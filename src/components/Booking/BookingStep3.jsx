@@ -91,23 +91,22 @@ ${formData.notes || "None"}
 
 Please contact me.`;
 
-    // --- Build the stored message (all info that has no dedicated column) ---
+    // --- Build the stored message (customer free-text notes only) ---
 
-    const customDetails =
+    const message = formData.notes.trim() || null;
+
+    // --- Custom course data (website-specific, kept in extra) ---
+
+    const extra =
       formData.course === "Custom Course"
-        ? `
-Custom Days: ${formData.customDays}
-Custom Minutes: ${formData.customMinutes}
-Custom Price: ${Number(formData.customPrice || 0).toLocaleString()}`
-        : "";
+        ? {
+            custom_days: formData.customDays,
+            custom_minutes: formData.customMinutes,
+            custom_price: formData.customPrice,
+          }
+        : null;
 
-    const storedMessage = `Area: ${formData.area}
-Pick & Drop: ${formData.pickup}
-Preferred Time: ${formData.time}
-Course: ${formData.course}${customDetails}
-Notes: ${formData.notes || "None"}`;
-
-    // --- Save to Supabase ---
+    // --- Save to Supabase (Phase 2 structured schema) ---
 
     const { error: supabaseError } = await supabase
       .from("booking_requests")
@@ -116,7 +115,18 @@ Notes: ${formData.notes || "None"}`;
         customer_phone: formData.phone.trim(),
         customer_email: formData.email.trim() || null,
         preferred_course: formData.course,
-        message: storedMessage,
+        message,
+
+        source: window.location.hostname || null,
+        area: formData.area.trim() || null,
+        city: null,
+        address: null,
+        preferred_date: null,
+        preferred_time: formData.time || null,
+        pickup_location: null,
+        dropoff_location: null,
+        home_service: formData.pickup === "Yes",
+        extra,
         status: "pending",
       });
 
