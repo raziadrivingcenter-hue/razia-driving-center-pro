@@ -19,6 +19,7 @@ function BookingWizard({
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    email: "",
     area: "",
 
     course: "",
@@ -58,6 +59,7 @@ function BookingWizard({
     setFormData({
       name: "",
       phone: "",
+      email: "",
       area: "",
 
       course: bookingData?.course || "",

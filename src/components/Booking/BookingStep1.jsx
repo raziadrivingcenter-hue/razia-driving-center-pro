@@ -6,9 +6,13 @@ function BookingStep1({
   next,
 }) {
   const phoneRegex = /^03\d{9}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const nameValid = formData.name.trim().length >= 3;
   const phoneValid = phoneRegex.test(formData.phone);
+  const emailValid =
+    formData.email.trim().length === 0 ||
+    emailRegex.test(formData.email);
   const areaValid = formData.area.trim().length >= 2;
 
   const canContinue =
@@ -64,6 +68,25 @@ function BookingStep1({
           error={
             formData.phone.length > 0 && !phoneValid
               ? "Enter a valid WhatsApp number (03XXXXXXXXX)."
+              : ""
+          }
+        />
+
+        <BookingInput
+          label="Email (Optional)"
+          type="email"
+          placeholder="you@example.com"
+          value={formData.email}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              email: e.target.value,
+            })
+          }
+          success={emailValid}
+          error={
+            formData.email.length > 0 && !emailValid
+              ? "Please enter a valid email address."
               : ""
           }
         />

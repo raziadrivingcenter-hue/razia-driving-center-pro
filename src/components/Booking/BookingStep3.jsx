@@ -5,6 +5,7 @@ import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
 
 import CustomSelect from "./CustomSelect";
+import { supabase } from "../../lib/supabase";
 
 function BookingStep3({
   formData,
@@ -15,8 +16,9 @@ function BookingStep3({
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (!formData.course) {
       alert("Please select a driving course.");
       return;
@@ -26,6 +28,12 @@ function BookingStep3({
       alert("Please select your preferred training time.");
       return;
     }
+
+    setError("");
+    setLoading(true);
+    setLoadingStep(1);
+
+    // --- Build WhatsApp message (existing business message) ---
 
     let courseDetails = "";
 
@@ -50,7 +58,14 @@ ${formData.course}
 `;
     }
 
-    const message = `Hello Razia Driving Center,
+    const emailLine = formData.email.trim()
+      ? `
+
+📧 Email:
+${formData.email.trim()}`
+      : "";
+
+    const whatsappMessage = `Hello Razia Driving Center,
 
 🚗 New Website Booking
 
@@ -58,7 +73,7 @@ ${formData.course}
 ${formData.name}
 
 📞 Phone:
-${formData.phone}
+${formData.phone}${emailLine}
 
 📍 Area:
 ${formData.area}
@@ -76,19 +91,59 @@ ${formData.notes || "None"}
 
 Please contact me.`;
 
-    const whatsappURL =
-      `https://wa.me/923094461407?text=${encodeURIComponent(message)}`;
+    // --- Build the stored message (all info that has no dedicated column) ---
 
-    setLoading(true);
-    setLoadingStep(1);
+    const customDetails =
+      formData.course === "Custom Course"
+        ? `
+Custom Days: ${formData.customDays}
+Custom Minutes: ${formData.customMinutes}
+Custom Price: ${Number(formData.customPrice || 0).toLocaleString()}`
+        : "";
 
-    setTimeout(() => {
-      setLoadingStep(2);
-    }, 700);
+    const storedMessage = `Area: ${formData.area}
+Pick & Drop: ${formData.pickup}
+Preferred Time: ${formData.time}
+Course: ${formData.course}${customDetails}
+Notes: ${formData.notes || "None"}`;
+
+    // --- Save to Supabase ---
+
+    const { error: supabaseError } = await supabase
+      .from("booking_requests")
+      .insert({
+        customer_name: formData.name.trim(),
+        customer_phone: formData.phone.trim(),
+        customer_email: formData.email.trim() || null,
+        preferred_course: formData.course,
+        message: storedMessage,
+        status: "pending",
+      });
+
+    if (supabaseError) {
+      setLoading(false);
+      setLoadingStep(0);
+
+      if (import.meta.env.DEV) {
+        console.error("Booking submission failed:", supabaseError.message);
+      }
+
+      setError(
+        "Sorry, we couldn't submit your booking right now. Please try again."
+      );
+      return;
+    }
+
+    // --- Supabase succeeded -> continue the existing WhatsApp flow ---
+
+    setLoadingStep(2);
 
     setTimeout(() => {
       setLoadingStep(3);
-    }, 1400);
+    }, 700);
+
+    const whatsappURL =
+      `https://wa.me/923094461407?text=${encodeURIComponent(whatsappMessage)}`;
 
     setTimeout(() => {
       setShowSuccess(true);
@@ -102,7 +157,7 @@ Please contact me.`;
         onClose();
       }, 1800);
 
-    }, 2200);
+    }, 1400);
   };
 
   if (showSuccess) {
@@ -119,11 +174,11 @@ Please contact me.`;
         </div>
 
         <h2 className="text-3xl font-black">
-          Booking Ready!
+          Booking Submitted!
         </h2>
 
         <p className="mt-3 text-gray-500">
-          Redirecting you to WhatsApp...
+          Booking request submitted successfully. We'll contact you shortly.
         </p>
 
         <div className="mt-8 h-2 overflow-hidden rounded-full bg-gray-200">
@@ -211,6 +266,14 @@ Please contact me.`;
         />
 
       </div>
+
+      {/* Error */}
+
+      {error && (
+        <div className="mt-6 rounded-xl border border-red-300 bg-red-50 p-3 text-center font-medium text-red-600">
+          {error}
+        </div>
+      )}
 
       {/* Buttons */}
 
