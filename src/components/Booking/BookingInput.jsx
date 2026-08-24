@@ -8,15 +8,23 @@ function BookingInput({
   onChange,
   error,
   success,
+  icon: Icon,
 }) {
   return (
     <div>
 
-      <label className="mb-2 block font-semibold text-gray-800">
+      <label className="mb-1 block text-sm font-semibold text-gray-800">
         {label}
       </label>
 
       <div className="relative">
+
+        {Icon && (
+          <Icon
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+        )}
 
         <input
           type={type}
@@ -25,15 +33,17 @@ function BookingInput({
           onChange={onChange}
           className={`
             w-full
-            rounded-2xl
+            rounded-xl
             border
             bg-white
-            p-4
-            pr-12
+            py-2.5
+            pr-9
+            text-sm
             text-gray-800
             outline-none
             transition-all
             duration-300
+            ${Icon ? "pl-9" : "px-3"}
 
             ${
               error
@@ -47,22 +57,22 @@ function BookingInput({
 
         {success && (
           <CheckCircle2
-            size={22}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"
+            size={16}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"
           />
         )}
 
         {error && (
           <AlertCircle
-            size={22}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-red-500"
+            size={16}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500"
           />
         )}
 
       </div>
 
       {error && (
-        <p className="mt-2 text-sm font-medium text-red-500">
+        <p className="mt-1.5 text-xs font-medium text-red-500">
           {error}
         </p>
       )}

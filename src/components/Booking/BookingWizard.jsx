@@ -1,4 +1,3 @@
-import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
@@ -24,6 +23,8 @@ function BookingWizard({
 
     course: "",
     pickup: "",
+    address: "",
+    distance: "",
     time: "",
     notes: "",
 
@@ -65,6 +66,8 @@ function BookingWizard({
       course: bookingData?.course || "",
 
       pickup: "",
+      address: "",
+      distance: "",
       time: "",
       notes: "",
 
@@ -131,49 +134,19 @@ function BookingWizard({
         }}
         className="
           w-full
-          max-w-md
-          max-h-[82vh]
+          max-w-[440px]
+          max-h-[680px]
           overflow-y-auto
-          rounded-3xl
+          rounded-2xl
           bg-white
           shadow-2xl
         "
       >
-        <BookingProgress step={step} />
-
-        {/* Header */}
-
-        <div className="flex items-start justify-between px-5 pt-5">
-
-          <div>
-
-            <h2 className="text-2xl font-black">
-              Book Course
-            </h2>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Complete the booking in 3 easy steps.
-            </p>
-
-          </div>
-
-          <button
-            onClick={onClose}
-            className="
-              rounded-xl
-              p-2
-              transition
-              hover:bg-gray-100
-            "
-          >
-            <X size={22} />
-          </button>
-
-        </div>
+        <BookingProgress step={step} onClose={onClose} />
 
         {/* LIVE SUMMARY */}
 
-        <div className="px-5 pt-4">
+        <div className="px-4 pt-3">
           <BookingLiveSummary
             formData={formData}
           />

@@ -21,17 +21,17 @@ function BookingStep1({
     areaValid;
 
   return (
-    <div className="px-5 pb-5 pt-4">
+    <div className="px-4 pb-4 pt-3">
 
-      <h2 className="text-3xl font-black">
+      <h2 className="text-lg font-black">
         Your Information
       </h2>
 
-      <p className="mt-2 text-gray-500">
+      <p className="mt-0.5 text-xs text-gray-500">
         Tell us a little about yourself.
       </p>
 
-      <div className="mt-8 space-y-6">
+      <div className="mt-4 grid grid-cols-2 gap-3">
 
         <BookingInput
           label="Full Name"
@@ -111,24 +111,25 @@ function BookingStep1({
 
       </div>
 
-      <div className="mt-10 flex justify-end">
+      <div className="mt-4 flex justify-end">
 
         <button
           onClick={next}
           disabled={!canContinue}
           className="
+            h-[42px]
+            w-[130px]
             rounded-xl
             bg-gradient-to-r
             from-[#FF3131]
             to-[#FF6201]
-            px-8
-            py-3
+            text-sm
             font-bold
             text-white
             shadow-lg
             transition-all
             duration-300
-            hover:-translate-y-1
+            hover:-translate-y-0.5
             hover:shadow-xl
             disabled:cursor-not-allowed
             disabled:opacity-40

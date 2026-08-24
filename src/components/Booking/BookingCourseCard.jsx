@@ -14,9 +14,9 @@ function BookingCourseCard({
       className={`
         relative
         w-full
-        rounded-2xl
+        rounded-xl
         border-2
-        p-5
+        p-3.5
         text-left
         transition-all
         duration-300
@@ -29,26 +29,26 @@ function BookingCourseCard({
       `}
     >
       {selected && (
-        <div className="absolute right-4 top-4 text-[#FF6201]">
-          <CheckCircle2 size={20} />
+        <div className="absolute right-3 top-3 text-[#FF6201]">
+          <CheckCircle2 size={18} />
         </div>
       )}
 
-      <h3 className="text-xl font-bold text-gray-900 pr-8">
+      <h3 className="pr-6 text-base font-bold text-gray-900">
         {title}
       </h3>
 
-      <p className="mt-1 text-sm text-gray-500">
+      <p className="mt-0.5 text-xs text-gray-500">
         {description}
       </p>
 
-      <div className="mt-4 flex items-end justify-between">
+      <div className="mt-2.5 flex items-end justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide text-gray-400">
+          <p className="text-[10px] uppercase tracking-wide text-gray-400">
             Starting From
           </p>
 
-          <h4 className="text-2xl font-black text-[#FF3131]">
+          <h4 className="text-xl font-black text-[#FF3131]">
             {price}
           </h4>
         </div>

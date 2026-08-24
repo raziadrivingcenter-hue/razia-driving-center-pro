@@ -120,11 +120,18 @@ Please contact me.`;
         source: window.location.hostname || null,
         area: formData.area.trim() || null,
         city: null,
-        address: null,
+        address:
+          formData.pickup === "Yes"
+            ? formData.address.trim() || null
+            : null,
         preferred_date: null,
         preferred_time: formData.time || null,
         pickup_location: null,
         dropoff_location: null,
+        distance_km:
+          formData.pickup === "Yes"
+            ? Number(formData.distance) || null
+            : null,
         home_service: formData.pickup === "Yes",
         extra,
         status: "pending",
@@ -166,62 +173,62 @@ Please contact me.`;
         setShowSuccess(false);
         onClose();
       }, 1800);
-
     }, 1400);
   };
 
   if (showSuccess) {
     return (
-      <div className="p-10 text-center">
+      <div className="px-6 py-8 text-center">
 
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
 
           <CheckCircle2
-            size={50}
+            size={40}
             className="text-green-600"
           />
 
         </div>
 
-        <h2 className="text-3xl font-black">
+        <h2 className="text-xl font-black">
           Booking Submitted!
         </h2>
 
-        <p className="mt-3 text-gray-500">
+        <p className="mt-2 text-sm text-gray-500">
           Booking request submitted successfully. We'll contact you shortly.
         </p>
 
-        <div className="mt-8 h-2 overflow-hidden rounded-full bg-gray-200">
+        <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-gray-200">
 
           <div className="h-full w-full animate-pulse rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201]" />
 
         </div>
 
-        <p className="mt-6 text-sm text-gray-400">
+        <p className="mt-4 text-xs text-gray-400">
           Please don't close this window.
         </p>
 
       </div>
     );
   }
-    return (
-    <div className="px-5 pb-5 pt-4">
+
+  return (
+    <div className="px-4 pb-4 pt-3">
 
       {/* Booking Summary */}
 
       <BookingSummary formData={formData} />
 
-      <h2 className="mt-6 text-3xl font-black">
+      <h2 className="mt-4 text-lg font-black">
         Final Step
       </h2>
 
-      <p className="mt-2 text-gray-500">
+      <p className="mt-0.5 text-xs text-gray-500">
         Just a few more details before booking.
       </p>
 
       {/* Preferred Time */}
 
-      <div className="mt-8">
+      <div className="mt-4">
 
         <CustomSelect
           label="Preferred Training Time"
@@ -244,14 +251,14 @@ Please contact me.`;
 
       {/* Notes */}
 
-      <div className="mt-6">
+      <div className="mt-3">
 
-        <label className="mb-2 block font-semibold">
+        <label className="mb-1 block text-sm font-semibold text-gray-800">
           Additional Notes
         </label>
 
         <textarea
-          rows="4"
+          rows="3"
           value={formData.notes}
           onChange={(e) =>
             setFormData({
@@ -262,10 +269,11 @@ Please contact me.`;
           placeholder="Anything you'd like us to know..."
           className="
             w-full
-            rounded-2xl
+            rounded-xl
             border
             border-gray-200
-            p-4
+            p-3
+            text-sm
             resize-none
             outline-none
             transition
@@ -280,22 +288,23 @@ Please contact me.`;
       {/* Error */}
 
       {error && (
-        <div className="mt-6 rounded-xl border border-red-300 bg-red-50 p-3 text-center font-medium text-red-600">
+        <div className="mt-3 rounded-xl border border-red-300 bg-red-50 p-2.5 text-center text-sm font-medium text-red-600">
           {error}
         </div>
       )}
 
       {/* Buttons */}
 
-      <div className="mt-10 flex justify-between">
+      <div className="mt-5 flex items-center justify-between">
 
         <button
           onClick={back}
           className="
             rounded-xl
             border
-            px-8
-            py-3
+            px-5
+            py-2.5
+            text-sm
             font-semibold
             transition
             hover:bg-gray-100
@@ -309,7 +318,8 @@ Please contact me.`;
           disabled={loading}
           className="
             flex
-            min-w-[220px]
+            h-[42px]
+            min-w-[180px]
             items-center
             justify-center
             gap-3
@@ -317,13 +327,13 @@ Please contact me.`;
             bg-gradient-to-r
             from-[#FF3131]
             to-[#FF6201]
-            px-8
-            py-3
+            px-6
+            text-sm
             font-bold
             text-white
             shadow-lg
             transition
-            hover:-translate-y-1
+            hover:-translate-y-0.5
             hover:shadow-xl
             disabled:cursor-not-allowed
             disabled:opacity-70
@@ -333,7 +343,7 @@ Please contact me.`;
 
           {loading ? (
 
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-col items-start gap-1.5">
 
               <div
                 className={`flex items-center gap-2 ${
@@ -344,15 +354,15 @@ Please contact me.`;
               >
 
                 {loadingStep >= 1 ? (
-                  <CheckCircle2 size={18} />
+                  <CheckCircle2 size={16} />
                 ) : (
                   <LoaderCircle
-                    size={18}
+                    size={16}
                     className="animate-spin"
                   />
                 )}
 
-                <span className="text-sm">
+                <span className="text-xs">
                   Checking Details...
                 </span>
 
@@ -367,12 +377,12 @@ Please contact me.`;
               >
 
                 {loadingStep >= 2 ? (
-                  <CheckCircle2 size={18} />
+                  <CheckCircle2 size={16} />
                 ) : (
-                  <div className="h-[18px] w-[18px]" />
+                  <div className="h-4 w-4" />
                 )}
 
-                <span className="text-sm">
+                <span className="text-xs">
                   Preparing Booking...
                 </span>
 
@@ -387,12 +397,12 @@ Please contact me.`;
               >
 
                 {loadingStep >= 3 ? (
-                  <CheckCircle2 size={18} />
+                  <CheckCircle2 size={16} />
                 ) : (
-                  <div className="h-[18px] w-[18px]" />
+                  <div className="h-4 w-4" />
                 )}
 
-                <span className="text-sm">
+                <span className="text-xs">
                   Opening WhatsApp...
                 </span>
 

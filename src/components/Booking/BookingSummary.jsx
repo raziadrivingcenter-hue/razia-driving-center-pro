@@ -64,7 +64,7 @@ function BookingSummary({ formData }) {
         }}
         className="
           overflow-hidden
-          rounded-3xl
+          rounded-xl
           border
           border-orange-100
           bg-gradient-to-br
@@ -79,15 +79,15 @@ function BookingSummary({ formData }) {
             bg-gradient-to-r
             from-[#FF3131]
             to-[#FF6201]
-            px-5
-            py-3
+            px-4
+            py-2
             text-white
           "
         >
 
           <div className="flex items-center justify-between">
 
-            <h3 className="font-black">
+            <h3 className="text-sm font-black">
               Booking Summary
             </h3>
 
@@ -103,9 +103,9 @@ function BookingSummary({ formData }) {
                 className="
                   rounded-full
                   bg-white
-                  px-3
-                  py-1
-                  text-xs
+                  px-2.5
+                  py-0.5
+                  text-[10px]
                   font-bold
                   text-[#FF6201]
                 "
@@ -118,15 +118,15 @@ function BookingSummary({ formData }) {
 
         </div>
 
-        <div className="space-y-4 p-5">
+        <div className="space-y-2.5 p-4">
 
           <div className="flex items-center justify-between">
 
-            <span className="text-gray-500">
+            <span className="text-xs text-gray-500">
               Course
             </span>
 
-            <span className="font-bold">
+            <span className="text-sm font-bold">
               {formData.course}
             </span>
 
@@ -140,17 +140,17 @@ function BookingSummary({ formData }) {
                 <div className="flex items-center gap-2">
 
                   <CalendarDays
-                    size={16}
+                    size={14}
                     className="text-[#FF6201]"
                   />
 
-                  <span className="text-gray-500">
+                  <span className="text-xs text-gray-500">
                     Days
                   </span>
 
                 </div>
 
-                <span className="font-bold">
+                <span className="text-sm font-bold">
                   {formData.customDays}
                 </span>
 
@@ -161,17 +161,17 @@ function BookingSummary({ formData }) {
                 <div className="flex items-center gap-2">
 
                   <Clock3
-                    size={16}
+                    size={14}
                     className="text-[#FF6201]"
                   />
 
-                  <span className="text-gray-500">
+                  <span className="text-xs text-gray-500">
                     Lesson
                   </span>
 
                 </div>
 
-                <span className="font-bold">
+                <span className="text-sm font-bold">
                   {formData.customMinutes} Minutes
                 </span>
 
@@ -186,25 +186,25 @@ function BookingSummary({ formData }) {
             <div className="flex items-center gap-2">
 
               <CarFront
-                size={16}
+                size={14}
                 className="text-[#FF6201]"
               />
 
-              <span className="text-gray-500">
+              <span className="text-xs text-gray-500">
                 Pick & Drop
               </span>
 
             </div>
 
-            <span className="font-bold">
+            <span className="text-sm font-bold">
               {formData.pickup || "-"}
             </span>
 
           </div>
 
-          <div className="border-t border-orange-100 pt-4">
+          <div className="border-t border-orange-100 pt-3">
 
-            <p className="text-xs uppercase tracking-widest text-gray-500">
+            <p className="text-[10px] uppercase tracking-widest text-gray-500">
               Estimated Fee
             </p>
 
@@ -219,8 +219,8 @@ function BookingSummary({ formData }) {
                 opacity: 1,
               }}
               className="
-                mt-2
-                text-3xl
+                mt-1
+                text-2xl
                 font-black
                 text-[#FF6201]
               "

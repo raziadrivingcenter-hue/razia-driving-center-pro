@@ -75,7 +75,7 @@ function Hero({ onBookNow }) {
 
   <div className="flex flex-wrap gap-4">
 
-    <PrimaryButton onClick={onBookNow}>
+    <PrimaryButton onClick={onBookNow} className="py-0.5">
       Book Now
     </PrimaryButton>
 
@@ -89,7 +89,7 @@ function Hero({ onBookNow }) {
       border-2
       border-[#FF6201]
       px-8
-      py-4
+      py-0.5
       font-semibold
       text-[#FF6201]
       transition-all
@@ -103,6 +103,27 @@ function Hero({ onBookNow }) {
       View Courses
     </a>
 
+  </div>
+
+  {/* Payment Reassurance */}
+  <div className="mt-4">
+    <span
+      className="
+        bg-gradient-to-r
+        from-[#FF3131]
+        to-[#FF6201]
+        bg-clip-text
+        text-transparent
+        text-sm
+        font-bold
+        tracking-wide
+      "
+    >
+      Payment on arrival
+    </span>
+    <p className="mt-0.5 text-[11px] text-gray-500">
+      No Card or Online Payment Required
+    </p>
   </div>
 
   {/* Second Row */}

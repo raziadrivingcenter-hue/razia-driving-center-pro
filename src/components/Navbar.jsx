@@ -109,7 +109,15 @@ ${
 >
 
           {/* Logo */}
-          <a href="#home">
+          <a
+            href="#home"
+            className="
+              flex
+              flex-col
+              items-center
+              gap-[3px]
+            "
+          >
             <img
               src={logo}
               alt="Razia Driving Center"
@@ -120,11 +128,25 @@ ${
   hover:scale-105 hover:rotate-1
   ${
     scrolled
-      ? "h-8"
-      : "h-10"
+      ? "h-4"
+      : "h-5"
   }
 `}
             />
+            <span
+              className="
+                bg-gradient-to-r
+                from-[#FF3131]
+                to-[#FF6201]
+                bg-clip-text
+                text-transparent
+                font-semibold
+                tracking-[0.18em]
+              "
+              style={{ fontSize: "12px", lineHeight: 1 }}
+            >
+              DRIVING CENTER
+            </span>
           </a>
 
           {/* Desktop Navigation */}
@@ -262,8 +284,8 @@ hover:after:w-full
     bg-gradient-to-r
     from-[#FF3131]
     to-[#FF6201]
-    px-8
-    py-4
+    px-6
+    py-3
     font-bold
     text-white
     shadow-lg

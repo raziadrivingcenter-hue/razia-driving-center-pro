@@ -1,6 +1,16 @@
+import { AnimatePresence, motion } from "framer-motion";
+import { MapPin, ChevronDown, ChevronUp } from "lucide-react";
+import { useMemo, useState } from "react";
+
 import CustomSelect from "./CustomSelect";
+import BookingInput from "./BookingInput";
 import BookingCourseCard from "./BookingCourseCard";
 import BookingSummary from "./BookingSummary";
+import {
+  calculatePickDropCharges,
+  getCourseDurationDays,
+  getCourseFee,
+} from "../../lib/pickDropCalculator";
 
 function BookingStep2({
   formData,
@@ -10,25 +20,107 @@ function BookingStep2({
 }) {
   const isCustomCourse = formData.course === "Custom Course";
 
+  const [locationStatus, setLocationStatus] = useState("idle");
+  const [locationError, setLocationError] = useState("");
+  const [showCalculation, setShowCalculation] = useState(false);
+
+  const handleCheckDistance = () => {
+    if (!navigator.geolocation) {
+      setLocationError(
+        "Your browser does not support location detection."
+      );
+      return;
+    }
+
+    setLocationError("");
+    setLocationStatus("locating");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        setLocationStatus("opening");
+
+        const directionsUrl =
+          `https://www.google.com/maps/dir/?api=1` +
+          `&origin=${latitude},${longitude}` +
+          `&destination=31.5201889,74.3575145`;
+
+        window.open(directionsUrl, "_blank", "noopener,noreferrer");
+
+        setTimeout(() => setLocationStatus("idle"), 1500);
+      },
+      (error) => {
+        setLocationStatus("idle");
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationError(
+              "Location access is required to check your distance. Please allow location access and try again."
+            );
+            break;
+          case error.TIMEOUT:
+            setLocationError(
+              "Location detection timed out. Please try again."
+            );
+            break;
+          case error.POSITION_UNAVAILABLE:
+          default:
+            setLocationError(
+              "Your current location could not be detected. Please try again."
+            );
+            break;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
+
+  const courseDuration = getCourseDurationDays(formData.course, {
+    customDays: formData.customDays,
+  });
+
+  const courseFee = getCourseFee(formData.course, {
+    customPrice: formData.customPrice,
+  });
+
+  const pricing = useMemo(() => {
+    const { pickDropCharges } = calculatePickDropCharges({
+      courseDuration,
+      distanceKm: formData.distance,
+    });
+
+    return {
+      courseDuration,
+      courseFee,
+      pickDropCharges,
+      totalPayable: courseFee + pickDropCharges,
+    };
+  }, [courseDuration, courseFee, formData.distance]);
+
   return (
-    <div className="px-5 pb-5 pt-4">
+    <div className="px-4 pb-4 pt-3">
 
       {/* Booking Summary */}
       <BookingSummary formData={formData} />
 
       {/* Heading */}
 
-      <h2 className="text-3xl font-black">
+      <h2 className="mt-4 text-lg font-black">
         Choose Your Course
       </h2>
 
-      <p className="mt-2 text-gray-500">
+      <p className="mt-0.5 text-xs text-gray-500">
         Select the training package that suits you best.
       </p>
 
       {/* Course Cards */}
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-4 space-y-3">
 
         {isCustomCourse ? (
 
@@ -100,17 +192,20 @@ function BookingStep2({
 
       {/* Pick & Drop */}
 
-      <div className="mt-6">
+      <div className="mt-4">
 
         <CustomSelect
           label="Do you require Pick & Drop service?"
           value={formData.pickup}
-          onChange={(e) =>
+          onChange={(e) => {
+            const value = e.target.value;
+
             setFormData({
               ...formData,
-              pickup: e.target.value,
-            })
-          }
+              pickup: value,
+              address: value === "Yes" ? formData.address : "",
+            });
+          }}
           options={[
             "Select Option",
             "Yes",
@@ -118,36 +213,253 @@ function BookingStep2({
           ]}
         />
 
-        {formData.pickup === "Yes" && (
-          <div
-            className="
-              mt-4
-              rounded-2xl
-              border
-              border-orange-200
-              bg-orange-50
-              p-4
-            "
-          >
-            <p className="font-semibold text-[#FF6201]">
-              🚗 Pick & Drop Service
-            </p>
+        <AnimatePresence>
+          {formData.pickup === "Yes" && (
+            <motion.div
+              initial={{
+                opacity: 0,
+                height: 0,
+              }}
+              animate={{
+                opacity: 1,
+                height: "auto",
+              }}
+              exit={{
+                opacity: 0,
+                height: 0,
+              }}
+              transition={{
+                duration: 0.2,
+              }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3">
 
-            <p className="mt-2 text-sm leading-6 text-gray-600">
-              Pick & Drop charges are calculated
-              based on your location within Lahore.
-              Our team will confirm the exact
-              transportation charges after reviewing
-              your booking request.
-            </p>
-          </div>
-        )}
+                <BookingInput
+                  label="Pickup / Drop-off Address"
+                  placeholder="Enter your complete pickup address"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: e.target.value,
+                    })
+                  }
+                  icon={MapPin}
+                  success={formData.address.trim().length >= 5}
+                  error={
+                    formData.address.trim().length > 0 &&
+                    formData.address.trim().length < 5
+                      ? "Please enter a complete address."
+                      : ""
+                  }
+                />
+
+                <p className="mt-2 text-[11px] text-gray-400">
+                  Calculate Your Self
+                </p>
+
+                <div className="mt-2 flex items-end gap-2">
+
+                  <BookingInput
+                    label="Distance In KM"
+                    placeholder="e.g. 5"
+                    value={formData.distance}
+                    onChange={(e) => {
+                      const onlyNumbers = e.target.value.replace(
+                        /[^0-9.]/g,
+                        ""
+                      );
+
+                      const parts = onlyNumbers.split(".");
+
+                      const sanitized =
+                        parts.length > 2
+                          ? parts[0] + "." + parts.slice(1).join("")
+                          : onlyNumbers;
+
+                      setFormData({
+                        ...formData,
+                        distance: sanitized,
+                      });
+                    }}
+                    success={Number(formData.distance) > 0}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handleCheckDistance}
+                    disabled={locationStatus !== "idle"}
+                    className="
+                      flex
+                      h-[42px]
+                      w-[130px]
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-xl
+                      bg-gradient-to-r
+                      from-[#FF3131]
+                      to-[#FF6201]
+                      text-sm
+                      font-semibold
+                      text-white
+                      shadow-md
+                      transition-all
+                      duration-300
+                      hover:-translate-y-0.5
+                      hover:shadow-lg
+                      disabled:cursor-not-allowed
+                      disabled:opacity-60
+                      disabled:hover:translate-y-0
+                    "
+                  >
+                    {locationStatus === "idle"
+                      ? "Check Distance"
+                      : locationStatus === "locating"
+                      ? "Getting your location..."
+                      : "Opening Google Maps..."}
+                  </button>
+
+                </div>
+
+                {locationError && (
+                  <p className="mt-2 text-xs font-medium text-red-500">
+                    {locationError}
+                  </p>
+                )}
+
+                {pricing.courseFee > 0 && (
+                  <div className="mt-3 rounded-xl border border-orange-100 bg-gradient-to-br from-white to-orange-50 p-3">
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        Selected Course Fee
+                      </span>
+                      <span className="text-sm font-bold text-gray-800">
+                        Rs. {pricing.courseFee.toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        Pick & Drop Charges
+                      </span>
+                      <span className="text-sm font-bold text-gray-800">
+                        Rs. {pricing.pickDropCharges.toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 border-t border-orange-100 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-black text-gray-900">
+                          Total Payable
+                        </span>
+                        <span className="text-base font-black text-[#FF6201]">
+                          Rs. {pricing.totalPayable.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowCalculation((prev) => !prev)
+                      }
+                      className="
+                        mt-2
+                        flex
+                        items-center
+                        gap-1
+                        text-[11px]
+                        font-semibold
+                        text-[#FF6201]
+                        transition
+                        hover:underline
+                      "
+                    >
+                      Estimated Pick & Drop Charge
+                      {showCalculation ? (
+                        <ChevronUp size={12} />
+                      ) : (
+                        <ChevronDown size={12} />
+                      )}
+                    </button>
+
+                    <AnimatePresence>
+                      {showCalculation && (
+                        <motion.div
+                          initial={{
+                            opacity: 0,
+                            height: 0,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            height: "auto",
+                          }}
+                          exit={{
+                            opacity: 0,
+                            height: 0,
+                          }}
+                          transition={{
+                            duration: 0.18,
+                          }}
+                          className="overflow-hidden"
+                        >
+                          <p className="mt-1 text-[11px] leading-5 text-gray-500">
+                            Course Duration × Rs. 50 × Distance × 2
+                          </p>
+                          <p className="text-[11px] font-semibold text-gray-700">
+                            {pricing.courseDuration} × 50 ×{" "}
+                            {pricing.pickDropCharges > 0
+                              ? formData.distance
+                              : 0}{" "}
+                            × 2 = Rs.{" "}
+                            {pricing.pickDropCharges.toLocaleString()}
+                          </p>
+                          <p className="mt-1 text-[10px] leading-4 text-gray-400">
+                            Final charges are verified by our team
+                            before booking confirmation.
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                  </div>
+                )}
+
+              </div>
+
+              <div
+                className="
+                  mt-3
+                  rounded-xl
+                  border
+                  border-orange-200
+                  bg-orange-50
+                  px-3
+                  py-2.5
+                "
+              >
+                <p className="text-[13px] font-semibold text-[#FF6201]">
+                  🚗 Pick & Drop Service
+                </p>
+
+                <p className="mt-0.5 text-[11px] leading-4 text-gray-600">
+                  Our team will verify your distance and
+                  confirm the exact Pick & Drop charges
+                  with you before booking confirmation.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
 
       {/* Navigation */}
 
-      <div className="mt-8 flex items-center justify-between">
+      <div className="mt-5 flex items-center justify-between">
 
         <button
           type="button"
@@ -156,8 +468,9 @@ function BookingStep2({
             rounded-xl
             border
             border-gray-300
-            px-6
-            py-3
+            px-5
+            py-2.5
+            text-sm
             font-semibold
             transition
             hover:bg-gray-100
@@ -169,20 +482,25 @@ function BookingStep2({
         <button
           type="button"
           onClick={next}
-          disabled={!formData.course}
+          disabled={
+            !formData.course ||
+            (formData.pickup === "Yes" &&
+              formData.address.trim().length < 5)
+          }
           className="
+            h-[42px]
             rounded-xl
             bg-gradient-to-r
             from-[#FF3131]
             to-[#FF6201]
-            px-8
-            py-3
+            px-6
+            text-sm
             font-bold
             text-white
             shadow-lg
             transition-all
             duration-300
-            hover:-translate-y-1
+            hover:-translate-y-0.5
             hover:shadow-xl
             disabled:cursor-not-allowed
             disabled:opacity-40

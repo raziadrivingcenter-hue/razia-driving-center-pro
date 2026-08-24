@@ -47,7 +47,7 @@ function CustomSelect({
       className="relative w-full"
     >
       {label && (
-        <label className="mb-2 block font-semibold text-gray-800">
+        <label className="mb-1 block text-sm font-semibold text-gray-800">
           {label}
         </label>
       )}
@@ -62,13 +62,14 @@ function CustomSelect({
           w-full
           items-center
           justify-between
-          rounded-2xl
+          rounded-xl
           border
           border-gray-200
           bg-white
-          px-4
-          py-3
+          px-3
+          py-2.5
           text-left
+          text-sm
           transition-all
           duration-300
           hover:border-[#FF6201]
@@ -96,7 +97,7 @@ function CustomSelect({
           }}
         >
           <ChevronDown
-            size={18}
+            size={16}
             className="text-gray-400"
           />
         </motion.div>
@@ -133,7 +134,7 @@ function CustomSelect({
               mt-2
               max-h-48
               overflow-y-auto
-              rounded-2xl
+              rounded-xl
               border
               border-orange-100
               bg-white
@@ -159,8 +160,8 @@ function CustomSelect({
                   w-full
                   items-center
                   justify-between
-                  px-4
-                  py-2.5
+                  px-3
+                  py-2
                   text-sm
                   text-left
                   transition-all
@@ -177,7 +178,7 @@ function CustomSelect({
 
                 {value === option && (
                   <Check
-                    size={16}
+                    size={14}
                     className="text-[#FF6201]"
                   />
                 )}
