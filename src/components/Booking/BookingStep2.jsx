@@ -1,20 +1,16 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { MapPin, ChevronDown, ChevronUp } from "lucide-react";
-import { useMemo, useState } from "react";
+import { MapPin, ChevronDown, ChevronUp, CarFront, XCircle } from "lucide-react";
+import { useState } from "react";
 
 import CustomSelect from "./CustomSelect";
 import BookingInput from "./BookingInput";
 import BookingCourseCard from "./BookingCourseCard";
 import BookingSummary from "./BookingSummary";
-import {
-  calculatePickDropCharges,
-  getCourseDurationDays,
-  getCourseFee,
-} from "../../lib/pickDropCalculator";
 
 function BookingStep2({
   formData,
   setFormData,
+  pricing,
   next,
   back,
 }) {
@@ -80,41 +76,19 @@ function BookingStep2({
     );
   };
 
-  const courseDuration = getCourseDurationDays(formData.course, {
-    customDays: formData.customDays,
-  });
-
-  const courseFee = getCourseFee(formData.course, {
-    customPrice: formData.customPrice,
-  });
-
-  const pricing = useMemo(() => {
-    const { pickDropCharges } = calculatePickDropCharges({
-      courseDuration,
-      distanceKm: formData.distance,
-    });
-
-    return {
-      courseDuration,
-      courseFee,
-      pickDropCharges,
-      totalPayable: courseFee + pickDropCharges,
-    };
-  }, [courseDuration, courseFee, formData.distance]);
-
   return (
-    <div className="px-4 pb-4 pt-3">
+    <div className="rounded-b-2xl border border-white/25 bg-white/[0.07] px-4 pb-4 pt-3 shadow-lg backdrop-blur-xl">
 
       {/* Booking Summary */}
       <BookingSummary formData={formData} />
 
       {/* Heading */}
 
-      <h2 className="mt-4 text-lg font-black">
+      <h2 className="mt-4 text-lg font-black text-white">
         Choose Your Course
       </h2>
 
-      <p className="mt-0.5 text-xs text-gray-500">
+      <p className="mt-0.5 text-xs text-gray-300">
         Select the training package that suits you best.
       </p>
 
@@ -255,7 +229,7 @@ function BookingStep2({
                   }
                 />
 
-                <p className="mt-2 text-[11px] text-gray-400">
+                <p className="mt-2 text-[11px] text-gray-300">
                   Calculate Your Self
                 </p>
 
@@ -283,7 +257,17 @@ function BookingStep2({
                         distance: sanitized,
                       });
                     }}
-                    success={Number(formData.distance) > 0}
+                    success={
+                      Number(formData.distance) > 0 &&
+                      Number(formData.distance) <= 20
+                    }
+                    error={
+                      Number(formData.distance) > 20
+                        ? "Sorry, Pick & Drop Service is available up to 20 KM."
+                        : ""
+                    }
+                    errorIcon={XCircle}
+                    hideErrorText
                   />
 
                   <button
@@ -323,6 +307,13 @@ function BookingStep2({
 
                 </div>
 
+                {Number(formData.distance) > 20 && (
+                  <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-400">
+                    <XCircle size={12} className="shrink-0 text-red-400" />
+                    Sorry, Pick & Drop Service is available up to 20 KM.
+                  </p>
+                )}
+
                 {locationError && (
                   <p className="mt-2 text-xs font-medium text-red-500">
                     {locationError}
@@ -330,29 +321,29 @@ function BookingStep2({
                 )}
 
                 {pricing.courseFee > 0 && (
-                  <div className="mt-3 rounded-xl border border-orange-100 bg-gradient-to-br from-white to-orange-50 p-3">
+                  <div className="mt-3 rounded-xl border border-white/20 bg-white/[0.07] p-3 backdrop-blur-md">
 
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-300">
                         Selected Course Fee
                       </span>
-                      <span className="text-sm font-bold text-gray-800">
+                      <span className="text-sm font-bold text-gray-100">
                         Rs. {pricing.courseFee.toLocaleString()}
                       </span>
                     </div>
 
                     <div className="mt-2 flex items-center justify-between">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-300">
                         Pick & Drop Charges
                       </span>
-                      <span className="text-sm font-bold text-gray-800">
+                      <span className="text-sm font-bold text-gray-100">
                         Rs. {pricing.pickDropCharges.toLocaleString()}
                       </span>
                     </div>
 
-                    <div className="mt-2 border-t border-orange-100 pt-2">
+                    <div className="mt-2 border-t border-white/20 pt-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-black text-gray-900">
+                        <span className="text-sm font-black text-white">
                           Total Payable
                         </span>
                         <span className="text-base font-black text-[#FF6201]">
@@ -406,10 +397,10 @@ function BookingStep2({
                           }}
                           className="overflow-hidden"
                         >
-                          <p className="mt-1 text-[11px] leading-5 text-gray-500">
+                          <p className="mt-1 text-[11px] leading-5 text-gray-300">
                             Course Duration × Rs. 50 × Distance × 2
                           </p>
-                          <p className="text-[11px] font-semibold text-gray-700">
+                          <p className="text-[11px] font-semibold text-gray-200">
                             {pricing.courseDuration} × 50 ×{" "}
                             {pricing.pickDropCharges > 0
                               ? formData.distance
@@ -435,17 +426,19 @@ function BookingStep2({
                   mt-3
                   rounded-xl
                   border
-                  border-orange-200
-                  bg-orange-50
+                  border-white/20
+                  bg-white/[0.07]
                   px-3
                   py-2.5
+                  backdrop-blur-md
                 "
               >
-                <p className="text-[13px] font-semibold text-[#FF6201]">
-                  🚗 Pick & Drop Service
+                <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#FF6201]">
+                  <CarFront size={14} className="shrink-0 text-[#FF6201]" />
+                  Pick & Drop Service
                 </p>
 
-                <p className="mt-0.5 text-[11px] leading-4 text-gray-600">
+                <p className="mt-0.5 text-[11px] leading-4 text-gray-300">
                   Our team will verify your distance and
                   confirm the exact Pick & Drop charges
                   with you before booking confirmation.
@@ -467,13 +460,14 @@ function BookingStep2({
           className="
             rounded-xl
             border
-            border-gray-300
+            border-white/25
             px-5
             py-2.5
             text-sm
             font-semibold
+            text-gray-200
             transition
-            hover:bg-gray-100
+            hover:bg-white/10
           "
         >
           ← Back
@@ -484,6 +478,7 @@ function BookingStep2({
           onClick={next}
           disabled={
             !formData.course ||
+            Number(formData.distance) > 20 ||
             (formData.pickup === "Yes" &&
               formData.address.trim().length < 5)
           }

@@ -1,21 +1,20 @@
-import BookingSummary from "./BookingSummary";
-
-import { CheckCircle2 } from "lucide-react";
-import { LoaderCircle } from "lucide-react";
+import { CheckCircle2, LoaderCircle, CalendarDays } from "lucide-react";
 import { useState } from "react";
 
 import CustomSelect from "./CustomSelect";
+import BookingInput from "./BookingInput";
 import { supabase } from "../../lib/supabase";
 
 function BookingStep3({
   formData,
   setFormData,
+  pricing,
   back,
   onClose,
 }) {
   const [loading, setLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [bookingId, setBookingId] = useState("");
   const [error, setError] = useState("");
 
   const handleBooking = async () => {
@@ -31,71 +30,8 @@ function BookingStep3({
 
     setError("");
     setLoading(true);
-    setLoadingStep(1);
-
-    // --- Build WhatsApp message (existing business message) ---
-
-    let courseDetails = "";
-
-    if (formData.course === "Custom Course") {
-      courseDetails = `
-🚘 Course:
-Custom Driving Course
-
-📅 Training Days:
-${formData.customDays} Days
-
-⏱ Lesson Duration:
-${formData.customMinutes} Minutes Daily
-
-💰 Estimated Fee:
-Rs. ${Number(formData.customPrice).toLocaleString()}
-`;
-    } else {
-      courseDetails = `
-🚘 Course:
-${formData.course}
-`;
-    }
-
-    const emailLine = formData.email.trim()
-      ? `
-
-📧 Email:
-${formData.email.trim()}`
-      : "";
-
-    const whatsappMessage = `Hello Razia Driving Center,
-
-🚗 New Website Booking
-
-👤 Name:
-${formData.name}
-
-📞 Phone:
-${formData.phone}${emailLine}
-
-📍 Area:
-${formData.area}
-
-${courseDetails}
-
-🚖 Pick & Drop:
-${formData.pickup}
-
-🕒 Preferred Training Time:
-${formData.time}
-
-📝 Additional Notes:
-${formData.notes || "None"}
-
-Please contact me.`;
-
-    // --- Build the stored message (customer free-text notes only) ---
 
     const message = formData.notes.trim() || null;
-
-    // --- Custom course data (website-specific, kept in extra) ---
 
     const extra =
       formData.course === "Custom Course"
@@ -103,43 +39,46 @@ Please contact me.`;
             custom_days: formData.customDays,
             custom_minutes: formData.customMinutes,
             custom_price: formData.customPrice,
+            course_fee: pricing.courseFee,
+            pick_drop_charges: pricing.pickDropCharges,
+            total_payable: pricing.totalPayable,
           }
-        : null;
+        : {
+            course_fee: pricing.courseFee,
+            pick_drop_charges: pricing.pickDropCharges,
+            total_payable: pricing.totalPayable,
+          };
 
-    // --- Save to Supabase (Phase 2 structured schema) ---
-
-    const { error: supabaseError } = await supabase
-      .from("booking_requests")
-      .insert({
-        customer_name: formData.name.trim(),
-        customer_phone: formData.phone.trim(),
-        customer_email: formData.email.trim() || null,
-        preferred_course: formData.course,
-        message,
-
-        source: window.location.hostname || null,
-        area: formData.area.trim() || null,
-        city: null,
-        address:
+    const { data, error: supabaseError } = await supabase.rpc(
+      "submit_booking",
+      {
+        p_customer_name: formData.name.trim(),
+        p_customer_phone: formData.phone.trim(),
+        p_customer_email: formData.email.trim() || null,
+        p_preferred_course: formData.course,
+        p_message: message,
+        p_source: window.location.hostname || null,
+        p_area: formData.area.trim() || null,
+        p_city: null,
+        p_address:
           formData.pickup === "Yes"
             ? formData.address.trim() || null
             : null,
-        preferred_date: null,
-        preferred_time: formData.time || null,
-        pickup_location: null,
-        dropoff_location: null,
-        distance_km:
+        p_preferred_date: formData.preferred_date || null,
+        p_preferred_time: formData.time || null,
+        p_pickup_location: null,
+        p_dropoff_location: null,
+        p_distance_km:
           formData.pickup === "Yes"
             ? Number(formData.distance) || null
             : null,
-        home_service: formData.pickup === "Yes",
-        extra,
-        status: "pending",
-      });
+        p_home_service: formData.pickup === "Yes",
+        p_extra: extra,
+      }
+    );
 
     if (supabaseError) {
       setLoading(false);
-      setLoadingStep(0);
 
       if (import.meta.env.DEV) {
         console.error("Booking submission failed:", supabaseError.message);
@@ -151,78 +90,150 @@ Please contact me.`;
       return;
     }
 
-    // --- Supabase succeeded -> continue the existing WhatsApp flow ---
+    setLoading(false);
+    setBookingId(String(data).slice(0, 8));
+    setShowConfirmation(true);
+  };
 
-    setLoadingStep(2);
-
-    setTimeout(() => {
-      setLoadingStep(3);
-    }, 700);
+  const handleInformWhatsApp = () => {
+    const whatsappMessage =
+      `Hello Razia Driving Center Team\n\n` +
+      `I Have Submitted My details Through your Website\n\n` +
+      `My Booking ID # ${bookingId}`;
 
     const whatsappURL =
       `https://wa.me/923094461407?text=${encodeURIComponent(whatsappMessage)}`;
 
-    setTimeout(() => {
-      setShowSuccess(true);
-
-      window.open(whatsappURL, "_blank");
-
-      setTimeout(() => {
-        setLoading(false);
-        setLoadingStep(0);
-        setShowSuccess(false);
-        onClose();
-      }, 1800);
-    }, 1400);
+    window.open(whatsappURL, "_blank");
   };
 
-  if (showSuccess) {
+  if (showConfirmation) {
     return (
       <div className="px-6 py-8 text-center">
 
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-
-          <CheckCircle2
-            size={40}
-            className="text-green-600"
-          />
-
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
+          <CheckCircle2 size={40} className="text-green-400" />
         </div>
 
-        <h2 className="text-xl font-black">
-          Booking Submitted!
+        <h2 className="text-xl font-black text-white">
+          Your Details Has Been Sent Successfully
         </h2>
 
-        <p className="mt-2 text-sm text-gray-500">
-          Booking request submitted successfully. We'll contact you shortly.
+        <p className="mt-3 text-sm font-semibold text-[#FF6201]">
+          Booking ID # {bookingId}
         </p>
 
-        <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-gray-200">
+        <div className="mt-6 flex items-center justify-center gap-3">
 
-          <div className="h-full w-full animate-pulse rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201]" />
+          <button
+            type="button"
+            onClick={onClose}
+            className="
+              rounded-xl
+              border
+              border-white/25
+              px-5
+              py-2.5
+              text-sm
+              font-semibold
+              text-gray-200
+              transition
+              hover:bg-white/10
+            "
+          >
+            Close
+          </button>
+
+          <button
+            type="button"
+            onClick={handleInformWhatsApp}
+            className="
+              h-[42px]
+              rounded-xl
+              bg-gradient-to-r
+              from-[#FF3131]
+              to-[#FF6201]
+              px-5
+              text-sm
+              font-bold
+              text-white
+              shadow-lg
+              transition
+              hover:-translate-y-0.5
+              hover:shadow-xl
+            "
+          >
+            Inform on WhatsApp
+          </button>
 
         </div>
-
-        <p className="mt-4 text-xs text-gray-400">
-          Please don't close this window.
-        </p>
 
       </div>
     );
   }
 
   return (
-    <div className="px-4 pb-4 pt-3">
+    <div className="rounded-b-2xl border border-white/25 bg-white/[0.07] px-4 pb-4 pt-3 shadow-lg backdrop-blur-xl">
 
-      {/* Booking Summary */}
+      {/* Compact Booking Summary */}
+      <div className="rounded-xl border border-white/20 bg-white/[0.07] p-3 backdrop-blur-md">
 
-      <BookingSummary formData={formData} />
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-300">
+            Course
+          </span>
+          <span className="text-sm font-bold text-gray-100">
+            {formData.course}
+          </span>
+        </div>
 
-      <h2 className="mt-4 text-lg font-black">
+        <div className="mt-2 flex items-center justify-between">
+          <span className="text-xs text-gray-300">
+            Pick & Drop
+          </span>
+          <span className="text-sm font-bold text-gray-100">
+            {formData.pickup || "-"}
+          </span>
+        </div>
+
+        <div className="mt-2 flex items-center justify-between">
+          <span className="text-xs text-gray-300">
+            Course Fee
+          </span>
+          <span className="text-sm font-bold text-gray-100">
+            Rs. {pricing.courseFee.toLocaleString()}
+          </span>
+        </div>
+
+        <div className="mt-2 flex items-center justify-between">
+          <span className="text-xs text-gray-300">
+            Pick & Drop Charges
+          </span>
+          <span className="text-sm font-bold text-gray-100">
+            Rs. {pricing.pickDropCharges.toLocaleString()}
+          </span>
+        </div>
+
+        <div className="mt-2 border-t border-white/20 pt-2">
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-black text-white">
+              Total Payable
+            </span>
+            <span className="text-base font-black text-[#FF6201]">
+              Rs. {pricing.totalPayable.toLocaleString()}
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <h2 className="mt-4 text-lg font-black text-white">
         Final Step
       </h2>
 
-      <p className="mt-0.5 text-xs text-gray-500">
+      <p className="mt-0.5 text-xs text-gray-300">
         Just a few more details before booking.
       </p>
 
@@ -249,11 +260,30 @@ Please contact me.`;
 
       </div>
 
+      {/* Preferred Joining Date */}
+
+      <div className="mt-3">
+
+        <BookingInput
+          label="Preferred Joining Date"
+          type="date"
+          value={formData.preferred_date}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              preferred_date: e.target.value,
+            })
+          }
+          icon={CalendarDays}
+        />
+
+      </div>
+
       {/* Notes */}
 
       <div className="mt-3">
 
-        <label className="mb-1 block text-sm font-semibold text-gray-800">
+        <label className="mb-1 block text-sm font-semibold text-gray-300">
           Additional Notes
         </label>
 
@@ -271,15 +301,19 @@ Please contact me.`;
             w-full
             rounded-xl
             border
-            border-gray-200
+            border-white/20
+            bg-white/[0.08]
             p-3
             text-sm
+            text-gray-100
+            placeholder-white/40
             resize-none
             outline-none
+            backdrop-blur-sm
             transition
             focus:border-[#FF6201]
             focus:ring-4
-            focus:ring-orange-100
+            focus:ring-[#FF6201]/20
           "
         />
 
@@ -288,7 +322,7 @@ Please contact me.`;
       {/* Error */}
 
       {error && (
-        <div className="mt-3 rounded-xl border border-red-300 bg-red-50 p-2.5 text-center text-sm font-medium text-red-600">
+        <div className="mt-3 rounded-xl border border-red-400/40 bg-red-500/10 p-2.5 text-center text-sm font-medium text-red-300">
           {error}
         </div>
       )}
@@ -302,12 +336,14 @@ Please contact me.`;
           className="
             rounded-xl
             border
+            border-white/25
             px-5
             py-2.5
             text-sm
             font-semibold
+            text-gray-200
             transition
-            hover:bg-gray-100
+            hover:bg-white/10
           "
         >
           ← Back
@@ -342,80 +378,12 @@ Please contact me.`;
         >
 
           {loading ? (
-
-            <div className="flex flex-col items-start gap-1.5">
-
-              <div
-                className={`flex items-center gap-2 ${
-                  loadingStep >= 1
-                    ? "text-white"
-                    : "text-white/60"
-                }`}
-              >
-
-                {loadingStep >= 1 ? (
-                  <CheckCircle2 size={16} />
-                ) : (
-                  <LoaderCircle
-                    size={16}
-                    className="animate-spin"
-                  />
-                )}
-
-                <span className="text-xs">
-                  Checking Details...
-                </span>
-
-              </div>
-
-              <div
-                className={`flex items-center gap-2 ${
-                  loadingStep >= 2
-                    ? "text-white"
-                    : "text-white/60"
-                }`}
-              >
-
-                {loadingStep >= 2 ? (
-                  <CheckCircle2 size={16} />
-                ) : (
-                  <div className="h-4 w-4" />
-                )}
-
-                <span className="text-xs">
-                  Preparing Booking...
-                </span>
-
-              </div>
-
-              <div
-                className={`flex items-center gap-2 ${
-                  loadingStep >= 3
-                    ? "text-white"
-                    : "text-white/60"
-                }`}
-              >
-
-                {loadingStep >= 3 ? (
-                  <CheckCircle2 size={16} />
-                ) : (
-                  <div className="h-4 w-4" />
-                )}
-
-                <span className="text-xs">
-                  Opening WhatsApp...
-                </span>
-
-              </div>
-
+            <div className="flex items-center gap-2">
+              <LoaderCircle size={16} className="animate-spin" />
+              <span className="text-xs">Submitting...</span>
             </div>
-
           ) : (
-
-            <>
-              <span>Book on WhatsApp</span>
-            </>
-
+            <span>Confirm</span>
           )}
 
         </button>

@@ -7,26 +7,31 @@ import {
 } from "lucide-react";
 
 function CourseCard({
+  name,
   title,
   oldPrice,
   price,
   duration,
   features,
-  popular,
+  badge,
+  titleIcon: TitleIcon,
   onBook,
 }) {
   return (
     <PremiumCard
       className={`p-5 ${
-        popular ? "border-2 border-[#FF6201]" : ""
+        badge ? "border-2 border-[#FF6201]" : ""
       }`}
     >
-      {/* Most Popular */}
+      {/* Badge (Most Selling / Public Favorite) */}
 
-      {popular && (
+      {badge && (
         <div className="absolute right-5 top-5">
           <span
             className="
+            inline-flex
+            items-center
+            gap-1
             rounded-full
             bg-gradient-to-r
             from-[#FF3131]
@@ -40,34 +45,43 @@ function CourseCard({
             shadow-lg
             "
           >
-            ⭐ MOST POPULAR
+            <badge.icon size={12} />
+
+            {badge.text}
           </span>
         </div>
       )}
 
-      <div className={popular ? "mt-12" : ""}>
+      <div className={badge ? "mt-12" : ""}>
         {/* Title */}
 
-        <h3 className="text-2xl font-black text-gray-900">
+        <h3 className="flex items-center gap-2 text-2xl font-black text-gray-900">
+          {TitleIcon && (
+            <TitleIcon
+              size={20}
+              className="shrink-0 text-[#FF6201]"
+            />
+          )}
+
           {title}
         </h3>
 
         {/* Description */}
 
         <p className="mt-2 text-sm leading-6 text-gray-500">
-          {title === "Economy Driving Course" &&
+          {name === "Economy Driving Course" &&
             "Perfect for first-time learners who want professional driving lessons."}
 
-          {title === "Pro Driver Course" &&
-            "Master busy roads, parking and advanced driving with confidence."}
+          {name === "Pro Driver Course" &&
+            "Build advanced driving skills through intensive training on busy roads, parking and real traffic."}
 
-          {title === "Own Vehicle Training" &&
+          {name === "Own Vehicle Training" &&
             "Learn comfortably using your own vehicle with expert guidance."}
         </p>
 
         {/* Price */}
 
-        <div className="mt-6">
+        <div className="mt-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
             Starting From
           </p>
@@ -85,7 +99,7 @@ function CourseCard({
 
         {/* Duration */}
 
-        <div className="mt-6 rounded-xl bg-gray-50 p-4">
+        <div className="mt-4 rounded-xl bg-gray-50 p-3">
           <div className="flex items-center gap-3">
             <div
               className="
@@ -116,27 +130,36 @@ function CourseCard({
 
         {/* Features */}
 
-        <div className="mt-6 space-y-3">
-          {features.map((feature) => (
-            <div
-              key={feature}
-              className="flex items-center gap-3"
-            >
-              <CheckCircle2
-                size={18}
-                className="shrink-0 text-green-500"
-              />
+        <div className="mt-4 space-y-2">
+          {features.map((feature) => {
+            const isObject = typeof feature === "object";
+            const Icon = isObject ? feature.icon : CheckCircle2;
+            const text = isObject ? feature.text : feature;
+            const iconColor = isObject
+              ? "text-[#FF6201]"
+              : "text-green-500";
 
-              <span className="text-sm text-gray-700">
-                {feature}
-              </span>
-            </div>
-          ))}
+            return (
+              <div
+                key={text}
+                className="flex items-center gap-3"
+              >
+                <Icon
+                  size={18}
+                  className={`shrink-0 ${iconColor}`}
+                />
+
+                <span className="text-sm text-gray-700">
+                  {text}
+                </span>
+              </div>
+            );
+          })}
         </div>
 
         {/* Bottom Text */}
 
-        <p className="mt-6 text-center text-xs text-gray-500">
+        <p className="mt-4 text-center text-xs text-gray-500">
           ✔ Free Consultation
 
           <span className="mx-2">•</span>
@@ -146,14 +169,14 @@ function CourseCard({
 
         {/* Divider */}
 
-        <div className="my-6 border-t border-gray-200"></div>
+        <div className="my-4 border-t border-gray-200"></div>
 
         {/* CTA */}
 
         <PrimaryButton
           onClick={() =>
             onBook?.({
-              course: title,
+              course: name,
             })
           }
           className="group w-full py-3 text-base"

@@ -66,11 +66,10 @@ function BookingSummary({ formData }) {
           overflow-hidden
           rounded-xl
           border
-          border-orange-100
-          bg-gradient-to-br
-          from-white
-          to-orange-50
+          border-white/20
+          bg-white/[0.07]
           shadow-lg
+          backdrop-blur-md
         "
       >
 
@@ -122,11 +121,11 @@ function BookingSummary({ formData }) {
 
           <div className="flex items-center justify-between">
 
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-300">
               Course
             </span>
 
-            <span className="text-sm font-bold">
+            <span className="text-sm font-bold text-gray-100">
               {formData.course}
             </span>
 
@@ -144,13 +143,13 @@ function BookingSummary({ formData }) {
                     className="text-[#FF6201]"
                   />
 
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-300">
                     Days
                   </span>
 
                 </div>
 
-                <span className="text-sm font-bold">
+                <span className="text-sm font-bold text-gray-100">
                   {formData.customDays}
                 </span>
 
@@ -165,13 +164,13 @@ function BookingSummary({ formData }) {
                     className="text-[#FF6201]"
                   />
 
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-300">
                     Lesson
                   </span>
 
                 </div>
 
-                <span className="text-sm font-bold">
+                <span className="text-sm font-bold text-gray-100">
                   {formData.customMinutes} Minutes
                 </span>
 
@@ -190,21 +189,21 @@ function BookingSummary({ formData }) {
                 className="text-[#FF6201]"
               />
 
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-300">
                 Pick & Drop
               </span>
 
             </div>
 
-            <span className="text-sm font-bold">
+            <span className="text-sm font-bold text-gray-100">
               {formData.pickup || "-"}
             </span>
 
           </div>
 
-          <div className="border-t border-orange-100 pt-3">
+          <div className="border-t border-white/20 pt-3">
 
-            <p className="text-[10px] uppercase tracking-widest text-gray-500">
+            <p className="text-[10px] uppercase tracking-widest text-gray-300">
               Estimated Fee
             </p>
 

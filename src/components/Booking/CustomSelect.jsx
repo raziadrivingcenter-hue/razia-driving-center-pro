@@ -47,7 +47,7 @@ function CustomSelect({
       className="relative w-full"
     >
       {label && (
-        <label className="mb-1 block text-sm font-semibold text-gray-800">
+        <label className="mb-1 block text-sm font-semibold text-gray-300">
           {label}
         </label>
       )}
@@ -64,25 +64,27 @@ function CustomSelect({
           justify-between
           rounded-xl
           border
-          border-gray-200
-          bg-white
+          border-white/20
+          bg-white/[0.08]
           px-3
           py-2.5
           text-left
           text-sm
+          text-gray-100
+          backdrop-blur-sm
           transition-all
           duration-300
-          hover:border-[#FF6201]
-          focus:border-[#FF6201]
+          hover:border-[#FF6201]/60
+          focus:border-[#FF6201]/70
           focus:ring-4
-          focus:ring-orange-100
+          focus:ring-[#FF6201]/20
         "
       >
         <span
           className={
             value
-              ? "text-gray-900"
-              : "text-gray-400"
+              ? "text-gray-100"
+              : "text-white/40"
           }
         >
           {value || options[0]}
@@ -98,7 +100,7 @@ function CustomSelect({
         >
           <ChevronDown
             size={16}
-            className="text-gray-400"
+            className="text-white/50"
           />
         </motion.div>
       </button>
@@ -136,9 +138,11 @@ function CustomSelect({
               overflow-y-auto
               rounded-xl
               border
-              border-orange-100
-              bg-white
+              border-white/20
+              bg-white/[0.10]
               shadow-xl
+              backdrop-blur-xl
+              saturate-[1.2]
 
               scrollbar-thin
               scrollbar-thumb-orange-300
@@ -169,8 +173,8 @@ function CustomSelect({
 
                   ${
                     value === option
-                      ? "bg-orange-50 text-[#FF6201]"
-                      : "hover:bg-orange-50"
+                      ? "bg-[#FF6201]/20 text-[#FF6201]"
+                      : "hover:bg-white/10 text-gray-100"
                   }
                 `}
               >

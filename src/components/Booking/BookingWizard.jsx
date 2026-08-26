@@ -1,11 +1,15 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import BookingProgress from "./BookingProgress";
 import BookingStep1 from "./BookingStep1";
 import BookingStep2 from "./BookingStep2";
 import BookingStep3 from "./BookingStep3";
-import BookingLiveSummary from "./BookingLiveSummary";
+import {
+  calculatePickDropCharges,
+  getCourseDurationDays,
+  getCourseFee,
+} from "../../lib/pickDropCalculator";
 
 function BookingWizard({
   isOpen,
@@ -27,11 +31,34 @@ function BookingWizard({
     distance: "",
     time: "",
     notes: "",
+    preferred_date: "",
 
     customDays: "",
     customMinutes: "",
     customPrice: "",
   });
+
+  const courseDuration = getCourseDurationDays(formData.course, {
+    customDays: formData.customDays,
+  });
+
+  const courseFee = getCourseFee(formData.course, {
+    customPrice: formData.customPrice,
+  });
+
+  const pricing = useMemo(() => {
+    const { pickDropCharges } = calculatePickDropCharges({
+      courseDuration,
+      distanceKm: formData.distance,
+    });
+
+    return {
+      courseDuration,
+      courseFee,
+      pickDropCharges,
+      totalPayable: courseFee + pickDropCharges,
+    };
+  }, [courseDuration, courseFee, formData.distance]);
 
   // ESC Close
 
@@ -70,6 +97,7 @@ function BookingWizard({
       distance: "",
       time: "",
       notes: "",
+      preferred_date: "",
 
       customDays: bookingData?.days || "",
       customMinutes: bookingData?.minutes || "",
@@ -119,7 +147,7 @@ function BookingWizard({
         flex
         items-center
         justify-center
-        bg-black/60
+        bg-black/80
         backdrop-blur-sm
         p-3
       "
@@ -138,19 +166,15 @@ function BookingWizard({
           max-h-[680px]
           overflow-y-auto
           rounded-2xl
-          bg-white
+          border
+          border-white/25
+          bg-white/10
           shadow-2xl
+          backdrop-blur-2xl
+          saturate-[1.2]
         "
       >
         <BookingProgress step={step} onClose={onClose} />
-
-        {/* LIVE SUMMARY */}
-
-        <div className="px-4 pt-3">
-          <BookingLiveSummary
-            formData={formData}
-          />
-        </div>
 
         <AnimatePresence mode="wait">
 
@@ -185,6 +209,7 @@ function BookingWizard({
               <BookingStep2
                 formData={formData}
                 setFormData={setFormData}
+                pricing={pricing}
                 next={() => setStep(3)}
                 back={() => setStep(1)}
               />
@@ -194,6 +219,7 @@ function BookingWizard({
               <BookingStep3
                 formData={formData}
                 setFormData={setFormData}
+                pricing={pricing}
                 back={() => setStep(2)}
                 onClose={onClose}
               />

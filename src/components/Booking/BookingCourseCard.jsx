@@ -23,8 +23,8 @@ function BookingCourseCard({
 
         ${
           selected
-            ? "border-[#FF6201] bg-orange-50 shadow-lg"
-            : "border-gray-200 bg-white hover:border-[#FF6201] hover:shadow-md"
+            ? "border-[#FF6201] bg-[#FF6201]/20 shadow-lg backdrop-blur-sm"
+            : "border-white/25 bg-white/[0.07] hover:border-[#FF6201]/60 hover:shadow-md backdrop-blur-sm"
         }
       `}
     >
@@ -34,11 +34,11 @@ function BookingCourseCard({
         </div>
       )}
 
-      <h3 className="pr-6 text-base font-bold text-gray-900">
+      <h3 className="pr-6 text-base font-bold text-white">
         {title}
       </h3>
 
-      <p className="mt-0.5 text-xs text-gray-500">
+      <p className="mt-0.5 text-xs text-gray-300">
         {description}
       </p>
 

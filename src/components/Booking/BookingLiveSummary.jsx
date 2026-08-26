@@ -6,12 +6,11 @@ function BookingLiveSummary({ formData }) {
       className="
         rounded-xl
         border
-        border-orange-100
-        bg-gradient-to-r
-        from-orange-50
-        to-white
+        border-white/20
+        bg-white/[0.07]
         p-3
         shadow-sm
+        backdrop-blur-md
       "
     >
       <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#FF6201]">
@@ -22,28 +21,28 @@ function BookingLiveSummary({ formData }) {
 
         <div className="flex items-center gap-2">
           <User size={14} className="shrink-0 text-[#FF6201]" />
-          <span className="truncate text-sm">
+          <span className="truncate text-sm text-gray-100">
             {formData.name || "Your Name"}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <Phone size={14} className="shrink-0 text-[#FF6201]" />
-          <span className="truncate text-sm">
+          <span className="truncate text-sm text-gray-100">
             {formData.phone || "Phone Number"}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <MapPin size={14} className="shrink-0 text-[#FF6201]" />
-          <span className="truncate text-sm">
+          <span className="truncate text-sm text-gray-100">
             {formData.area || "Your Area"}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <CarFront size={14} className="shrink-0 text-[#FF6201]" />
-          <span className="truncate text-sm">
+          <span className="truncate text-sm text-gray-100">
             {formData.course || "Course Not Selected"}
           </span>
         </div>

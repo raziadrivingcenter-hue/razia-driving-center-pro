@@ -20,9 +20,9 @@ function BookingSelect({
   return (
     <div className="w-full">
 
-      <label className="mb-2 block font-semibold text-gray-800">
+      <label className="mb-2 block font-semibold text-gray-300">
         {label}
-      </label>
+    </label>
 
       <div className="relative">
 
@@ -37,18 +37,19 @@ function BookingSelect({
             appearance-none
             rounded-2xl
             border
-            border-gray-200
-            bg-white
+            border-white/20
+            bg-white/[0.08]
             px-4
             py-4
             pr-12
-            text-gray-800
+            text-gray-100
             outline-none
+            backdrop-blur-sm
             transition-all
             duration-300
-            focus:border-[#FF6201]
+            focus:border-[#FF6201]/70
             focus:ring-4
-            focus:ring-orange-100
+            focus:ring-[#FF6201]/20
           "
         >
           {options.map((option) => (
@@ -72,7 +73,7 @@ function BookingSelect({
             h-5
             w-5
             -translate-y-1/2
-            text-gray-400
+            text-white/50
           "
           fill="none"
           stroke="currentColor"

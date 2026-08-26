@@ -1,4 +1,5 @@
 import BookingInput from "./BookingInput";
+import BookingLiveSummary from "./BookingLiveSummary";
 
 function BookingStep1({
   formData,
@@ -21,15 +22,19 @@ function BookingStep1({
     areaValid;
 
   return (
-    <div className="px-4 pb-4 pt-3">
-
-      <h2 className="text-lg font-black">
+    <div className="rounded-b-2xl border border-white/25 bg-white/[0.07] px-4 pb-4 pt-3 shadow-lg backdrop-blur-xl">
+      <div className="mt-3">
+        <BookingLiveSummary formData={formData} />
+      </div>
+      <h2 className="text-lg font-black text-white">
         Your Information
       </h2>
 
-      <p className="mt-0.5 text-xs text-gray-500">
+      <p className="mt-0.5 text-xs text-gray-300">
         Tell us a little about yourself.
       </p>
+
+      
 
       <div className="mt-4 grid grid-cols-2 gap-3">
 
