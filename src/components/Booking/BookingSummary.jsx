@@ -11,12 +11,12 @@ function BookingSummary({ formData }) {
     ? Number(formData.customPrice || 0)
     : Number(
         (
-          formData.course === "Economy Driving Course"
+          formData.course === "Basic Plan"
+            ? 9999
+            : formData.course === "Economy Driving Course"
             ? 14500
             : formData.course === "Pro Driver Course"
-            ? 26500
-            : formData.course === "Own Vehicle Training"
-            ? 13989
+            ? 21750
             : 0
         )
       );

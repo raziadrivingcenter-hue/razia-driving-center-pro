@@ -2,69 +2,7 @@ import CustomCourseCard from "./CustomCourseCard";
 import SectionTitle from "./UI/SectionTitle";
 import GlowCard from "./GlowCard";
 import CourseCard from "./CourseCard";
-import {
-  CalendarCheck,
-  CalendarDays,
-  UserRound,
-  Route,
-  ParkingSquare,
-  ShieldCheck,
-  Gauge,
-  Sparkles,
-  Gem,
-} from "lucide-react";
-
-const courses = [
-  {
-    name: "Economy Driving Course",
-    title: "PLUS Plan",
-    oldPrice: "Rs. 16,000",
-    price: "Rs. 14,500",
-    duration: "10 Days Training",
-    features: [
-      { icon: CalendarCheck, text: "10/10 Days Practical Training" },
-      { icon: UserRound, text: "1-on-1 Private Driving Lessons" },
-      { icon: Route, text: "Main Road & Real Traffic Training" },
-      { icon: ParkingSquare, text: "Parking & Reversing Skills" },
-      { icon: ShieldCheck, text: "Dual-Braking Safety System" },
-      { icon: Gauge, text: "Clutch Control & Complete Driving Skills" },
-    ],
-    badge: { icon: Sparkles, text: "Most Selling / Public Favorite" },
-    titleIcon: null,
-  },
-  {
-    name: "Pro Driver Course",
-    title: "Pro+ Plan",
-    oldPrice: "Rs. 28,000",
-    price: "Rs. 26,500",
-    duration: "21 Days Training",
-    features: [
-      { icon: CalendarDays, text: "21 Days Practical Training" },
-      { icon: UserRound, text: "1-on-1 Advanced Driving Lessons" },
-      { icon: Route, text: "Heavy Traffic & Main Road Training" },
-      { icon: ParkingSquare, text: "Advanced Parking & Reversing" },
-      { icon: ShieldCheck, text: "Dual-Braking Safety System" },
-      { icon: Gauge, text: "Clutch Control & Complete Driving Skills" },
-    ],
-    badge: null,
-    titleIcon: Gem,
-  },
-  {
-    name: "Own Vehicle Training",
-    title: "Own Vehicle Training",
-    oldPrice: "Rs. 15,000",
-    price: "Rs. 13,989",
-    duration: "10 Days Training",
-    features: [
-      "Learn in Your Vehicle",
-      "Road Confidence",
-      "Expert Guidance",
-      "Personal Practice",
-    ],
-    badge: null,
-    titleIcon: null,
-  },
-];
+import { courses } from "../data/courses";
 
 function Courses({ onCustomBooking }) {
   return (
@@ -109,7 +47,7 @@ function Courses({ onCustomBooking }) {
 
         {/* Custom Course Builder */}
 
-        <div className="mx-auto mt-16 max-w-3xl">
+        <div className="mx-auto mt-16 max-w-5xl">
 
           <GlowCard>
 

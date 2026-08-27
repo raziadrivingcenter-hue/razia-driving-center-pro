@@ -6,6 +6,7 @@ function PrimaryButton({
   href,
   type = "button",
   className = "",
+  hideArrow = false,
 }) {
   const buttonClasses = `
     group
@@ -33,19 +34,23 @@ function PrimaryButton({
     ${className}
   `;
 
+  const arrow = (
+    <ArrowRight
+      size={18}
+      className="
+        transition-transform
+        duration-300
+        group-hover:translate-x-1
+      "
+    />
+  );
+
   if (href) {
     return (
       <a href={href} className={buttonClasses}>
         <span>{children}</span>
 
-        <ArrowRight
-          size={18}
-          className="
-            transition-transform
-            duration-300
-            group-hover:translate-x-1
-          "
-        />
+        {!hideArrow && arrow}
       </a>
     );
   }
@@ -58,14 +63,7 @@ function PrimaryButton({
     >
       <span>{children}</span>
 
-      <ArrowRight
-        size={18}
-        className="
-          transition-transform
-          duration-300
-          group-hover:translate-x-1
-        "
-      />
+      {!hideArrow && arrow}
     </button>
   );
 }

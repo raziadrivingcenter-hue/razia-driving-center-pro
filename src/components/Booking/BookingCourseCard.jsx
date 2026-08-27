@@ -1,58 +1,109 @@
-import { CheckCircle2 } from "lucide-react";
+import { variantConfig } from "../../data/courseCardVariants";
 
 function BookingCourseCard({
   title,
-  description,
+  oldPrice,
   price,
+  duration,
+  detail,
+  variant = "silver",
+  badge,
   selected,
   onClick,
 }) {
+  const isPro = title === "PRO+ Plan";
+  const config = variantConfig[variant];
+
+  // Extract the numeric portion (e.g. "Rs. 14,500" -> "14,500").
+  const priceNum = price.replace(/^[^\d]*/, "");
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={`
-        relative
-        w-full
-        rounded-xl
-        border-2
-        p-3.5
-        text-left
-        transition-all
-        duration-300
+        relative w-full rounded-2xl text-center
+        transition-all duration-300 ease-out overflow-visible
 
         ${
           selected
-            ? "border-[#FF6201] bg-[#FF6201]/20 shadow-lg backdrop-blur-sm"
-            : "border-white/25 bg-white/[0.07] hover:border-[#FF6201]/60 hover:shadow-md backdrop-blur-sm"
+            ? "scale-[1.03] shadow-xl"
+            : "shadow-md hover:scale-[1.02] hover:shadow-lg"
         }
       `}
+      style={{
+        background: config.bg,
+        color: config.text,
+        padding: "1.25rem 1rem",
+        border: selected
+          ? `3px solid ${config.border}`
+          : "3px solid transparent",
+      }}
     >
-      {selected && (
-        <div className="absolute right-3 top-3 text-[#FF6201]">
-          <CheckCircle2 size={18} />
-        </div>
+      {/* Premium star badge — top-right corner of the gold card. */}
+      {isPro && (
+        <span
+          className="absolute -top-2.5 -right-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white text-base shadow-md ring-2 ring-[#D4A028]"
+          aria-label="Premium choice"
+        >
+          ⭐
+        </span>
       )}
 
-      <h3 className="pr-6 text-base font-bold text-white">
+      {/* Promotional badge — top-right corner (e.g. PLUS Plan "Most Selling"). */}
+      {badge && !isPro && (
+        <span
+          className="absolute -top-2 -right-2 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201] px-2 py-0.5 text-[8px] font-bold tracking-wide text-white shadow-lg"
+        >
+          <badge.icon size={9} />
+          {badge.text}
+        </span>
+      )}
+
+      {/* Plan name */}
+      <h3 className="text-base font-extrabold uppercase tracking-wide sm:text-lg">
         {title}
       </h3>
 
-      <p className="mt-0.5 text-xs text-gray-300">
-        {description}
+      {/* Original price — strikethrough, muted */}
+      {oldPrice && (
+        <p
+          className="mt-1 text-xs font-semibold sm:text-sm"
+          style={{ color: config.oldPrice }}
+        >
+          <s>{oldPrice}</s>
+        </p>
+      )}
+
+      {/* Discounted price — the hero number */}
+      <p className="mt-1" style={{ lineHeight: 1.1 }}>
+        <span className="align-top text-xs font-extrabold sm:text-sm">
+          Rs.
+        </span>
+        <span className="text-xl font-black sm:text-2xl">
+          {priceNum}
+        </span>
       </p>
 
-      <div className="mt-2.5 flex items-end justify-between">
-        <div>
-          <p className="text-[10px] uppercase tracking-wide text-gray-400">
-            Starting From
-          </p>
+      {/* Duration line */}
+      {duration && (
+        <p
+          className="mt-3 text-xs font-bold uppercase tracking-widest sm:text-sm"
+          style={{ color: config.text }}
+        >
+          {duration}
+        </p>
+      )}
 
-          <h4 className="text-xl font-black text-[#FF3131]">
-            {price}
-          </h4>
-        </div>
-      </div>
+      {/* Key training detail — one-liner */}
+      {detail && (
+        <p
+          className="mt-1 text-[10px] font-semibold uppercase tracking-wide sm:text-xs"
+          style={{ color: config.subtext }}
+        >
+          {detail}
+        </p>
+      )}
     </button>
   );
 }

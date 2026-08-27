@@ -47,15 +47,18 @@ function BookingWizard({
   });
 
   const pricing = useMemo(() => {
-    const { pickDropCharges } = calculatePickDropCharges({
-      courseDuration,
-      distanceKm: formData.distance,
-    });
+    const { pickDropCharges, freeDistanceKm, chargeableDistanceKm, ratePerKm } =
+      calculatePickDropCharges({
+        distanceKm: formData.distance,
+      });
 
     return {
       courseDuration,
       courseFee,
       pickDropCharges,
+      freeDistanceKm,
+      chargeableDistanceKm,
+      ratePerKm,
       totalPayable: courseFee + pickDropCharges,
     };
   }, [courseDuration, courseFee, formData.distance]);

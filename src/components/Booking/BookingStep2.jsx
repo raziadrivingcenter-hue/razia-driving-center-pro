@@ -6,6 +6,9 @@ import CustomSelect from "./CustomSelect";
 import BookingInput from "./BookingInput";
 import BookingCourseCard from "./BookingCourseCard";
 import BookingSummary from "./BookingSummary";
+import { useCountUp } from "../../hooks/useCountUp";
+import { courses } from "../../data/courses";
+import { courseVariantMap } from "../../data/courseCardVariants";
 
 function BookingStep2({
   formData,
@@ -15,6 +18,14 @@ function BookingStep2({
   back,
 }) {
   const isCustomCourse = formData.course === "Custom Course";
+
+  // Animated numeric values for the Pick & Drop calculation card.
+  const animCourseFee = useCountUp(pricing.courseFee);
+  const animDistance = useCountUp(pricing.distanceKm);
+  const animFreeDistance = useCountUp(pricing.freeDistanceKm);
+  const animChargeable = useCountUp(pricing.chargeableDistanceKm);
+  const animPickDrop = useCountUp(pricing.pickDropCharges);
+  const animTotal = useCountUp(pricing.totalPayable);
 
   const [locationStatus, setLocationStatus] = useState("idle");
   const [locationError, setLocationError] = useState("");
@@ -94,16 +105,18 @@ function BookingStep2({
 
       {/* Course Cards */}
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3">
 
         {isCustomCourse ? (
 
           <BookingCourseCard
             title="✨ Custom Driving Course"
-            description={`${formData.customDays} Days • ${formData.customMinutes} Minutes Daily`}
             price={`Rs. ${Number(
               formData.customPrice
             ).toLocaleString()}`}
+            duration={`${formData.customDays} Days`}
+            detail={`${formData.customMinutes} MINUTES DAILY TRAINING`}
+            variant="silver"
             selected={true}
             onClick={() => {}}
           />
@@ -111,53 +124,40 @@ function BookingStep2({
         ) : (
 
           <>
-            <BookingCourseCard
-              title="Economy Driving Course"
-              description="Perfect for first-time learners."
-              price="Rs. 14,500"
-              selected={
-                formData.course ===
-                "Economy Driving Course"
-              }
-              onClick={() =>
-                setFormData({
-                  ...formData,
-                  course: "Economy Driving Course",
-                })
-              }
-            />
+            {courses.slice(0, 3).map((course) => {
+              // Explicit detail line if set, else first feature uppercased.
+              const firstFeature = course.features?.[0];
+              const firstFeatureText =
+                typeof firstFeature === "string"
+                  ? firstFeature
+                  : firstFeature?.text ?? "";
+              const detail = (course.detail ?? firstFeatureText).toUpperCase();
 
-            <BookingCourseCard
-              title="Pro Driver Course"
-              description="Advanced driving in real Lahore traffic."
-              price="Rs. 26,500"
-              selected={
-                formData.course ===
-                "Pro Driver Course"
-              }
-              onClick={() =>
-                setFormData({
-                  ...formData,
-                  course: "Pro Driver Course",
-                })
-              }
-            />
+              // "10 Days Training" -> "10 DAYS"
+              const durationDays = course.duration
+                ? course.duration.replace(/^(.*days).*$/i, "$1").trim().toUpperCase()
+                : "";
 
-            <BookingCourseCard
-              title="Own Vehicle Training"
-              description="Learn using your own vehicle."
-              price="Rs. 13,989"
-              selected={
-                formData.course ===
-                "Own Vehicle Training"
-              }
-              onClick={() =>
-                setFormData({
-                  ...formData,
-                  course: "Own Vehicle Training",
-                })
-              }
-            />
+              return (
+                <BookingCourseCard
+                  key={course.name}
+                  title={course.title}
+                  oldPrice={course.oldPrice}
+                  price={course.price}
+                  duration={durationDays}
+                  detail={detail}
+                  variant={courseVariantMap[course.title] ?? "silver"}
+                  badge={course.badge}
+                  selected={formData.course === course.name}
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      course: course.name,
+                    })
+                  }
+                />
+              );
+            })}
           </>
 
         )}
@@ -328,7 +328,34 @@ function BookingStep2({
                         Selected Course Fee
                       </span>
                       <span className="text-sm font-bold text-gray-100">
-                        Rs. {pricing.courseFee.toLocaleString()}
+                        Rs. {Math.round(animCourseFee).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-xs text-gray-300">
+                        Distance
+                      </span>
+                      <span className="text-sm font-bold text-gray-100">
+                        {Math.round(animDistance)} KM
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-xs text-gray-300">
+                        Free Distance
+                      </span>
+                      <span className="text-sm font-bold text-green-400">
+                        {Math.round(animFreeDistance)} KM — FREE
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-xs text-gray-300">
+                        Chargeable Distance
+                      </span>
+                      <span className="text-sm font-bold text-gray-100">
+                        {Math.round(animChargeable)} KM
                       </span>
                     </div>
 
@@ -337,7 +364,7 @@ function BookingStep2({
                         Pick & Drop Charges
                       </span>
                       <span className="text-sm font-bold text-gray-100">
-                        Rs. {pricing.pickDropCharges.toLocaleString()}
+                        Rs. {Math.round(animPickDrop).toLocaleString()}
                       </span>
                     </div>
 
@@ -347,10 +374,14 @@ function BookingStep2({
                           Total Payable
                         </span>
                         <span className="text-base font-black text-[#FF6201]">
-                          Rs. {pricing.totalPayable.toLocaleString()}
+                          Rs. {Math.round(animTotal).toLocaleString()}
                         </span>
                       </div>
                     </div>
+
+                    <p className="mt-2 text-[11px] leading-4 text-gray-400">
+                      You only pay for the distance beyond 2 KM.
+                    </p>
 
                     <button
                       type="button"
@@ -398,14 +429,10 @@ function BookingStep2({
                           className="overflow-hidden"
                         >
                           <p className="mt-1 text-[11px] leading-5 text-gray-300">
-                            Course Duration × Rs. 50 × Distance × 2
+                            First {pricing.freeDistanceKm} KM are FREE. Remaining distance is charged at Rs. {pricing.ratePerKm.toLocaleString()}/KM.
                           </p>
                           <p className="text-[11px] font-semibold text-gray-200">
-                            {pricing.courseDuration} × 50 ×{" "}
-                            {pricing.pickDropCharges > 0
-                              ? formData.distance
-                              : 0}{" "}
-                            × 2 = Rs.{" "}
+                            {pricing.chargeableDistanceKm} KM × Rs. {pricing.ratePerKm.toLocaleString()} = Rs.{" "}
                             {pricing.pickDropCharges.toLocaleString()}
                           </p>
                           <p className="mt-1 text-[10px] leading-4 text-gray-400">

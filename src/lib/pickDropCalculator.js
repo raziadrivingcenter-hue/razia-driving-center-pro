@@ -7,9 +7,11 @@
 
 // --- Fixed pricing configuration ----------------------------------------------
 
-export const PICKUP_DROP_RATE_PER_KM = 50;
+export const PICKUP_DROP_RATE_PER_KM = 1000;
 
-export const ROUND_TRIP = 2;
+// First 2 KM of the Pick & Drop distance are FREE. Only the distance
+// beyond this allowance is chargeable, at PICKUP_DROP_RATE_PER_KM per KM.
+export const FREE_DISTANCE_KM = 2;
 
 // Minimum address length used by the booking form's own validation.
 // Kept here so the distance UI and the engine share one source of truth.
@@ -20,17 +22,17 @@ export const MIN_ADDRESS_LENGTH = 5;
 // Custom Course is dynamic, so its values are passed in at call time.
 
 export const PICK_DROP_COURSE_CONFIG = {
+  "Basic Plan": {
+    durationDays: 7,
+    fee: 9999,
+  },
   "Economy Driving Course": {
     durationDays: 10,
     fee: 14500,
   },
   "Pro Driver Course": {
-    durationDays: 21,
-    fee: 26500,
-  },
-  "Own Vehicle Training": {
-    durationDays: 10,
-    fee: 13989,
+    durationDays: 15,
+    fee: 21750,
   },
 };
 
@@ -80,28 +82,31 @@ export const getCourseFee = (courseTitle, { customPrice } = {}) => {
 // Returns a structured breakdown. Pure math only — every input is sanitized so
 // the result is never NaN or Infinity, and never negative.
 
-export const calculatePickDropCharges = ({ courseDuration, distanceKm }) => {
-  const duration = sanitizeDuration(courseDuration);
+export const calculatePickDropCharges = ({ distanceKm }) => {
   const distance = sanitizeDistance(distanceKm);
 
+  // First 2 KM are FREE. Only the distance beyond that is chargeable.
+  const chargeableDistance = Math.max(0, distance - FREE_DISTANCE_KM);
+  const freeDistance = Math.min(distance, FREE_DISTANCE_KM);
+
   const pickDropCharges = Math.round(
-    duration * PICKUP_DROP_RATE_PER_KM * distance * ROUND_TRIP
+    chargeableDistance * PICKUP_DROP_RATE_PER_KM
   );
 
   return {
-    courseDuration: duration,
     distanceKm: distance,
+    freeDistanceKm: freeDistance,
+    chargeableDistanceKm: chargeableDistance,
     ratePerKm: PICKUP_DROP_RATE_PER_KM,
-    roundTrip: ROUND_TRIP,
     pickDropCharges,
   };
 };
 
 // --- Convenience: total payable ----------------------------------------------
 
-export const calculateTotalPayable = ({ courseTitle, courseDuration, distanceKm, customPrice }) => {
+export const calculateTotalPayable = ({ courseTitle, distanceKm, customPrice }) => {
   const courseFee = getCourseFee(courseTitle, { customPrice });
-  const { pickDropCharges } = calculatePickDropCharges({ courseDuration, distanceKm });
+  const { pickDropCharges } = calculatePickDropCharges({ distanceKm });
 
   return {
     courseFee,

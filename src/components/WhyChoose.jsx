@@ -65,67 +65,55 @@ function WhyChoose() {
     <section
       id="why-choose"
       data-aos="fade-up"
-      className="bg-gray-50 py-24"
+      className="border-t border-[#E8E8E8] px-8 py-12 md:px-16 md:py-16"
+      style={{
+        background: "linear-gradient(135deg, #FFFBF7, #FFF9F5)",
+      }}
     >
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
+        {/* Badge */}
+        <span className="inline-block rounded-full bg-[#FFB84D] px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-[#333]">
+          Why Choose Us
+        </span>
 
-        <div className="text-center">
+        {/* Heading */}
+        <h2 className="mt-3 max-w-[600px] text-3xl font-extrabold leading-tight text-[#1A1A1A] md:text-[40px]">
+          Why Choose Razia Driving Center?
+        </h2>
 
-          <span className="rounded-full bg-orange-100 px-4 py-2 font-semibold text-[#FF6201]">
-            Why Choose Us
-          </span>
+        {/* Description */}
+        <p className="mt-4 max-w-[650px] text-base leading-relaxed text-[#666] md:text-lg">
+          We provide professional, safe and confidence-building driving
+          lessons trusted by thousands of students across Lahore.
+        </p>
 
-          <h2 className="mt-6 text-5xl font-black">
-            Why Choose Razia Driving Center?
-          </h2>
-
-          <p className="mt-4 text-lg text-gray-500">
-            We provide professional, safe and confidence-building driving
-            lessons trusted by thousands of students across Lahore.
-          </p>
-
-        </div>
-
-        <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-
+        {/* Icon grid */}
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, index) => {
-
             const Icon = feature.icon;
 
             return (
-
               <div
                 key={index}
                 data-aos="zoom-in"
-                data-aos-delay={index * 100}
-                className="group rounded-3xl bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-3 hover:border hover:border-[#FF6201] hover:shadow-2xl"
+                data-aos-delay={index * 80}
+                className="group rounded-2xl bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
               >
-
-                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-100 transition-all duration-300 group-hover:rotate-12 group-hover:scale-110">
-
-                  <Icon
-                    size={34}
-                    className="text-[#FF6201]"
-                  />
-
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-orange-50 transition-all duration-300 group-hover:scale-110">
+                  <Icon size={28} className="text-[#FF6201]" />
                 </div>
 
-                <h3 className="text-2xl font-bold">
+                <h3 className="text-base font-bold text-[#1A1A1A]">
                   {feature.title}
                 </h3>
 
-                <p className="mt-4 leading-8 text-gray-600">
+                <p className="mt-2 text-sm leading-relaxed text-[#666]">
                   {feature.description}
                 </p>
-
               </div>
-
             );
-
           })}
-
         </div>
-
       </div>
     </section>
   );

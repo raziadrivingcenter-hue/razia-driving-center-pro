@@ -2,7 +2,6 @@ import PremiumCard from "./UI/PremiumCard";
 import PrimaryButton from "./UI/PrimaryButton";
 import {
   Clock3,
-  ArrowRight,
   CheckCircle2,
 } from "lucide-react";
 
@@ -23,10 +22,10 @@ function CourseCard({
         badge ? "border-2 border-[#FF6201]" : ""
       }`}
     >
-      {/* Badge (Most Selling / Public Favorite) */}
+      {/* Badge (Most Selling / Public Favorite) — top-right corner */}
 
       {badge && (
-        <div className="absolute right-5 top-5">
+        <div className="absolute right-3 top-3 z-10">
           <span
             className="
             inline-flex
@@ -36,23 +35,23 @@ function CourseCard({
             bg-gradient-to-r
             from-[#FF3131]
             to-[#FF6201]
-            px-3
-            py-1.5
-            text-[10px]
+            px-2.5
+            py-1
+            text-[9px]
             font-bold
             tracking-wide
             text-white
             shadow-lg
             "
           >
-            <badge.icon size={12} />
+            <badge.icon size={10} />
 
             {badge.text}
           </span>
         </div>
       )}
 
-      <div className={badge ? "mt-12" : ""}>
+      <div className={badge ? "mt-10" : ""}>
         {/* Title */}
 
         <h3 className="flex items-center gap-2 text-2xl font-black text-gray-900">
@@ -68,15 +67,15 @@ function CourseCard({
 
         {/* Description */}
 
-        <p className="mt-2 text-sm leading-6 text-gray-500">
+        <p className="mt-1 text-sm leading-[1.35] text-gray-500">
+          {name === "Basic Plan" &&
+            "Perfect for first-time learners."}
+
           {name === "Economy Driving Course" &&
             "Perfect for first-time learners who want professional driving lessons."}
 
           {name === "Pro Driver Course" &&
             "Build advanced driving skills through intensive training on busy roads, parking and real traffic."}
-
-          {name === "Own Vehicle Training" &&
-            "Learn comfortably using your own vehicle with expert guidance."}
         </p>
 
         {/* Price */}
@@ -179,18 +178,10 @@ function CourseCard({
               course: name,
             })
           }
-          className="group w-full py-3 text-base"
+          className="w-full py-2.5 text-sm"
+          hideArrow
         >
-          Book Your Seat
-
-          <ArrowRight
-            size={18}
-            className="
-            transition-transform
-            duration-300
-            group-hover:translate-x-1
-            "
-          />
+          Book This Plan
         </PrimaryButton>
       </div>
     </PremiumCard>
