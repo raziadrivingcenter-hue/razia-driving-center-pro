@@ -88,19 +88,19 @@ function FooterLinks() {
         <ul className="space-y-4">
 
           <li className="text-gray-400">
-            Economy Driving Course
+            Basic Plan — Rs. 9,999
           </li>
 
           <li className="text-gray-400">
-            Pro Driver Course
+            Economy / PLUS Plan — Rs. 14,500
           </li>
 
           <li className="text-gray-400">
-            Own Vehicle Training
+            Pro / PRO+ Plan — Rs. 21,750
           </li>
 
           <li className="text-gray-400">
-            Pick & Drop Available
+            Custom Course Builder
           </li>
 
         </ul>
@@ -151,7 +151,7 @@ function FooterLinks() {
             />
 
             <span className="text-gray-400">
-              Gulberg, Lahore, Pakistan
+              28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan
             </span>
 
           </div>
@@ -164,7 +164,7 @@ function FooterLinks() {
             />
 
             <span className="text-gray-400">
-              Open 7 Days a Week
+              Training 8 AM – 8 PM | Consultation 7 AM – 12 AM
             </span>
 
           </div>

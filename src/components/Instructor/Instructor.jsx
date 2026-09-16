@@ -134,11 +134,11 @@ function Instructor() {
   >
 
     <h3 className="text-3xl font-black text-[#FF6201]">
-      20+
+      Est. 2016
     </h3>
 
     <p className="font-semibold text-gray-800">
-      Years Experience
+      Trusted Since 2016
     </p>
 
   </div>
@@ -173,7 +173,7 @@ function Instructor() {
 
     <p className="text-gray-700">
 
-      Google Rating
+      133 Google Reviews
 
     </p>
 
@@ -213,9 +213,9 @@ function Instructor() {
                 text-gray-600
               "
             >
-              With more than two decades of professional driving instruction,
-              Madam Razia has helped thousands of beginners become confident,
-              responsible and independent drivers.
+              Since December 2016, Madam Razia has helped thousands of
+              beginners become confident, responsible and independent drivers
+              across Lahore.
             </p>
 
             <p

@@ -83,9 +83,9 @@ function Hero({ onBookNow }) {
             sequence={[
               "🚗 Learn from Professionals.",
               2000,
-              "⭐ 20+ Years Experience.",
+              "⭐ Trusted Since 2016.",
               2000,
-              "🎓 Trusted by 5000+ Students.",
+              "🎓 5,000+ Successful Students.",
               2000,
               "👩 Female Driving Instructor.",
               2000,
@@ -98,9 +98,11 @@ function Hero({ onBookNow }) {
         </div>
 
         <p className="mt-5 max-w-lg text-[15px] leading-5 text-gray-600">
-          Professional one-to-one driving lessons with experienced female
-          instructors. Learn confidently on real Lahore roads with thousands
-          of successful students.
+          Razia Driving Center offers professional one-to-one driving
+          lessons in Gulberg 2, Lahore with an experienced female
+          instructor. Beginners and nervous learners build confidence on
+          real Lahore roads with practical parking, reversing and traffic
+          training.
         </p>
 
         {/* Buttons */}

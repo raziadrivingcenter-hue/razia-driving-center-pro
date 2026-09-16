@@ -126,7 +126,35 @@ function MapSection() {
                 <div>
 
                   <h3 className="font-bold">
-                    Working Hours
+                    Consultation &amp; Customer Support
+                  </h3>
+
+                  <p className="text-gray-600">
+                    Monday – Sunday
+                  </p>
+
+                  <p className="text-gray-600">
+                    7:00 AM – 12:00 AM
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="rounded-3xl bg-gray-50 p-6 shadow-lg transition hover:-translate-y-2 hover:shadow-2xl">
+
+              <div className="flex items-center gap-4">
+
+                <div className="rounded-2xl bg-orange-100 p-4">
+                  <Clock className="text-[#FF6201]" />
+                </div>
+
+                <div>
+
+                  <h3 className="font-bold">
+                    Driving Training
                   </h3>
 
                   <p className="text-gray-600">

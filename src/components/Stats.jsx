@@ -110,25 +110,25 @@ function Stats() {
         />
 
         <StatCard
-          Icon={GraduationCap}
-          end={20}
-          suffix="+"
-          title="Years Experience"
-        />
-
-        <StatCard
-          Icon={Car}
-          end={10}
-          suffix="+"
-          title="Driving Courses"
-        />
-
-        <StatCard
           Icon={Star}
           end={5}
           decimals={1}
           suffix=" ★"
           title="Google Rating"
+        />
+
+        <StatCard
+          Icon={GraduationCap}
+          end={133}
+          suffix=""
+          title="Google Reviews"
+        />
+
+        <StatCard
+          Icon={Car}
+          end={2016}
+          suffix=""
+          title="Est. 2016"
         />
 
       </div>

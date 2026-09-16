@@ -59,7 +59,7 @@ function FooterBottom() {
             </h4>
 
             <p className="text-sm text-gray-400">
-              ★★★★★ Rated 5.0 by Our Students
+              ★★★★★ 5.0 from 133 Reviews
             </p>
 
           </div>

@@ -10,7 +10,7 @@ import {
 const badges = [
   {
     icon: <Award size={22} />,
-    title: "20+ Years Experience",
+    title: "Est. 2016",
   },
   {
     icon: <Users size={22} />,

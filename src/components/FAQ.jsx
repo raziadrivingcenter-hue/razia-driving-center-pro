@@ -3,34 +3,74 @@ import { ChevronDown } from "lucide-react";
 
 const faqs = [
   {
-    question: "What is the course fee?",
+    question: "Which driving school is in Gulberg 2, Lahore?",
     answer:
-      "Our Economy Driving Course starts from Rs. 14,500. We also offer Pro Driver and Own Vehicle training packages.",
+      "Razia Driving Center is a driving school based in Gulberg 2, Lahore. It offers one-to-one driving lessons with an experienced female instructor.",
   },
   {
-    question: "Do you provide female driving instructors?",
+    question: "Does Razia Driving Center have a female instructor?",
     answer:
-      "Yes. We specialize in professional one-to-one driving lessons with experienced female instructors.",
+      "Yes. All driving lessons at Razia Driving Center are taught by an experienced female instructor, Madam Razia.",
   },
   {
-    question: "Do you provide Pick & Drop?",
+    question: "Is the training one-to-one?",
     answer:
-      "Yes. Pick & Drop is available in selected areas of Lahore. Contact us to confirm your location.",
+      "Yes. Every lesson is a private one-to-one session. There are no shared lessons.",
+  },
+  {
+    question: "How much do driving lessons cost?",
+    answer:
+      "Razia Driving Center offers three structured courses: the Basic Plan at Rs. 9,999 (7 days), the Economy / PLUS Plan at Rs. 14,500 (10 days), and the Pro / PRO+ Plan at Rs. 21,750 (15 days). A custom course builder is also available on the website.",
+  },
+  {
+    question: "How long are the courses?",
+    answer:
+      "The Basic Plan runs for 7 days, the Economy (PLUS) Plan for 10 days, and the Pro (PRO+) Plan for 15 days. Each daily session is 30 minutes of practical driving.",
   },
   {
     question: "Can complete beginners join?",
     answer:
-      "Absolutely! Most of our students have never driven before. We teach from the very basics.",
+      "Yes. Most students at Razia Driving Center are complete beginners. Training starts from the very basics and builds up to confident, independent driving.",
   },
   {
-    question: "How many days is the course?",
+    question: "Does training include real Lahore traffic?",
     answer:
-      "Our Economy Course is 10 days, while the Pro Driver Course provides extended practical training.",
+      "Yes. Practical training takes place on real Lahore roads in actual traffic conditions, so learners build confidence for everyday driving.",
   },
   {
-    question: "Which areas do you cover?",
+    question: "Does training include parking and reversing?",
     answer:
-      "We provide driving lessons in Gulberg and many surrounding areas of Lahore. Contact us for availability.",
+      "Yes. The practical training covers parking, reversing, U-turns, clutch control and traffic-rule education.",
+  },
+  {
+    question: "Is pick & drop available?",
+    answer:
+      "Yes. Pick & drop is available in selected areas of Lahore. Contact Razia Driving Center to confirm availability for your location.",
+  },
+  {
+    question: "What areas does Razia Driving Center serve?",
+    answer:
+      "Razia Driving Center is based in Gulberg 2 and serves Gulberg III, Lahore Cantt and surrounding areas across Lahore.",
+  },
+  {
+    question: "What are the training hours?",
+    answer:
+      "Driving training runs from 8:00 AM to 8:00 PM, Monday to Sunday.",
+  },
+  {
+    question: "What are the consultation hours?",
+    answer:
+      "Consultation and customer support is available from 7:00 AM to 12:00 AM (midnight), Monday to Sunday.",
+  },
+  {
+    question: "How is Razia Driving Center rated on Google?",
+    answer:
+      "Razia Driving Center is rated 5.0 out of 5 on Google, based on 133 verified Google reviews.",
+  },
+  {
+    question: "When was Razia Driving Center established?",
+    answer:
+      "Razia Driving Center was established in December 2016. It has taught thousands of students across Lahore since then.",
   },
 ];
 

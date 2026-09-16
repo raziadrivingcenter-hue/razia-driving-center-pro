@@ -31,9 +31,10 @@ function About() {
 
           <p className="mt-8 text-lg leading-8 text-gray-600">
             Razia Driving Center has proudly trained thousands of students
-            throughout Lahore. Our experienced female instructors provide
-            one-to-one practical driving lessons on real roads, helping
-            beginners become confident, safe and responsible drivers.
+            across Lahore since December 2016. Our experienced female
+            instructor provides one-to-one practical driving lessons on
+            real Lahore roads, helping beginners become confident, safe and
+            responsible drivers.
           </p>
 
           <div className="mt-12 space-y-6">
@@ -74,12 +75,11 @@ function About() {
               <div>
 
                 <h3 className="text-xl font-bold">
-                  20+ Years Experience
+                  Est. 2016
                 </h3>
 
                 <p className="mt-2 text-gray-600">
-                  Highly experienced female instructors trusted by
-                  thousands of students.
+                  Trusted by thousands of students across Lahore for nearly a decade.
                 </p>
 
               </div>
@@ -119,11 +119,11 @@ function About() {
             />
 
             <h3 className="mt-6 text-5xl font-black">
-              20+
+              5.0 ★
             </h3>
 
             <p className="mt-2 text-gray-600">
-              Years Experience
+              133 Google Reviews
             </p>
 
           </div>
@@ -136,11 +136,11 @@ function About() {
             />
 
             <h3 className="mt-6 text-5xl font-black">
-              10+
+              Est. 2016
             </h3>
 
             <p className="mt-2 text-gray-600">
-              Driving Courses
+              Gulberg 2, Lahore
             </p>
 
           </div>
@@ -152,12 +152,12 @@ function About() {
               className="mx-auto text-[#FF6201] transition duration-300 group-hover:scale-125"
             />
 
-            <h3 className="mt-6 text-5xl font-black">
-              100%
+            <h3 className="mt-6 text-4xl font-black">
+              1-on-1
             </h3>
 
             <p className="mt-2 text-gray-600">
-              Practical Training
+              Female Instructor
             </p>
 
           </div>

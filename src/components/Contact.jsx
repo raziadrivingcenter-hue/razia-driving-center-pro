@@ -97,13 +97,13 @@ function Contact() {
                   </h4>
 
                   <p className="text-gray-600">
-                    Gulberg, Lahore, Pakistan
+                    28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan
                   </p>
                 </div>
 
               </div>
 
-              {/* Hours */}
+              {/* Consultation & Customer Support Hours */}
               <div className="group flex items-center gap-5 rounded-2xl p-3 transition hover:bg-orange-50">
 
                 <div className="rounded-full bg-orange-100 p-4 transition group-hover:scale-110">
@@ -112,7 +112,31 @@ function Contact() {
 
                 <div>
                   <h4 className="font-bold">
-                    Working Hours
+                    Consultation &amp; Customer Support
+                  </h4>
+
+                  <p className="text-gray-600">
+                    Monday - Sunday
+                  </p>
+
+                  <p className="text-gray-600">
+                    7:00 AM – 12:00 AM
+                  </p>
+
+                </div>
+
+              </div>
+
+              {/* Driving Training Hours */}
+              <div className="group flex items-center gap-5 rounded-2xl p-3 transition hover:bg-orange-50">
+
+                <div className="rounded-full bg-orange-100 p-4 transition group-hover:scale-110">
+                  <Clock className="text-[#FF6201]" />
+                </div>
+
+                <div>
+                  <h4 className="font-bold">
+                    Driving Training
                   </h4>
 
                   <p className="text-gray-600">

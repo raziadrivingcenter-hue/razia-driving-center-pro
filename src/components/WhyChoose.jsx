@@ -14,49 +14,49 @@ const features = [
     icon: ShieldCheck,
     title: "Female Instructor",
     description:
-      "Professional one-to-one driving lessons by an experienced female instructor.",
+      "One-to-one driving lessons with an experienced female instructor.",
   },
   {
     icon: Navigation,
-    title: "Real Traffic Training",
+    title: "Real Lahore Traffic",
     description:
-      "Practice on real Lahore roads to build confidence in actual traffic.",
+      "Practice on real Lahore roads to build confidence in actual traffic conditions.",
   },
   {
     icon: Car,
     title: "One-to-One Training",
     description:
-      "Personal attention throughout your driving course for faster learning.",
+      "Every lesson is private, personal attention from start to finish.",
   },
   {
     icon: Users,
-    title: "5000+ Students",
+    title: "5,000+ Students",
     description:
-      "Thousands of successful students have learned driving with us.",
+      "Thousands of successful students have learned driving with us since 2016.",
   },
   {
     icon: Award,
-    title: "20+ Years Experience",
+    title: "5.0 on Google",
     description:
-      "More than two decades of professional driving instruction experience.",
+      "Rated 5.0 stars from 133 verified Google reviews.",
   },
   {
     icon: Clock,
-    title: "Flexible Timing",
+    title: "Training Hours",
     description:
-      "Morning and evening driving classes to fit your schedule.",
+      "Driving lessons 8 AM – 8 PM. Consultation 7 AM – 12 AM, 7 days a week.",
   },
   {
     icon: GraduationCap,
-    title: "Confidence Building",
+    title: "Beginner Friendly",
     description:
-      "Learn safe driving techniques and become a confident driver.",
+      "Complete beginners learn basics, parking, reversing, U-turns and traffic rules.",
   },
   {
     icon: MapPinned,
-    title: "Lahore Coverage",
+    title: "Gulberg 2 & Across Lahore",
     description:
-      "Driving lessons available across Gulberg and surrounding Lahore areas.",
+      "Based in Gulberg 2. Serving Gulberg III, Lahore Cantt and surrounding Lahore areas.",
   },
 ];
 

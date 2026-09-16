@@ -14,8 +14,8 @@ function FooterBrand() {
       </h2>
 
       <p className="mt-5 max-w-sm leading-8 text-gray-400">
-        Helping Lahore learn driving with confidence through
-        professional one-to-one driving lessons.
+        Helping Lahore learn driving with confidence since 2016 through
+        professional one-to-one driving lessons with a female instructor.
       </p>
 
       <div className="mt-8 space-y-4">
@@ -67,7 +67,7 @@ function FooterBrand() {
           />
 
           <span className="text-gray-300">
-            Gulberg, Lahore
+            Gulberg 2, Lahore
           </span>
 
         </div>
