@@ -1,0 +1,6 @@
+# SPA fallback — all deep links serve index.html
+/*    /index.html   200
+
+# Canonical: redirect www to root domain
+https://www.raziadrivingcenter.com/*    https://raziadrivingcenter.com/:splat   301
+http://www.raziadrivingcenter.com/*     https://raziadrivingcenter.com/:splat   301

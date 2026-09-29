@@ -22,8 +22,7 @@ function BookingStep2({
   // Animated numeric values for the Pick & Drop calculation card.
   const animCourseFee = useCountUp(pricing.courseFee);
   const animDistance = useCountUp(pricing.distanceKm);
-  const animFreeDistance = useCountUp(pricing.freeDistanceKm);
-  const animChargeable = useCountUp(pricing.chargeableDistanceKm);
+  const animDuration = useCountUp(pricing.durationDays);
   const animPickDrop = useCountUp(pricing.pickDropCharges);
   const animTotal = useCountUp(pricing.totalPayable);
 
@@ -259,11 +258,11 @@ function BookingStep2({
                     }}
                     success={
                       Number(formData.distance) > 0 &&
-                      Number(formData.distance) <= 20
+                      Number(formData.distance) <= 30
                     }
                     error={
-                      Number(formData.distance) > 20
-                        ? "Sorry, Pick & Drop Service is available up to 20 KM."
+                      Number(formData.distance) > 30
+                        ? "Sorry, Pick & Drop Service is available up to 30 KM."
                         : ""
                     }
                     errorIcon={XCircle}
@@ -307,10 +306,10 @@ function BookingStep2({
 
                 </div>
 
-                {Number(formData.distance) > 20 && (
+                {Number(formData.distance) > 30 && (
                   <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-400">
                     <XCircle size={12} className="shrink-0 text-red-400" />
-                    Sorry, Pick & Drop Service is available up to 20 KM.
+                    Sorry, Pick & Drop Service is available up to 30 KM.
                   </p>
                 )}
 
@@ -343,19 +342,19 @@ function BookingStep2({
 
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-xs text-gray-300">
-                        Free Distance
+                        Course Duration
                       </span>
-                      <span className="text-sm font-bold text-green-400">
-                        {Math.round(animFreeDistance)} KM — FREE
+                      <span className="text-sm font-bold text-gray-100">
+                        {Math.round(animDuration)} Days
                       </span>
                     </div>
 
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-xs text-gray-300">
-                        Chargeable Distance
+                        Rate
                       </span>
                       <span className="text-sm font-bold text-gray-100">
-                        {Math.round(animChargeable)} KM
+                        Rs. {pricing.ratePerKm}/KM × {pricing.roundTripMultiplier} (round trip)
                       </span>
                     </div>
 
@@ -380,7 +379,7 @@ function BookingStep2({
                     </div>
 
                     <p className="mt-2 text-[11px] leading-4 text-gray-400">
-                      You only pay for the distance beyond 2 KM.
+                      Pick & Drop is available up to {pricing.maxDistanceKm} KM.
                     </p>
 
                     <button
@@ -400,7 +399,7 @@ function BookingStep2({
                         hover:underline
                       "
                     >
-                      Estimated Pick & Drop Charge
+                      How is this calculated?
                       {showCalculation ? (
                         <ChevronUp size={12} />
                       ) : (
@@ -429,10 +428,10 @@ function BookingStep2({
                           className="overflow-hidden"
                         >
                           <p className="mt-1 text-[11px] leading-5 text-gray-300">
-                            First {pricing.freeDistanceKm} KM are FREE. Remaining distance is charged at Rs. {pricing.ratePerKm.toLocaleString()}/KM.
+                            Total Pick & Drop Cost = Distance × Rs. {pricing.ratePerKm} × Duration (days) × {pricing.roundTripMultiplier} (round trip).
                           </p>
                           <p className="text-[11px] font-semibold text-gray-200">
-                            {pricing.chargeableDistanceKm} KM × Rs. {pricing.ratePerKm.toLocaleString()} = Rs.{" "}
+                            {pricing.distanceKm} KM × Rs. {pricing.ratePerKm} × {pricing.durationDays} days × {pricing.roundTripMultiplier} = Rs.{" "}
                             {pricing.pickDropCharges.toLocaleString()}
                           </p>
                           <p className="mt-1 text-[10px] leading-4 text-gray-400">
@@ -505,7 +504,7 @@ function BookingStep2({
           onClick={next}
           disabled={
             !formData.course ||
-            Number(formData.distance) > 20 ||
+            Number(formData.distance) > 30 ||
             (formData.pickup === "Yes" &&
               formData.address.trim().length < 5)
           }

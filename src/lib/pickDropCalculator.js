@@ -7,11 +7,14 @@
 
 // --- Fixed pricing configuration ----------------------------------------------
 
-export const PICKUP_DROP_RATE_PER_KM = 1000;
+// Cost per kilometer for Pick & Drop service.
+export const RATE_PER_KM = 50;
 
-// First 2 KM of the Pick & Drop distance are FREE. Only the distance
-// beyond this allowance is chargeable, at PICKUP_DROP_RATE_PER_KM per KM.
-export const FREE_DISTANCE_KM = 2;
+// Every training day requires a round trip (pickup + drop-off).
+export const ROUND_TRIP_MULTIPLIER = 2;
+
+// Pick & Drop service is only available up to this distance.
+export const MAX_DISTANCE_KM = 30;
 
 // Minimum address length used by the booking form's own validation.
 // Kept here so the distance UI and the engine share one source of truth.
@@ -47,66 +50,78 @@ const toFiniteNumber = (value) => {
 const sanitizeDistance = (distanceKm) => {
   const number = toFiniteNumber(distanceKm);
 
-  return number < 0 ? 0 : number;
+  if (number < 0) return 0;
+
+  // Clamp to the maximum serviceable distance.
+  return number > MAX_DISTANCE_KM ? MAX_DISTANCE_KM : number;
 };
 
-const sanitizeDuration = (courseDuration) => {
-  const number = toFiniteNumber(courseDuration);
+const sanitizeDuration = (durationDays) => {
+  const number = toFiniteNumber(durationDays);
 
   return number < 0 ? 0 : number;
 };
 
 // --- Course lookups ----------------------------------------------------------
 
-export const getCourseDurationDays = (courseTitle, { customDays } = {}) => {
-  if (courseTitle === "Custom Course") {
+export const getCourseDurationDays = (courseId, { customDays } = {}) => {
+  if (courseId === "Custom Course") {
     return sanitizeDuration(customDays);
   }
 
-  const config = PICK_DROP_COURSE_CONFIG[courseTitle];
+  const config = PICK_DROP_COURSE_CONFIG[courseId];
 
   return config ? config.durationDays : 0;
 };
 
-export const getCourseFee = (courseTitle, { customPrice } = {}) => {
-  if (courseTitle === "Custom Course") {
+export const getCourseFee = (courseId, { customPrice } = {}) => {
+  if (courseId === "Custom Course") {
     return toFiniteNumber(customPrice);
   }
 
-  const config = PICK_DROP_COURSE_CONFIG[courseTitle];
+  const config = PICK_DROP_COURSE_CONFIG[courseId];
 
   return config ? config.fee : 0;
 };
 
 // --- Core calculation --------------------------------------------------------
+// Total Pick & Drop Cost = Distance × Rs. 50 × Duration (days) × 2 (round trip)
 // Returns a structured breakdown. Pure math only — every input is sanitized so
 // the result is never NaN or Infinity, and never negative.
 
-export const calculatePickDropCharges = ({ distanceKm }) => {
+export const calculatePickDropCharges = (distanceKm, durationDays) => {
   const distance = sanitizeDistance(distanceKm);
-
-  // First 2 KM are FREE. Only the distance beyond that is chargeable.
-  const chargeableDistance = Math.max(0, distance - FREE_DISTANCE_KM);
-  const freeDistance = Math.min(distance, FREE_DISTANCE_KM);
+  const duration = sanitizeDuration(durationDays);
 
   const pickDropCharges = Math.round(
-    chargeableDistance * PICKUP_DROP_RATE_PER_KM
+    distance * RATE_PER_KM * duration * ROUND_TRIP_MULTIPLIER
   );
 
   return {
     distanceKm: distance,
-    freeDistanceKm: freeDistance,
-    chargeableDistanceKm: chargeableDistance,
-    ratePerKm: PICKUP_DROP_RATE_PER_KM,
+    durationDays: duration,
+    ratePerKm: RATE_PER_KM,
+    roundTripMultiplier: ROUND_TRIP_MULTIPLIER,
+    maxDistanceKm: MAX_DISTANCE_KM,
     pickDropCharges,
   };
 };
 
 // --- Convenience: total payable ----------------------------------------------
+// When the customer does not require Pick & Drop, charges are zero.
 
-export const calculateTotalPayable = ({ courseTitle, distanceKm, customPrice }) => {
-  const courseFee = getCourseFee(courseTitle, { customPrice });
-  const { pickDropCharges } = calculatePickDropCharges({ distanceKm });
+export const calculateTotalPayable = (
+  courseId,
+  distanceKm,
+  hasPickDrop,
+  { customPrice, customDays } = {}
+) => {
+  const courseFee = getCourseFee(courseId, { customPrice });
+  const durationDays = getCourseDurationDays(courseId, { customDays });
+
+  const { pickDropCharges } = hasPickDrop
+    ? calculatePickDropCharges(distanceKm, durationDays)
+    : { pickDropCharges: 0 };
 
   return {
     courseFee,
