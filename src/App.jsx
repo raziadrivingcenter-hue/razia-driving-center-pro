@@ -25,6 +25,7 @@ import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import LiveEnrollment from "./components/LiveEnrollment";
 import WhatsAppButton from "./components/WhatsAppButton";
+import AIChatWidget from "./components/AIChatWidget";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -110,6 +111,8 @@ const openBooking = (data = null) => {
         <LiveEnrollment />
 
         <WhatsAppButton />
+
+        <AIChatWidget />
       </div>
 
       <BookingWizard
