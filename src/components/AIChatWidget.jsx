@@ -33,6 +33,139 @@ function parseMessage(text) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Lightweight markdown renderer                                      */
+/*  Supports: **bold**, *italic*, `code`, line breaks, simple lists    */
+/* ------------------------------------------------------------------ */
+
+function renderMarkdown(text) {
+  // Split text into segments, processing bold, italic, and code
+  const parts = [];
+  // Regex to match **bold**, *italic*, or `code` — non-greedy
+  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+
+    if (match[2]) {
+      // **bold**
+      parts.push(<strong key={match.index} className="font-bold">{match[2]}</strong>);
+    } else if (match[3]) {
+      // *italic*
+      parts.push(<em key={match.index} className="italic">{match[3]}</em>);
+    } else if (match[4]) {
+      // `code`
+      parts.push(
+        <code key={match.index} className="rounded bg-gray-200 px-1 py-0.5 text-xs font-mono text-[#FF6201]">
+          {match[4]}
+        </code>
+      );
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  // If no markdown found, return plain text
+  if (parts.length === 0) return text;
+
+  // Process line breaks within each text part
+  const result = [];
+  parts.forEach((part, i) => {
+    if (typeof part === "string") {
+      const lines = part.split("\n");
+      lines.forEach((line, j) => {
+        result.push(line);
+        if (j < lines.length - 1) {
+          result.push(<br key={`br-${i}-${j}`} />);
+        }
+      });
+    } else {
+      result.push(part);
+    }
+  });
+
+  return result;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Typewriter hook — progressively reveals text                       */
+/*  Each instance has stable content; only `active` can change.        */
+/*  Starts typing on mount, stops when `active` becomes false.         */
+/* ------------------------------------------------------------------ */
+
+function useTypewriter(text, speed = 18, active = true) {
+  const [displayed, setDisplayed] = useState(() => {
+    // Initialize: short text shows fully, longer text starts empty
+    return text.length < 20 ? text : "";
+  });
+  const [isTyping, setIsTyping] = useState(() => text.length >= 20);
+  const indexRef = useRef(text.length < 20 ? text.length : 0);
+  const intervalRef = useRef(null);
+
+  // Start typing on mount (only for longer text)
+  useEffect(() => {
+    if (text.length < 20 || !active) return;
+
+    intervalRef.current = setInterval(() => {
+      indexRef.current += 1;
+      setDisplayed(text.slice(0, indexRef.current));
+
+      if (indexRef.current >= text.length) {
+        clearInterval(intervalRef.current);
+        setIsTyping(false);
+      }
+    }, speed);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Stop typing immediately when deactivated (new message sent)
+  useEffect(() => {
+    if (!active && intervalRef.current) {
+      clearInterval(intervalRef.current);
+      setDisplayed(text);
+      setIsTyping(false);
+    }
+  }, [active, text]);
+
+  return { displayed, isTyping };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Typewriter message — renders markdown with typing animation        */
+/* ------------------------------------------------------------------ */
+
+function TypewriterMessage({ content, isLatest }) {
+  const { displayed, isTyping } = useTypewriter(content, 18, isLatest);
+
+  // Only animate the latest AI message; older ones render instantly
+  if (!isLatest) {
+    return <>{renderMarkdown(content)}</>;
+  }
+
+  return (
+    <span>
+      {isTyping ? renderMarkdown(displayed) : renderMarkdown(content)}
+      {isTyping && (
+        <span className="ml-0.5 inline-block h-4 w-1 animate-pulse bg-[#FF6201]" />
+      )}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Typing indicator — three bouncing dots                             */
 /* ------------------------------------------------------------------ */
 
@@ -152,7 +285,7 @@ function BookingSuccessCard({ bookingId, whatsappLink }) {
 /*  Single message bubble                                              */
 /* ------------------------------------------------------------------ */
 
-function ChatMessage({ message, onButtonSelect, disabled, bookingResult }) {
+function ChatMessage({ message, onButtonSelect, disabled, bookingResult, isLatest }) {
   const isUser = message.role === "user";
   const { cleanText, buttons } = !isUser ? parseMessage(message.content) : { cleanText: message.content, buttons: [] };
 
@@ -160,24 +293,30 @@ function ChatMessage({ message, onButtonSelect, disabled, bookingResult }) {
   const isSummary = !isUser && cleanText.includes("Booking Summary");
 
   return (
-    <div className={`flex gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
+    <div className={`flex gap-2.5 ${isUser ? "justify-end" : "justify-start"}`}>
+      {/* AI avatar */}
       {!isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201] text-white">
-          <Bot size={16} />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201] shadow-md">
+          <Bot size={17} className="text-white" />
         </div>
       )}
 
-      <div className="max-w-[85%]">
+      <div className="max-w-[82%]">
+        {/* Message bubble */}
         <div
-          className={`rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+          className={`rounded-2xl px-4 py-3 text-[13.5px] leading-[1.65] ${
             isUser
-              ? "rounded-br-sm bg-[#FF6201] text-white"
+              ? "rounded-br-sm bg-gradient-to-r from-[#FF3131] to-[#FF6201] text-white shadow-md"
               : isSummary
-                ? "rounded-bl-sm border border-orange-200 bg-orange-50 text-gray-800"
-                : "rounded-bl-sm bg-gray-100 text-gray-800"
+                ? "rounded-bl-sm border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 text-gray-800 shadow-sm"
+                : "rounded-bl-sm bg-white text-gray-800 shadow-sm ring-1 ring-gray-100"
           }`}
         >
-          {cleanText}
+          {isUser ? (
+            <span className="whitespace-pre-wrap">{cleanText}</span>
+          ) : (
+            <TypewriterMessage content={cleanText} isLatest={isLatest} />
+          )}
         </div>
 
         {/* Quick-reply buttons for AI messages */}
@@ -198,9 +337,10 @@ function ChatMessage({ message, onButtonSelect, disabled, bookingResult }) {
         )}
       </div>
 
+      {/* User avatar */}
       {isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-500">
-          <User size={16} />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-200 shadow-sm">
+          <User size={17} className="text-gray-500" />
         </div>
       )}
     </div>
@@ -537,6 +677,7 @@ function AIChatWidget() {
                   message={msg}
                   onButtonSelect={handleButtonSelect}
                   disabled={isLoading}
+                  isLatest={i === messages.length - 1 && msg.role === "assistant"}
                   bookingResult={
                     i === messages.length - 1 && bookingResult && msg.role === "assistant"
                       ? bookingResult
