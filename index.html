@@ -3,18 +3,39 @@
 
 <head>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-C1P9FLL24H"></script>
+  <!-- Google Analytics — deferred until page is interactive (Phase 1C) -->
   <script>
+    // Load GA after first user interaction or when page becomes idle
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-C1P9FLL24H');
+
+    function loadGA() {
+      if (window._gaLoaded) return;
+      window._gaLoaded = true;
+      var s = document.createElement('script');
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-C1P9FLL24H';
+      s.async = true;
+      document.head.appendChild(s);
+    }
+
+    // Load on first user interaction (scroll, click, touch, key)
+    ['scroll', 'click', 'touchstart', 'keydown'].forEach(function(evt) {
+      window.addEventListener(evt, loadGA, { once: true, passive: true });
+    });
+
+    // Fallback: load after 3s even without interaction
+    setTimeout(loadGA, 3000);
   </script>
 
   <meta charset="UTF-8" />
 
   <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <!-- Phase 1C: Preconnect to critical origins -->
+  <link rel="preconnect" href="https://maps.googleapis.com" />
+  <link rel="preconnect" href="https://www.google.com" />
 
   <meta
     name="viewport"
@@ -189,7 +210,29 @@
 
 <body>
 
-  <div id="root"></div>
+  <div id="root">
+    <!-- SEO Fallback: Static content available before React mounts.
+         Replaced by the React application on initialization. -->
+    <main style="max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem; font-family: system-ui, -apple-system, sans-serif; color: #1a1a1a; line-height: 1.7;">
+      <h1 style="font-size: 1.75rem; font-weight: 800; margin: 0 0 1rem; color: #111827;">Driving School in Gulberg 2, Lahore</h1>
+
+      <p style="font-size: 1rem; margin: 0 0 1rem; color: #4b5563;">
+        Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-one driving lessons with an experienced female instructor.
+      </p>
+
+      <p style="font-size: 0.95rem; margin: 0 0 1.25rem; color: #4b5563;">
+        5.0 Google Rating · 133 Google Reviews · 5,118+ Students Trained · Established 2016
+      </p>
+
+      <address style="font-style: normal; font-size: 0.95rem; margin: 0 0 0.5rem; color: #4b5563;">
+        28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan
+      </address>
+
+      <p style="font-size: 0.95rem; margin: 0; color: #4b5563;">
+        Phone: <a href="tel:+923094461407" style="color: #FF6201; text-decoration: none;">+92 309 4461407</a>
+      </p>
+    </main>
+  </div>
 
   <script
     type="module"

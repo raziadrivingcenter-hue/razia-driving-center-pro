@@ -56,6 +56,10 @@ function Gallery() {
                 <img
                   src={image}
                   alt={`Driving Lesson ${index + 1}`}
+                  width="400"
+                  height="320"
+                  loading="lazy"
+                  decoding="async"
                   className="h-80 w-full object-cover transition duration-500 group-hover:scale-110"
                 />
 

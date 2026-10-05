@@ -51,6 +51,15 @@ function CourseCard({
         </div>
       )}
 
+      {/* FREE Pick & Drop Badge — PLUS Plan only */}
+      {name === "Economy Driving Course" && (
+        <div className="mb-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-3 py-1.5 text-[11px] font-bold tracking-wide text-white shadow-md">
+            🚗 FREE Pick & Drop upto 2 KM
+          </span>
+        </div>
+      )}
+
       <div className={badge ? "mt-10" : ""}>
         {/* Title */}
 

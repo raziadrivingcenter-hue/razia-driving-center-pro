@@ -54,11 +54,9 @@ function MapSection() {
                   </h3>
 
                   <p className="mt-2 text-gray-600 leading-7">
-                    Plot 28/a, S Block,
+                    28/A, S Block, Gulberg 2,
                     <br />
-                    Gulberg II,
-                    <br />
-                    Lahore, Pakistan
+                    Lahore, 54660, Pakistan
                   </p>
 
                 </div>

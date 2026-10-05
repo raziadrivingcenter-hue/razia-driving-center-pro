@@ -1,15 +1,5 @@
-import {
-
-  Mail,
-  Phone,
-  MapPin,
-  Star,
-} from "lucide-react";
-
-/* ------------------------------------------------------------------ */
-/* Inline brand SVG icons — lucide-react has no Instagram/Facebook/    */
-/* TikTok glyphs, so we use the official brand paths at a small size. */
-/* ------------------------------------------------------------------ */
+import { useState, useEffect } from "react";
+import { Mail, Phone, MapPin, Star } from "lucide-react";
 
 const FacebookIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -36,205 +26,54 @@ const WhatsAppIcon = () => (
 );
 
 function FooterBottom() {
+  const [stats, setStats] = useState({ rating: "5.0", count: 133 });
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadStats = async () => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const response = await fetch("/api/reviews", { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!cancelled && data.averageRating && data.totalReviewCount) {
+          setStats({ rating: data.averageRating.toFixed(1), count: data.totalReviewCount });
+        }
+      } catch (_err) { /* keep defaults */ }
+    };
+    loadStats();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <>
-      {/* Divider */}
-
       <div className="my-14 h-px w-full bg-white/10" />
-
-      {/* Bottom Section */}
-
       <div className="flex flex-col items-center justify-between gap-10 lg:flex-row">
-
-        {/* Google Badge */}
-
-        <div
-          className="
-            flex
-            items-center
-            gap-5
-            rounded-2xl
-            border
-            border-white/10
-            bg-white/5
-            px-6
-            py-4
-            backdrop-blur-md
-          "
-        >
-
-          <div
-            className="
-              flex
-              h-14
-              w-14
-              items-center
-              justify-center
-              rounded-full
-              bg-white
-            "
-          >
-            <Star
-              size={28}
-              className="fill-yellow-400 text-yellow-400"
-            />
+        <div className="flex items-center gap-5 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 backdrop-blur-md">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white">
+            <Star size={28} className="fill-yellow-400 text-yellow-400" />
           </div>
-
           <div>
-
-            <h4 className="font-bold text-white">
-              Google Reviews
-            </h4>
-
-            <p className="text-sm text-gray-400">
-              ★★★★★ 5.0 from 133 Reviews
-            </p>
-
+            <h4 className="font-bold text-white">Google Reviews</h4>
+            <p className="text-sm text-gray-400">★★★★★ {stats.rating} from {stats.count} Reviews</p>
           </div>
-
         </div>
-
-        {/* Social Icons */}
-
         <div className="flex flex-wrap justify-center gap-4">
-
-          {/* Facebook */}
-          <a
-            href="https://www.facebook.com/raziadrivingcenter"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Facebook"
-            className="
-              rounded-2xl
-              bg-white/5
-              p-4
-              text-gray-300
-              transition-all
-              duration-300
-              hover:-translate-y-2
-              hover:bg-[#1877F2]
-              hover:text-white
-            "
-          >
-            <FacebookIcon />
-          </a>
-
-          {/* Instagram */}
-          <a
-            href="https://www.instagram.com/raziadrivingcenter"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Instagram"
-            className="
-              rounded-2xl
-              bg-white/5
-              p-4
-              text-gray-300
-              transition-all
-              duration-300
-              hover:-translate-y-2
-              hover:bg-[#E1306C]
-              hover:text-white
-            "
-          >
-            <InstagramIcon />
-          </a>
-
-          {/* TikTok */}
-          <a
-            href="https://www.tiktok.com/@raziadrivingcenter"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="TikTok"
-            className="
-              rounded-2xl
-              bg-white/5
-              p-4
-              text-gray-300
-              transition-all
-              duration-300
-              hover:-translate-y-2
-              hover:bg-black
-              hover:text-white
-            "
-          >
-            <TikTokIcon />
-          </a>
-
-          {/* Google Maps */}
-          <a
-            href="https://www.google.com/maps/dir//Razia+Driving+Center,+Gulberg+2,+Lahore,+Pakistan/"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Google Maps"
-            className="
-              rounded-2xl
-              bg-white/5
-              p-4
-              text-gray-300
-              transition-all
-              duration-300
-              hover:-translate-y-2
-              hover:bg-[#4285F4]
-              hover:text-white
-            "
-          >
-            <MapPin size={18} />
-          </a>
-
-          {/* WhatsApp */}
-          <a
-            href="https://wa.me/923094461407"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="WhatsApp"
-            className="
-              rounded-2xl
-              bg-white/5
-              p-4
-              text-gray-300
-              transition-all
-              duration-300
-              hover:-translate-y-2
-              hover:bg-[#25D366]
-              hover:text-white
-            "
-          >
-            <WhatsAppIcon />
-          </a>
-
+          <a href="https://www.facebook.com/raziadrivingcenter" target="_blank" rel="noreferrer" aria-label="Facebook" className="rounded-2xl bg-white/5 p-4 text-gray-300 transition-all duration-300 hover:-translate-y-2 hover:bg-[#1877F2] hover:text-white"><FacebookIcon /></a>
+          <a href="https://www.instagram.com/raziadrivingcenter" target="_blank" rel="noreferrer" aria-label="Instagram" className="rounded-2xl bg-white/5 p-4 text-gray-300 transition-all duration-300 hover:-translate-y-2 hover:bg-[#E1306C] hover:text-white"><InstagramIcon /></a>
+          <a href="https://www.tiktok.com/@raziadrivingcenter" target="_blank" rel="noreferrer" aria-label="TikTok" className="rounded-2xl bg-white/5 p-4 text-gray-300 transition-all duration-300 hover:-translate-y-2 hover:bg-black hover:text-white"><TikTokIcon /></a>
+          <a href="https://www.google.com/maps/dir//Razia+Driving+Center,+Gulberg+2,+Lahore,+Pakistan/" target="_blank" rel="noreferrer" aria-label="Google Maps" className="rounded-2xl bg-white/5 p-4 text-gray-300 transition-all duration-300 hover:-translate-y-2 hover:bg-[#4285F4] hover:text-white"><MapPin size={18} /></a>
+          <a href="https://wa.me/923094461407" target="_blank" rel="noreferrer" aria-label="WhatsApp" className="rounded-2xl bg-white/5 p-4 text-gray-300 transition-all duration-300 hover:-translate-y-2 hover:bg-[#25D366] hover:text-white"><WhatsAppIcon /></a>
         </div>
-
       </div>
-
-      {/* Copyright */}
-
       <div className="mt-14 border-t border-white/10 pt-8">
-
-        <div
-          className="
-            flex
-            flex-col
-            items-center
-            justify-between
-            gap-5
-            text-center
-            lg:flex-row
-          "
-        >
-
-          <p className="text-gray-500">
-            © 2026 Razia Driving Center. All Rights Reserved.
-          </p>
-
-          <p className="font-medium text-gray-400">
-            Learn Today. Drive Forever.
-          </p>
-
+        <div className="flex flex-col items-center justify-between gap-5 text-center lg:flex-row">
+          <p className="text-gray-500">© 2026 Razia Driving Center. All Rights Reserved.</p>
+          <p className="font-medium text-gray-400">Learn Today. Drive Forever.</p>
         </div>
-
       </div>
-
     </>
   );
 }

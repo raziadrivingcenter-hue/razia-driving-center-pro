@@ -4,27 +4,28 @@ import googleLogo from "../../assets/google-logo.png";
 function ReviewCard({ review }) {
   const [expanded, setExpanded] = useState(false);
 
+  const stars = "★".repeat(review.rating || 5);
+  const emptyStars = "☆".repeat(5 - (review.rating || 5));
+
   return (
     <div
-  className="
-    review-card
-    group
-    rounded-3xl
-    border
-    border-gray-200
-    bg-white
-    p-7
-    shadow-lg
-    transition-all
-    duration-500
-    hover:-translate-y-2
-    hover:shadow-2xl
-  "
->
+      className="
+        review-card
+        group
+        rounded-3xl
+        border
+        border-gray-200
+        bg-white
+        p-7
+        shadow-lg
+        transition-all
+        duration-500
+        hover:-translate-y-2
+        hover:shadow-2xl
+      "
+    >
       {/* Top */}
-
       <div className="flex items-center justify-between">
-
         <img
           src={googleLogo}
           alt="Google"
@@ -36,17 +37,14 @@ function ReviewCard({ review }) {
             group-hover:rotate-6
           "
         />
-
         <div className="text-xl tracking-wide text-yellow-500">
-          ★★★★★
+          {stars}
+          {emptyStars}
         </div>
-
       </div>
 
       {/* Profile */}
-
       <div className="mt-6 flex items-center gap-4">
-
         <div
           className="
             flex
@@ -65,25 +63,14 @@ function ReviewCard({ review }) {
         >
           {review.name.charAt(0)}
         </div>
-
         <div>
-
-          <h3 className="text-lg font-bold text-gray-900">
-            {review.name}
-          </h3>
-
-          <p className="text-sm text-gray-500">
-            {review.time}
-          </p>
-
+          <h3 className="text-lg font-bold text-gray-900">{review.name}</h3>
+          <p className="text-sm text-gray-500">{review.time}</p>
         </div>
-
       </div>
 
       {/* Verified Badge */}
-
       {review.verified && (
-
         <div
           className="
             mt-5
@@ -101,21 +88,16 @@ function ReviewCard({ review }) {
         >
           ✔ Verified Google Review
         </div>
-
       )}
 
       {/* Review */}
-
       <p className="mt-6 leading-8 text-gray-600">
-
         {expanded
           ? review.review
           : `${review.review.substring(0, 130)}...`}
-
       </p>
 
       {/* Read More */}
-
       <button
         onClick={() => setExpanded(!expanded)}
         className="

@@ -121,6 +121,8 @@ ${
             <img
               src={logo}
               alt="Razia Driving Center"
+              width="180"
+              height="20"
               className={`
   w-auto
   transition-all

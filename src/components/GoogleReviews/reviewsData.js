@@ -1,4 +1,5 @@
-const reviewsData = [
+// Fallback reviews — shown when Google Business Profile API is unavailable
+export const fallbackReviews = [
   {
     id: 1,
     name: "Mehwish Habib",
@@ -60,4 +61,4 @@ const reviewsData = [
   },
 ];
 
-export default reviewsData;
+export default fallbackReviews;

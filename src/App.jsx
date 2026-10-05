@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { AnimatePresence } from "framer-motion";
 
 import AOS from "aos";
@@ -17,15 +17,19 @@ import Courses from "./components/Courses";
 import WhyChoose from "./components/WhyChoose";
 import GoogleReviews from "./components/GoogleReviews/GoogleReviews";
 import Instructor from "./components/Instructor/Instructor";
-import Gallery from "./components/Gallery";
 import About from "./components/About";
-import FAQ from "./components/FAQ";
-import MapSection from "./components/MapSection";
-import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import LiveEnrollment from "./components/LiveEnrollment";
 import WhatsAppButton from "./components/WhatsAppButton";
-import AIChatWidget from "./components/AIChatWidget";
+
+// Phase 1C: Lazy-load below-fold components to reduce initial JS payload
+const Gallery = lazy(() => import("./components/Gallery"));
+const FAQ = lazy(() => import("./components/FAQ"));
+const MapSection = lazy(() => import("./components/MapSection"));
+const Contact = lazy(() => import("./components/Contact"));
+const AIChatWidget = lazy(() =>
+  import("./components/AIChatWidget")
+);
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -37,7 +41,8 @@ const openBooking = (data = null) => {
   setBookingOpen(true);
 };
 
-  // Premium Loading Logic
+  // Premium Loading Logic — Phase 1C: finish as soon as DOM is ready,
+  // do not wait for all images/resources (that blocks LCP).
   useEffect(() => {
     function finishLoading() {
       setLoading(false);
@@ -51,15 +56,22 @@ const openBooking = (data = null) => {
       });
     }
 
+    // If document already fully loaded, finish after a brief splash
     if (document.readyState === "complete") {
-      const timer = setTimeout(finishLoading, 1200);
+      const timer = setTimeout(finishLoading, 400);
       return () => clearTimeout(timer);
     }
 
-    window.addEventListener("load", finishLoading);
+    // Otherwise finish on DOMContentLoaded (DOM parsed, images may still load)
+    document.addEventListener("DOMContentLoaded", finishLoading);
+
+    // Safety fallback — never block more than 1.5s even if DOMContentLoaded
+    // somehow doesn't fire
+    const fallback = setTimeout(finishLoading, 1500);
 
     return () => {
-      window.removeEventListener("load", finishLoading);
+      document.removeEventListener("DOMContentLoaded", finishLoading);
+      clearTimeout(fallback);
     };
   }, []);
 
@@ -96,15 +108,23 @@ const openBooking = (data = null) => {
 
         <Instructor />
 
-        <Gallery />
+        <Suspense fallback={null}>
+          <Gallery />
+        </Suspense>
 
         <About />
 
-        <FAQ />
+        <Suspense fallback={null}>
+          <FAQ />
+        </Suspense>
 
-        <MapSection />
+        <Suspense fallback={null}>
+          <MapSection />
+        </Suspense>
 
-        <Contact />
+        <Suspense fallback={null}>
+          <Contact />
+        </Suspense>
 
         <Footer />
 
@@ -112,7 +132,9 @@ const openBooking = (data = null) => {
 
         <WhatsAppButton />
 
-        <AIChatWidget />
+        <Suspense fallback={null}>
+          <AIChatWidget />
+        </Suspense>
       </div>
 
       <BookingWizard

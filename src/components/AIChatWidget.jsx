@@ -507,7 +507,7 @@ function AIChatWidget() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             onClick={() => setIsOpen(true)}
-            aria-label="Open AI Assistant"
+            aria-label="Open Mani"
             className="
               fixed
               bottom-6
@@ -534,7 +534,7 @@ function AIChatWidget() {
               className="transition animate-pulse"
             />
             <span className="hidden font-bold md:block">
-              AI Assistant
+              Ask Mani
             </span>
           </motion.button>
         )}
@@ -575,7 +575,7 @@ function AIChatWidget() {
                 </div>
                 <div>
                   <h3 className="font-bold leading-tight">
-                    AI Assistant
+                    Mani
                   </h3>
                   <p className="text-xs text-white/80">
                     Razia Driving Center
@@ -604,8 +604,8 @@ function AIChatWidget() {
                     Assalam-o-Alaikum! 👋
                   </h4>
                   <p className="mt-2 max-w-[280px] text-sm text-gray-500">
-                    Main aap ki course info, pricing, aur booking mein help kar
-                    sakta hoon. Kya scene hai? 🚗
+                    Main Mani hoon — aap ki course info, pricing, aur booking mein help kar
+                    sakti hoon. Kya scene hai? 🚗
                   </p>
 
                   {/* Quick-start buttons */}
@@ -781,16 +781,22 @@ const COURSE_PRICING = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Calculate pick & drop charges using the same formula as the engine */
+/*  Calculate pick & drop charges                                      */
 /*  Pick & Drop = Distance × 50 × Course Duration (days) × 2           */
+/*  PLUS Plan: first 2 KM free, charge only on remaining distance       */
+/*  Basic & PRO+: full charges on entire distance                      */
 /* ------------------------------------------------------------------ */
 
 function calculatePickDropCharges(distanceKm, courseName) {
   const course = COURSE_PRICING[courseName];
   if (!course || !distanceKm) return 0;
 
-  const dist = Math.min(parseFloat(distanceKm) || 0, 30); // clamp to 30 KM max
-  return Math.round(dist * 50 * course.days * 2);
+  const rawDist = Math.min(parseFloat(distanceKm) || 0, 30); // clamp to 30 KM max
+
+  // PLUS Plan gets first 2 KM free
+  const chargeableDist = courseName === "PLUS Plan" ? Math.max(rawDist - 2, 0) : rawDist;
+
+  return Math.round(chargeableDist * 50 * course.days * 2);
 }
 
 /* ------------------------------------------------------------------ */

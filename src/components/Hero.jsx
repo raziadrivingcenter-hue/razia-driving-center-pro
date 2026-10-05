@@ -72,10 +72,15 @@ function Hero({ onBookNow }) {
 
         {/* Main Heading */}
         <h1 className="mt-5 text-5xl font-extrabold leading-tight tracking-tight">
-          Drive with
+          Driving School in
           <br />
-          Confidence.
+          Gulberg 2, Lahore
         </h1>
+
+        {/* Supporting Tagline */}
+        <p className="mt-3 text-xl font-semibold text-[#FF5A1F]">
+          Drive with Confidence.
+        </p>
 
         {/* Animated Text */}
         <div className="mt-4 h-12 flex items-center">
@@ -85,7 +90,7 @@ function Hero({ onBookNow }) {
               2000,
               "⭐ Trusted Since 2016.",
               2000,
-              "🎓 5,000+ Successful Students.",
+              "🎓 5,118 Successful Students.",
               2000,
               "👩 Female Driving Instructor.",
               2000,
@@ -145,15 +150,20 @@ function Hero({ onBookNow }) {
   </div>
 
   {/* Promotional Offer */}
-  <div className="mt-4 inline-flex items-center gap-2">
-    <span className="rounded-full border border-[#FF6201]/40 bg-[#FF6201]/10 px-3 py-1.5 text-sm font-bold text-[#FF6201]">
-      <span className="font-black">FREE</span> Pick & Drop upto{" "}
-      <span className="font-black">2 KM</span>
-    </span>
+  <div className="mt-4">
+    <div className="inline-flex items-center gap-2">
+      <span className="rounded-full border border-[#FF6201]/40 bg-[#FF6201]/10 px-3 py-1.5 text-sm font-bold text-[#FF6201]">
+        <span className="font-black">FREE</span> Pick & Drop upto{" "}
+        <span className="font-black">2 KM</span>
+      </span>
 
-    <span className="rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white">
-      Limited Offer!
-    </span>
+      <span className="rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white">
+        Limited Offer!
+      </span>
+    </div>
+    <p className="mt-1.5 text-xs font-semibold text-gray-500">
+      ✨ Only on <span className="font-bold text-[#FF6201]">PLUS Plan</span> — Rs. 14,500
+    </p>
   </div>
 
   {/* No Hidden Charges */}
@@ -343,7 +353,7 @@ function Hero({ onBookNow }) {
     "
   >
     <h3 className="text-center text-lg font-black text-gray-900">
-      5,000+ Successful Drivers
+      5,118 Successful Students
     </h3>
 
     <p className="mt-0.5 text-center text-sm text-gray-600">

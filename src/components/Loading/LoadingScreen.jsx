@@ -131,6 +131,9 @@ function LoadingScreen() {
       <motion.img
         src={logo}
         alt="Razia Driving Center"
+        width="480"
+        height="228"
+        fetchpriority="high"
         initial={{
           opacity: 0,
           scale: 0.7,

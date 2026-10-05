@@ -105,6 +105,10 @@ function Instructor() {
   <img
     src={instructorImage}
     alt="Madam Razia"
+    width="800"
+    height="800"
+    loading="lazy"
+    decoding="async"
     className="
       w-full
       rounded-[35px]
