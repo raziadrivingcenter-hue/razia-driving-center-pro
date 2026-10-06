@@ -262,6 +262,8 @@ function Hero({ onBookNow }) {
   <img
   src={Safe}
   alt="Safe Driving"
+  width="56"
+  height="56"
   draggable={false}
   className="
     w-14

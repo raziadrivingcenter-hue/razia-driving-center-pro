@@ -1,0 +1,26 @@
+{
+  "name": "Razia Driving Center",
+  "description": "Professional one-to-one driving lessons in Gulberg 2, Lahore with an experienced female instructor.",
+  "url": "https://raziadrivingcenter.com",
+  "telephone": "+92 309 4461407",
+  "address": "28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan",
+  "areaServed": ["Gulberg 2", "Gulberg III", "Lahore Cantt", "Lahore"],
+  "priceRange": "$$",
+  "courses": [
+    {
+      "name": "Basic Plan",
+      "price": "Rs. 9,999",
+      "duration": "7 Days"
+    },
+    {
+      "name": "PLUS Plan",
+      "price": "Rs. 14,500",
+      "duration": "10 Days"
+    },
+    {
+      "name": "PRO+ Plan",
+      "price": "Rs. 21,750",
+      "duration": "15 Days"
+    }
+  ]
+}

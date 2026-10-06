@@ -304,6 +304,8 @@ hover:after:w-full
             {/* Mobile Hamburger */}
             <button
               onClick={() => setMenuOpen(true)}
+              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={menuOpen}
               className="rounded-xl p-2 transition hover:bg-gray-100 md:hidden"
             >
               <Menu size={30} />

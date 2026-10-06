@@ -63,7 +63,7 @@ function CourseCard({
       <div className={badge ? "mt-10" : ""}>
         {/* Title */}
 
-        <h3 className="flex items-center gap-2 text-2xl font-black text-gray-900">
+        <h2 className="flex items-center gap-2 text-2xl font-black text-gray-900">
           {TitleIcon && (
             <TitleIcon
               size={20}
@@ -72,7 +72,7 @@ function CourseCard({
           )}
 
           {title}
-        </h3>
+        </h2>
 
         {/* Description */}
 
@@ -90,7 +90,7 @@ function CourseCard({
         {/* Price */}
 
         <div className="mt-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
             Starting From
           </p>
 
@@ -99,7 +99,7 @@ function CourseCard({
               {price}
             </h2>
 
-            <span className="pb-1 text-base text-gray-400 line-through">
+            <span className="pb-1 text-base text-gray-500 line-through">
               {oldPrice}
             </span>
           </div>
@@ -125,7 +125,7 @@ function CourseCard({
             </div>
 
             <div>
-              <p className="text-[10px] uppercase tracking-wide text-gray-400">
+              <p className="text-[10px] uppercase tracking-wide text-gray-500">
                 Course Duration
               </p>
 

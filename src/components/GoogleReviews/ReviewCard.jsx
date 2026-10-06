@@ -29,6 +29,8 @@ function ReviewCard({ review }) {
         <img
           src={googleLogo}
           alt="Google"
+          width="32"
+          height="32"
           className="
             h-8
             w-8
