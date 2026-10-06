@@ -2,13 +2,25 @@ import { useState, useEffect } from "react";
 import { Menu } from "lucide-react";
 import logo from "../assets/logo.png";
 import { motion } from "framer-motion";
+import { useRouter } from "../router";
 
-
+const SERVICE_ROUTES = ["/driving-school-gulberg-lahore/", "/driving-school-gulberg-lahore"];
 
 function Navbar({ onBookNow }) {
+  const { route, navigateToSection } = useRouter();
+  const isServicePage = SERVICE_ROUTES.includes(route);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+
+  // When on the service page, nav links should navigate to homepage sections.
+  // On the homepage, the standard anchor href works as-is.
+  const handleNavClick = (e, sectionId) => {
+    if (isServicePage) {
+      e.preventDefault();
+      navigateToSection(sectionId);
+    }
+  };
   useEffect(() => {
   const sections = [
     "home",
@@ -110,7 +122,8 @@ ${
 
           {/* Logo */}
           <a
-            href="#home"
+            href={isServicePage ? "/" : "#home"}
+            onClick={(e) => handleNavClick(e, "home")}
             className="
               flex
               flex-col
@@ -155,7 +168,8 @@ ${
           <div className="hidden items-center gap-8 md:flex">
 
             <a
-              href="#home"
+              href={isServicePage ? "/" : "#home"}
+              onClick={(e) => handleNavClick(e, "home")}
               className="
 relative
 font-medium
@@ -178,7 +192,8 @@ hover:after:w-full
             </a>
 
             <a
-              href="#courses"
+              href={isServicePage ? "/#courses" : "#courses"}
+              onClick={(e) => handleNavClick(e, "courses")}
               className="
 relative
 font-medium
@@ -201,7 +216,8 @@ hover:after:w-full
             </a>
 
             <a
-              href="#reviews"
+              href={isServicePage ? "/#reviews" : "#reviews"}
+              onClick={(e) => handleNavClick(e, "reviews")}
               className="
 relative
 font-medium
@@ -224,7 +240,8 @@ hover:after:w-full
             </a>
 
             <a
-              href="#about"
+              href={isServicePage ? "/#about" : "#about"}
+              onClick={(e) => handleNavClick(e, "about")}
               className="
 relative
 font-medium
@@ -247,7 +264,8 @@ hover:after:w-full
             </a>
 
             <a
-              href="#contact"
+              href={isServicePage ? "/#contact" : "#contact"}
+              onClick={(e) => handleNavClick(e, "contact")}
               className="
 relative
 font-medium
@@ -335,40 +353,40 @@ hover:after:w-full
             <div className="flex flex-col gap-3 text-lg font-semibold">
 
               <a
-                href="#home"
-                onClick={() => setMenuOpen(false)}
+                href={isServicePage ? "/" : "#home"}
+                onClick={(e) => { handleNavClick(e, "home"); setMenuOpen(false); }}
                 className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
               >
                 Home
               </a>
 
               <a
-                href="#courses"
-                onClick={() => setMenuOpen(false)}
+                href={isServicePage ? "/#courses" : "#courses"}
+                onClick={(e) => { handleNavClick(e, "courses"); setMenuOpen(false); }}
                 className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
               >
                 Courses
               </a>
 
               <a
-                href="#reviews"
-                onClick={() => setMenuOpen(false)}
+                href={isServicePage ? "/#reviews" : "#reviews"}
+                onClick={(e) => { handleNavClick(e, "reviews"); setMenuOpen(false); }}
                 className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
               >
                 Reviews
               </a>
 
               <a
-                href="#about"
-                onClick={() => setMenuOpen(false)}
+                href={isServicePage ? "/#about" : "#about"}
+                onClick={(e) => { handleNavClick(e, "about"); setMenuOpen(false); }}
                 className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
               >
                 About
               </a>
 
               <a
-                href="#contact"
-                onClick={() => setMenuOpen(false)}
+                href={isServicePage ? "/#contact" : "#contact"}
+                onClick={(e) => { handleNavClick(e, "contact"); setMenuOpen(false); }}
                 className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
               >
                 Contact

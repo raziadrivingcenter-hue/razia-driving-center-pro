@@ -73,6 +73,15 @@ function FooterLinks() {
             </a>
           </li>
 
+          <li>
+            <a
+              href="#location"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Location & Directions
+            </a>
+          </li>
+
         </ul>
 
       </div>

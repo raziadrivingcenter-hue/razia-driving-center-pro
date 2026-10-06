@@ -31,8 +31,9 @@ function About() {
 
           <p className="mt-8 text-lg leading-8 text-gray-600">
             Razia Driving Center has proudly trained thousands of students
-            across Lahore since December 2016. Our experienced female
-            instructor provides one-to-one practical driving lessons on
+            across Lahore since December 2016. Our experienced{" "}
+            <a href="#instructor" className="text-[#FF6201] underline font-medium">female instructor</a>
+            {" "}provides one-to-one practical driving lessons on
             real Lahore roads, helping beginners become confident, safe and
             responsible drivers.
           </p>

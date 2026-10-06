@@ -253,6 +253,18 @@ function Hero({ onBookNow }) {
 
   </div>
 
+  {/* Internal link to local SEO service page */}
+  <p className="mt-5 text-sm text-gray-500">
+    Looking for a{" "}
+    <a
+      href="/driving-school-gulberg-lahore/"
+      className="font-medium text-[#FF6201] underline-offset-2 hover:underline"
+    >
+      driving school in Gulberg Lahore
+    </a>
+    ? See why students choose Razia Driving Center.
+  </p>
+
 </div>
 
         {/* Safety Statement */}

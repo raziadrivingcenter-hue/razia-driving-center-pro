@@ -55,7 +55,7 @@ function Gallery() {
 
                 <img
                   src={image}
-                  alt={`Driving Lesson ${index + 1}`}
+                  alt={`Student driving lesson at Razia Driving Center — gallery photo ${index + 1}`}
                   width="400"
                   height="320"
                   loading="lazy"
