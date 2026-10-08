@@ -47,24 +47,39 @@ function ReviewCard({ review }) {
 
       {/* Profile */}
       <div className="mt-6 flex items-center gap-4">
-        <div
-          className="
-            flex
-            h-14
-            w-14
-            items-center
-            justify-center
-            rounded-full
-            bg-gradient-to-r
-            from-[#FF3131]
-            to-[#FF6201]
-            text-xl
-            font-bold
-            text-white
-          "
-        >
-          {review.name.charAt(0)}
-        </div>
+        {review.photoUrl ? (
+          <img
+            src={review.photoUrl}
+            alt={`${review.name} profile photo`}
+            width="56"
+            height="56"
+            className="
+              h-14
+              w-14
+              rounded-full
+              object-cover
+            "
+          />
+        ) : (
+          <div
+            className="
+              flex
+              h-14
+              w-14
+              items-center
+              justify-center
+              rounded-full
+              bg-gradient-to-r
+              from-[#FF3131]
+              to-[#FF6201]
+              text-xl
+              font-bold
+              text-white
+            "
+          >
+            {review.name.charAt(0)}
+          </div>
+        )}
         <div>
           <h3 className="text-lg font-bold text-gray-900">{review.name}</h3>
           <p className="text-sm text-gray-500">{review.time}</p>

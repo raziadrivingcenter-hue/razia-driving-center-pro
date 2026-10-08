@@ -102,23 +102,41 @@ function normalizeReview(apiReview, index) {
     time: toRelativeTime(apiReview.createTime),
     verified: true,
     review: apiReview.comment || "",
+    photoUrl: apiReview.reviewer?.profilePhotoUrl || null,
   };
 }
 
-// Build the response with aggregate stats
-function buildResponse(reviews) {
-  const totalCount = reviews.length;
+// Build the response with aggregate stats.
+// rawData is the full Google API response, which provides authoritative
+// totalReviewCount and averageRating across ALL reviews for the location.
+function buildResponse(reviews, rawData) {
+  // totalReviewCount: prefer Google's authoritative value
+  const googleTotal =
+    rawData && typeof rawData.totalReviewCount === "number"
+      ? rawData.totalReviewCount
+      : null;
+  const totalCount = googleTotal !== null ? googleTotal : reviews.length;
+
+  // averageRating: prefer Google's authoritative value
+  const googleAvg =
+    rawData && typeof rawData.averageRating === "number"
+      ? rawData.averageRating
+      : null;
   const avgRating =
-    totalCount > 0
-      ? (
-          reviews.reduce((sum, r) => sum + r.rating, 0) / totalCount
-        ).toFixed(1)
-      : "5.0";
+    googleAvg !== null
+      ? googleAvg
+      : totalCount > 0
+        ? parseFloat(
+            (
+              reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+            ).toFixed(1)
+          )
+        : 5.0;
 
   return {
     reviews,
     totalCount,
-    averageRating: parseFloat(avgRating),
+    averageRating: avgRating,
     totalReviewCount: totalCount,
     fetched: true,
   };
@@ -205,7 +223,7 @@ export async function onRequest(context) {
 
     const rawReviews = data.reviews || [];
     const normalized = rawReviews.map(normalizeReview);
-    const response = buildResponse(normalized);
+    const response = buildResponse(normalized, data);
 
     // Update cache
     reviewsCache = response;
