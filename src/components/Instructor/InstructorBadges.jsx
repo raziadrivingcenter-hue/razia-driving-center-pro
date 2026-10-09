@@ -14,7 +14,7 @@ const badges = [
   },
   {
     icon: <Users size={22} />,
-    title: "5118 Students Trained",
+    title: "5218 Students Trained",
   },
   {
     icon: <Car size={22} />,

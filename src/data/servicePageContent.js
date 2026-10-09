@@ -103,7 +103,7 @@ export const staticContent = {
     "Ladies-focused training with a female instructor",
     "Practical training on real Lahore roads",
     "Manual car instruction",
-    "5,118+ students trained since 2016",
+    "5,218+ students trained since 2016",
     "5.0 Google rating from 133 reviews",
   ],
   courses: [

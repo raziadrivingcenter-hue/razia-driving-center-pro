@@ -2,7 +2,7 @@ function InstructorStats() {
   const stats = [
     { number: "5.0★", label: "Google Rating" },
     { number: "133", label: "Reviews" },
-    { number: "5118", label: "Students" },
+    { number: "5218", label: "Students" },
   ];
 
   return (

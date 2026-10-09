@@ -156,7 +156,7 @@ function ServicePage() {
               <div className="mt-6 space-y-5">
                 {[
                   { label: "Based in", value: "Gulberg 2, Lahore" },
-                  { label: "Students trained", value: "5,118+" },
+                  { label: "Students trained", value: "5,218+" },
                   { label: "Experience", value: "20+ years" },
                   { label: "Google rating", value: "5.0 from 133 reviews" },
                   { label: "Training hours", value: "8:00 AM – 8:00 PM daily" },
@@ -196,7 +196,7 @@ function ServicePage() {
               },
               {
                 icon: Users,
-                title: "5,118+ Students",
+                title: "5,218+ Students",
                 text: "Thousands of successful students trained across Lahore since 2016.",
               },
               {

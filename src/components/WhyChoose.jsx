@@ -30,7 +30,7 @@ const features = [
   },
   {
     icon: Users,
-    title: "5118 Students",
+    title: "5218 Students",
     description:
       "Thousands of successful students have learned driving with us since 2016.",
   },

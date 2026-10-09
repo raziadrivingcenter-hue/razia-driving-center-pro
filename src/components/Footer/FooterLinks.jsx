@@ -86,30 +86,59 @@ function FooterLinks() {
 
       </div>
 
-      {/* Courses */}
+      {/* Learn & Guides */}
 
       <div>
 
         <h3 className="mb-6 text-xl font-bold text-white">
-          Courses
+          Learn &amp; Guides
         </h3>
 
         <ul className="space-y-4">
 
-          <li className="text-gray-400">
-            Basic Plan — Rs. 9,999
+          <li>
+            <a
+              href="/driving-school-gulberg-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Driving School in Gulberg
+            </a>
           </li>
 
-          <li className="text-gray-400">
-            Economy / PLUS Plan — Rs. 14,500
+          <li>
+            <a
+              href="/female-driving-instructor-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Female Driving Instructor
+            </a>
           </li>
 
-          <li className="text-gray-400">
-            Pro / PRO+ Plan — Rs. 21,750
+          <li>
+            <a
+              href="/practical-driving-lessons-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Practical Driving Lessons
+            </a>
           </li>
 
-          <li className="text-gray-400">
-            Custom Course Builder
+          <li>
+            <a
+              href="/advanced-driving-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Advanced Driving Lessons
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="/free-driving-guide-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Free Driving Guide
+            </a>
           </li>
 
         </ul>

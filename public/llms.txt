@@ -1,11 +1,12 @@
 # Razia Driving Center
 
 ## About
-Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-one driving lessons with an experienced female instructor. Established in December 2016. Rated 5.0 from 133 Google reviews. 5,118+ students trained.
+Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-one driving lessons with an experienced female instructor, Madam Razia. The AI assistant on the website is named Mani. Established in December 2016. Rated 5.0 from 133 Google reviews. 5,218+ students trained.
 
 ## Contact
 - Address: 28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan
 - Phone: +92 309 4461407
+- WhatsApp: https://wa.me/923094461407
 - Website: https://raziadrivingcenter.com
 
 ## Courses
@@ -13,12 +14,19 @@ Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-on
 - PLUS Plan — Rs. 14,500 (10 days)
 - PRO+ Plan — Rs. 21,750 (15 days)
 
+## Pricing Rule
+- Distance charge: km × 50 × course days × 2
+- First 2 km free ONLY on the PLUS Plan
+- Maximum distance: 30 km
+- Training is NOT at the center. The instructor picks the student from home, trains in the student's own area, then drops them home.
+
 ## Services
 - One-to-one private driving lessons
-- Female driving instructor
+- Female driving instructor (Madam Razia)
 - Real Lahore traffic training
 - Parking and reversing skills
-- Pick & drop available
+- Pick & drop from home
+- Manual car with dual controls
 
 ## Areas Served
 - Gulberg 2, Lahore
@@ -29,3 +37,11 @@ Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-on
 ## Hours
 - Driving Training: 8:00 AM – 8:00 PM (Monday – Sunday)
 - Consultation & Support: 7:00 AM – 12:00 AM (Monday – Sunday)
+
+## Pages
+- Homepage: https://raziadrivingcenter.com/
+- Driving School Gulberg Lahore: https://raziadrivingcenter.com/driving-school-gulberg-lahore/
+- Female Driving Instructor Lahore: https://raziadrivingcenter.com/female-driving-instructor-lahore/
+- Practical Driving Lessons Lahore: https://raziadrivingcenter.com/practical-driving-lessons-lahore/
+- Advanced Driving Lahore: https://raziadrivingcenter.com/advanced-driving-lahore/
+- Free Driving Guide Lahore: https://raziadrivingcenter.com/free-driving-guide-lahore/

@@ -104,7 +104,7 @@ function Stats() {
 
         <StatCard
           Icon={Users}
-          end={5118}
+          end={5218}
           suffix="+"
           title="Students Trained"
         />

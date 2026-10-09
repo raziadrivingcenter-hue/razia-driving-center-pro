@@ -90,7 +90,7 @@ function Hero({ onBookNow }) {
               2000,
               "⭐ Trusted Since 2016.",
               2000,
-              "🎓 5,118 Successful Students.",
+              "🎓 5,218 Successful Students.",
               2000,
               "👩 Female Driving Instructor.",
               2000,
@@ -367,7 +367,7 @@ function Hero({ onBookNow }) {
     "
   >
     <h3 className="text-center text-lg font-black text-gray-900">
-      5,118 Successful Students
+      5,218 Successful Students
     </h3>
 
     <p className="mt-0.5 text-center text-sm text-gray-600">
