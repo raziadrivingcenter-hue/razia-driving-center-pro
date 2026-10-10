@@ -43,7 +43,7 @@ function ReviewCard({ review }) {
         flexShrink: 0,
       }}
     >
-      {/* Profile photo or initial */}
+      {/* Profile photo or initial fallback */}
       <div
         style={{
           width: "0.38in",
