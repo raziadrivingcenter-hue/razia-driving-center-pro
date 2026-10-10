@@ -19,7 +19,6 @@ import GoogleReviews from "./GoogleReviews/GoogleReviews";
 import Instructor from "./Instructor/Instructor";
 import About from "./About";
 import Footer from "./Footer";
-import LiveEnrollment from "./LiveEnrollment";
 import WhatsAppButton from "./WhatsAppButton";
 
 // Phase 1C: Lazy-load below-fold components to reduce initial JS payload
@@ -119,8 +118,6 @@ function Homepage() {
         </Suspense>
 
         <Footer />
-
-        <LiveEnrollment />
 
         <WhatsAppButton />
 
