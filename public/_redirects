@@ -1,6 +1,14 @@
-# SPA fallback — all deep links serve index.html
-/*    /index.html   200
+# Static SEO landing pages — served as real files, not the SPA.
+# These rules must come BEFORE the catch-all below.
+/driving-school-gulberg-lahore/    /driving-school-gulberg-lahore/index.html    200
+/female-driving-instructor-lahore/ /female-driving-instructor-lahore/index.html  200
+/practical-driving-lessons-lahore/ /practical-driving-lessons-lahore/index.html  200
+/advanced-driving-lahore/         /advanced-driving-lahore/index.html          200
+/free-driving-guide-lahore/       /free-driving-guide-lahore/index.html        200
 
 # Canonical: redirect www to root domain
 https://www.raziadrivingcenter.com/*    https://raziadrivingcenter.com/:splat   301
 http://www.raziadrivingcenter.com/*     https://raziadrivingcenter.com/:splat   301
+
+# SPA fallback — all remaining deep links serve index.html
+/*    /index.html   200
