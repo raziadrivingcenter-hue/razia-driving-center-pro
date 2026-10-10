@@ -129,14 +129,14 @@ function ReviewWall() {
         if (cancelled) return;
         const list = Array.isArray(data.reviews) ? data.reviews : [];
         if (list.length > 0) {
-          setReviews(list.slice(0, 11));
+          setReviews(list.slice(0, 20));
         } else {
           // API returned successfully but with no reviews — use fallback
-          setReviews(fallbackReviews.slice(0, 11));
+          setReviews(fallbackReviews.slice(0, 20));
         }
       } catch (_err) {
         // API unavailable — fall back to the 6 known real reviews
-        if (!cancelled) setReviews(fallbackReviews.slice(0, 11));
+        if (!cancelled) setReviews(fallbackReviews.slice(0, 20));
       }
     };
 
