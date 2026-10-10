@@ -1,4 +1,54 @@
 import { motion } from "framer-motion";
+import {
+  GiStopSign,
+  GiSpeedometer,
+  GiTrafficCone,
+  GiDirectionSign,
+  GiHazardSign,
+  GiLevelCrossing,
+  GiRoad,
+  GiCrossroad,
+} from "react-icons/gi";
+import {
+  BsSignYield,
+  BsSignNoParking,
+} from "react-icons/bs";
+import { BiNoEntry } from "react-icons/bi";
+import {
+  MdOutlineRoundaboutLeft,
+  MdOutlineLocalParking,
+  MdOutlineSchool,
+} from "react-icons/md";
+import {
+  TbArrowRoundaboutRight,
+  TbParkingCircle,
+} from "react-icons/tb";
+
+import ReviewWall from "./Hero/ReviewWall";
+
+// Scattered road-sign icons: { Icon, size, top, bottom, left, right, opacity }.
+// Larger signs pushed toward edges; center-left (headline + buttons) kept clearer.
+const signs = [
+  // large (96–120px)
+  { Icon: GiStopSign,            size: 110, top: "3%",  right: "6%",  opacity: 0.18 },
+  { Icon: BiNoEntry,             size: 100, bottom: "6%", right: "10%", opacity: 0.16 },
+  { Icon: GiDirectionSign,       size: 96,  top: "45%", right: "3%",  opacity: 0.20 },
+  // medium (56–72px)
+  { Icon: BsSignYield,           size: 64,  bottom: "4%", left: "3%",  opacity: 0.15 },
+  { Icon: MdOutlineRoundaboutLeft, size: 68, top: "3%", left: "2%", opacity: 0.18 },
+  { Icon: GiHazardSign,          size: 60,  top: "22%", right: "22%", opacity: 0.16 },
+  { Icon: GiCrossroad,           size: 60,  bottom: "28%", right: "22%", opacity: 0.14 },
+  { Icon: MdOutlineLocalParking, size: 56,  top: "62%", right: "15%", opacity: 0.20 },
+  // small (28–40px)
+  { Icon: GiSpeedometer,         size: 36,  top: "15%", right: "35%", opacity: 0.16 },
+  { Icon: MdOutlineSchool,       size: 32,  bottom: "18%", right: "35%", opacity: 0.18 },
+  { Icon: GiTrafficCone,         size: 36,  top: "50%", right: "28%", opacity: 0.14 },
+  { Icon: GiLevelCrossing,       size: 32,  bottom: "42%", right: "6%",  opacity: 0.18 },
+  { Icon: GiRoad,                size: 28,  bottom: "50%", left: "4%",  opacity: 0.15 },
+  { Icon: BsSignNoParking,       size: 32,  top: "72%", left: "3%",  opacity: 0.16 },
+  { Icon: TbArrowRoundaboutRight, size: 40, bottom: "8%", right: "32%", opacity: 0.14 },
+  { Icon: TbParkingCircle,       size: 32,  top: "12%", right: "48%", opacity: 0.18 },
+];
 
 function Hero({ onBookNow }) {
   return (
@@ -7,20 +57,46 @@ function Hero({ onBookNow }) {
       className="
         relative
         w-full
+        overflow-hidden
         bg-gradient-to-br
         from-[#FF3131]
         to-[#FF6201]
         pt-20
         pb-8
-        md:pt-24
-        md:pb-10
+        md:pt-16
+        md:pb-12
       "
     >
-      <div className="mx-auto max-w-6xl px-6 md:px-8">
+      {/* Embossed road-sign pattern layer.
+          Above the orange gradient, below the text. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0"
+      >
+        {signs.map(({ Icon, size, top, bottom, left, right, opacity }, i) => (
+          <Icon
+            key={i}
+            size={size}
+            color="white"
+            style={{
+              position: "absolute",
+              top,
+              bottom,
+              left,
+              right,
+              opacity,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-10 mx-auto flex max-w-6xl items-center gap-10 px-6 md:px-8 lg:gap-12">
+        {/* Left column: headline, description, buttons, fact */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
+          className="min-w-0 flex-1"
         >
           {/* H1 */}
 
@@ -34,7 +110,9 @@ function Hero({ onBookNow }) {
               md:text-[2.25rem]
             "
           >
-            Driving School in Gulberg 2, Lahore
+            Driving School in
+            <br />
+            Gulberg 2, Lahore
           </h1>
 
           {/* Supporting Line */}
@@ -97,6 +175,11 @@ function Hero({ onBookNow }) {
             5.0 Google Rating · 133 Reviews · 5,218+ Students Trained · Est. 2016
           </p>
         </motion.div>
+
+        {/* Right column: review brick wall (desktop only) */}
+        <div className="hidden shrink-0 min-[900px]:block">
+          <ReviewWall />
+        </div>
       </div>
     </section>
   );

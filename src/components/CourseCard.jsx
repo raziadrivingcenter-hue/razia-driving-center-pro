@@ -25,46 +25,43 @@ function CourseCard({
         badge ? "border-2 border-[#FF6201]" : ""
       }`}
     >
-      {/* Badge (Most Selling / Public Favorite) — top-right corner */}
+      {/* Badges — stacked so they never overlap or clip */}
 
-      {badge && (
-        <div className="absolute right-3 top-3 z-10">
-          <span
-            className="
-            inline-flex
-            items-center
-            gap-1
-            rounded-full
-            bg-gradient-to-r
-            from-[#FF3131]
-            to-[#FF6201]
-            px-2.5
-            py-1
-            text-[9px]
-            font-bold
-            tracking-wide
-            text-white
-            shadow-lg
-            "
-          >
-            <badge.icon size={10} />
+      {(badge || name === "Economy Driving Course") && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {name === "Economy Driving Course" && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-2.5 py-1 text-[10px] font-bold tracking-wide text-white">
+              🚗 FREE Pick & Drop upto 2 KM
+            </span>
+          )}
 
-            {badge.text}
-          </span>
+          {badge && (
+            <span
+              className="
+              inline-flex
+              items-center
+              gap-1
+              rounded-full
+              bg-gradient-to-r
+              from-[#FF3131]
+              to-[#FF6201]
+              px-2.5
+              py-1
+              text-[10px]
+              font-bold
+              tracking-wide
+              text-white
+              "
+            >
+              <badge.icon size={10} />
+
+              {badge.text}
+            </span>
+          )}
         </div>
       )}
 
-      {/* FREE Pick & Drop Badge — PLUS Plan only */}
-
-      {name === "Economy Driving Course" && (
-        <div className="mb-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-3 py-1 text-[11px] font-bold tracking-wide text-white shadow-md">
-            🚗 FREE Pick & Drop upto 2 KM
-          </span>
-        </div>
-      )}
-
-      <div className={badge ? "mt-6" : ""}>
+      <div>
         {/* Title */}
 
         <h2 className="flex items-center gap-2 text-lg font-black leading-tight text-gray-900">
