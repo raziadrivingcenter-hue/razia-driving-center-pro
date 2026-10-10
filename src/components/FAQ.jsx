@@ -206,7 +206,7 @@ function FAQ() {
     <section
       id="faq"
       data-aos="fade-up"
-      className="bg-gray-50 py-24"
+      className="bg-gray-50 py-8 md:py-10"
     >
       <script
         type="application/ld+json"
@@ -217,34 +217,35 @@ function FAQ() {
 
       <div className="mx-auto max-w-4xl px-6">
 
-        <h2 className="text-center text-5xl font-black">
+        <h2 className="text-center text-2xl font-black leading-[1.2] md:text-3xl">
           Frequently Asked Questions
         </h2>
 
-        <p className="mt-4 text-center text-lg text-gray-500">
+        <p className="mt-2 text-center text-sm text-gray-500">
           Everything you need to know before joining Razia Driving Center.
         </p>
 
-        <div className="mt-16 space-y-5">
+        <div className="mt-6 space-y-3">
 
           {faqs.map((faq, index) => (
 
             <div
               key={index}
-              className="overflow-hidden rounded-2xl bg-white shadow-lg"
+              className="overflow-hidden rounded-xl bg-white shadow-sm"
             >
 
               <button
                 onClick={() => toggleFAQ(index)}
-                className="flex w-full items-center justify-between p-6 text-left"
+                className="flex w-full items-center justify-between px-4 py-3 text-left"
               >
 
-                <span className="text-lg font-bold">
+                <span className="text-sm font-bold leading-snug">
                   {faq.question}
                 </span>
 
                 <ChevronDown
-                  className={`transition-transform duration-300 ${
+                  size={18}
+                  className={`shrink-0 transition-transform duration-300 ${
                     active === index ? "rotate-180" : ""
                   }`}
                 />
@@ -261,7 +262,7 @@ function FAQ() {
 
                 <div className="overflow-hidden">
 
-                  <p className="px-6 pb-6 leading-8 text-gray-600">
+                  <p className="px-4 pb-3 text-sm leading-[1.5] text-gray-600">
                     {faq.answer}
                   </p>
 

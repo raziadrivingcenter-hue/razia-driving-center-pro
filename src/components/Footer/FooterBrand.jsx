@@ -9,16 +9,16 @@ function FooterBrand() {
   return (
     <div>
 
-      <h2 className="text-3xl font-black text-white">
+      <h2 className="text-2xl font-black text-white">
         Razia Driving Center
       </h2>
 
-      <p className="mt-5 max-w-sm leading-8 text-gray-400">
+      <p className="mt-3 max-w-sm text-sm leading-[1.5] text-gray-400">
         Helping Lahore learn driving with confidence since 2016 through
         professional one-to-one driving lessons with a female instructor.
       </p>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-4 space-y-2.5">
 
         <div className="flex items-center gap-3">
 

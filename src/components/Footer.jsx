@@ -49,16 +49,16 @@ function Footer() {
           relative
           z-10
           mx-auto
-          max-w-7xl
+          max-w-6xl
           px-6
-          py-24
+          py-10
         "
       >
 
         <div
           className="
             grid
-            gap-20
+            gap-10
             lg:grid-cols-[1.2fr_2fr]
           "
         >

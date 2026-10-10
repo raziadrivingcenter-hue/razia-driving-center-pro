@@ -16,9 +16,12 @@ function CourseCard({
   titleIcon: TitleIcon,
   onBook,
 }) {
+  // Show only the first 4 features to keep the card compact.
+  const shortFeatures = features.slice(0, 4);
+
   return (
     <PremiumCard
-      className={`p-5 ${
+      className={`p-4 ${
         badge ? "border-2 border-[#FF6201]" : ""
       }`}
     >
@@ -52,21 +55,22 @@ function CourseCard({
       )}
 
       {/* FREE Pick & Drop Badge — PLUS Plan only */}
+
       {name === "Economy Driving Course" && (
-        <div className="mb-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-3 py-1.5 text-[11px] font-bold tracking-wide text-white shadow-md">
+        <div className="mb-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-3 py-1 text-[11px] font-bold tracking-wide text-white shadow-md">
             🚗 FREE Pick & Drop upto 2 KM
           </span>
         </div>
       )}
 
-      <div className={badge ? "mt-10" : ""}>
+      <div className={badge ? "mt-6" : ""}>
         {/* Title */}
 
-        <h2 className="flex items-center gap-2 text-2xl font-black text-gray-900">
+        <h2 className="flex items-center gap-2 text-lg font-black leading-tight text-gray-900">
           {TitleIcon && (
             <TitleIcon
-              size={20}
+              size={18}
               className="shrink-0 text-[#FF6201]"
             />
           )}
@@ -74,72 +78,32 @@ function CourseCard({
           {title}
         </h2>
 
-        {/* Description */}
-
-        <p className="mt-1 text-sm leading-[1.35] text-gray-500">
-          {name === "Basic Plan" &&
-            "Perfect for first-time learners."}
-
-          {name === "Economy Driving Course" &&
-            "Perfect for first-time learners who want professional driving lessons."}
-
-          {name === "Pro Driver Course" &&
-            "Build advanced driving skills through intensive training on busy roads, parking and real traffic."}
-        </p>
-
         {/* Price */}
 
-        <div className="mt-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-            Starting From
-          </p>
+        <div className="mt-2 flex items-end gap-2">
+          <h2 className="text-2xl font-black leading-none text-[#FF3131]">
+            {price}
+          </h2>
 
-          <div className="mt-2 flex items-end gap-2">
-            <h2 className="text-4xl font-black text-[#FF3131]">
-              {price}
-            </h2>
-
-            <span className="pb-1 text-base text-gray-500 line-through">
-              {oldPrice}
-            </span>
-          </div>
+          <span className="pb-0.5 text-sm text-gray-500 line-through">
+            {oldPrice}
+          </span>
         </div>
 
         {/* Duration */}
 
-        <div className="mt-4 rounded-xl bg-gray-50 p-3">
-          <div className="flex items-center gap-3">
-            <div
-              className="
-              flex
-              h-8
-              w-8
-              items-center
-              justify-center
-              rounded-lg
-              bg-orange-100
-              text-[#FF6201]
-              "
-            >
-              <Clock3 size={16} />
-            </div>
+        <div className="mt-2 flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
+          <Clock3 size={14} className="shrink-0 text-[#FF6201]" />
 
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-gray-500">
-                Course Duration
-              </p>
-
-              <p className="text-sm font-semibold">
-                {duration}
-              </p>
-            </div>
-          </div>
+          <span className="text-xs font-semibold text-gray-700">
+            {duration}
+          </span>
         </div>
 
         {/* Features */}
 
-        <div className="mt-4 space-y-2">
-          {features.map((feature) => {
+        <div className="mt-3 space-y-1.5">
+          {shortFeatures.map((feature) => {
             const isObject = typeof feature === "object";
             const Icon = isObject ? feature.icon : CheckCircle2;
             const text = isObject ? feature.text : feature;
@@ -150,14 +114,14 @@ function CourseCard({
             return (
               <div
                 key={text}
-                className="flex items-center gap-3"
+                className="flex items-start gap-2"
               >
                 <Icon
-                  size={18}
-                  className={`shrink-0 ${iconColor}`}
+                  size={15}
+                  className={`mt-0.5 shrink-0 ${iconColor}`}
                 />
 
-                <span className="text-sm text-gray-700">
+                <span className="text-xs leading-[1.4] text-gray-700">
                   {text}
                 </span>
               </div>
@@ -165,19 +129,9 @@ function CourseCard({
           })}
         </div>
 
-        {/* Bottom Text */}
-
-        <p className="mt-4 text-center text-xs text-gray-500">
-          ✔ Free Consultation
-
-          <span className="mx-2">•</span>
-
-          ✔ Flexible Timings
-        </p>
-
         {/* Divider */}
 
-        <div className="my-4 border-t border-gray-200"></div>
+        <div className="my-3 border-t border-gray-200"></div>
 
         {/* CTA */}
 
@@ -187,7 +141,7 @@ function CourseCard({
               course: name,
             })
           }
-          className="w-full py-2.5 text-sm"
+          className="w-full py-2 text-sm"
           hideArrow
         >
           Book This Plan

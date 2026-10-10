@@ -17,15 +17,15 @@ function PremiumCard({
         group
         relative
         overflow-hidden
-        rounded-3xl
+        rounded-2xl
         border
         border-gray-100
         bg-white
-        shadow-lg
+        shadow-md
         transition-all
         duration-300
         hover:border-orange-200
-        hover:shadow-2xl
+        hover:shadow-xl
         ${className}
       `}
     >

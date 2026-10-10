@@ -8,9 +8,9 @@ function Instructor() {
     <section
       id="instructor"
       data-aos="fade-up"
-      className="bg-white py-28"
+      className="bg-white py-8 md:py-10"
     >
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-6xl px-6">
 
         {/* Heading */}
 
@@ -20,8 +20,9 @@ function Instructor() {
             className="
               rounded-full
               bg-orange-100
-              px-5
-              py-2
+              px-3
+              py-1.5
+              text-xs
               font-semibold
               text-[#FF6201]
             "
@@ -31,10 +32,12 @@ function Instructor() {
 
           <h2
             className="
-              mt-6
-              text-5xl
+              mt-3
+              text-2xl
               font-black
+              leading-[1.2]
               text-gray-900
+              md:text-3xl
             "
           >
             Learn From Experience.
@@ -44,9 +47,9 @@ function Instructor() {
             className="
               mx-auto
               mt-2
-              max-w-3xl
-              text-lg
-              leading-8
+              max-w-2xl
+              text-sm
+              leading-[1.45]
               text-gray-600
             "
           >
@@ -60,7 +63,7 @@ function Instructor() {
 
         <div
           className="
-            mt-2
+            mt-6
             grid
             items-center
             gap-6
@@ -70,120 +73,83 @@ function Instructor() {
 
           {/* LEFT */}
 
-<div className="relative">
+          <div className="relative">
 
-  {/* Background Glow */}
+            <img
+              src={instructorImage}
+              alt="Madam Razia"
+              width="800"
+              height="800"
+              loading="lazy"
+              decoding="async"
+              className="
+                w-full
+                rounded-2xl
+                shadow-lg
+              "
+            />
 
-  <div
-    className="
-      absolute
-      -left-10
-      top-10
-      h-72
-      w-72
-      rounded-full
-      bg-[#FF6201]
-      opacity-10
-      blur-[90px]
-    "
-  />
+            {/* Experience Badge */}
 
-  <div
-    className="
-      absolute
-      -right-10
-      bottom-10
-      h-60
-      w-60
-      rounded-full
-      bg-[#FF3131]
-      opacity-10
-      blur-[90px]
-    "
-  />
+            <div
+              className="
+                absolute
+                -top-3
+                -left-3
+                rounded-xl
+                border
+                border-white/30
+                bg-white/20
+                backdrop-blur-md
+                px-4
+                py-2.5
+                shadow-lg
+              "
+            >
 
-  <img
-    src={instructorImage}
-    alt="Madam Razia"
-    width="800"
-    height="800"
-    loading="lazy"
-    decoding="async"
-    className="
-      w-full
-      rounded-[35px]
-      shadow-2xl
-      transition-all
-      duration-500
-      hover:scale-[1.02]
-    "
-  />
+              <h3 className="text-lg font-black text-[#FF6201]">
+                Est. 2016
+              </h3>
 
-  {/* Experience Badge */}
+              <p className="text-xs font-semibold text-gray-800">
+                Trusted Since 2016
+              </p>
 
-  <div
-    className="
-      absolute
-      -top-8
-      -left-8
-      rounded-3xl
-      border
-      border-white/30
-      bg-white/20
-      backdrop-blur-xl
-      px-6
-      py-5
-      shadow-2xl
-    "
-  >
+            </div>
 
-    <h3 className="text-3xl font-black text-[#FF6201]">
-      Est. 2016
-    </h3>
+            {/* Google Rating */}
 
-    <p className="font-semibold text-gray-800">
-      Trusted Since 2016
-    </p>
+            <div
+              className="
+                absolute
+                -bottom-3
+                -right-3
+                rounded-xl
+                border
+                border-white/30
+                bg-white/20
+                backdrop-blur-md
+                px-4
+                py-2.5
+                shadow-lg
+              "
+            >
 
-  </div>
+              <div className="text-yellow-500 text-sm leading-none">
+                ★★★★★
+              </div>
 
-  {/* Google Rating */}
+              <h3 className="text-lg font-black">
+                5.0
+              </h3>
 
-  <div
-    className="
-      absolute
-      -bottom-8
-      -right-8
-      rounded-3xl
-      border
-      border-white/30
-      bg-white/20
-      backdrop-blur-xl
-      px-6
-      py-5
-      shadow-2xl
-    "
-  >
+              <p className="text-xs text-gray-700">
+                133 Google Reviews
+              </p>
 
-    <div className="text-yellow-500 text-xl">
+            </div>
 
-      ★★★★★
-
-    </div>
-
-    <h3 className="text-3xl font-black">
-      5.0
-    </h3>
-
-    <p className="text-gray-700">
-
-      133 Google Reviews
-
-    </p>
-
-  </div>
-
-</div>
+          </div>
 
           {/* RIGHT */}
 
@@ -191,9 +157,11 @@ function Instructor() {
 
             <h3
               className="
-                text-4xl
+                text-2xl
                 font-black
+                leading-tight
                 text-gray-900
+                md:text-3xl
               "
             >
               Madam Razia
@@ -201,8 +169,8 @@ function Instructor() {
 
             <p
               className="
-                mt-2
-                text-xl
+                mt-1
+                text-sm
                 font-semibold
                 text-[#FF6201]
               "
@@ -213,43 +181,33 @@ function Instructor() {
             <p
               className="
                 mt-2
-                leading-5
+                text-sm
+                leading-[1.45]
                 text-gray-600
               "
             >
               Since December 2016, Madam Razia has helped thousands of
               beginners become confident, responsible and independent drivers
-              across Lahore.
-            </p>
-
-            <p
-              className="
-                mt-2
-                leading-5
-                text-gray-600
-              "
-            >
-              Every lesson is conducted patiently, focusing on confidence,
-              safety and real traffic experience so students can drive
-              independently in everyday situations.
+              across Lahore. Every lesson focuses on confidence, safety and
+              real traffic experience.
             </p>
 
             {/* Personal Message */}
 
             <div
               className="
-                mt-4
-                rounded-3xl
+                mt-3
+                rounded-xl
                 border-l-4
                 border-[#FF6201]
                 bg-orange-50
-                p-6
+                p-4
               "
             >
 
               <h4
                 className="
-                  text-lg
+                  text-sm
                   font-bold
                   text-gray-900
                 "
@@ -259,9 +217,10 @@ function Instructor() {
 
               <p
                 className="
-                  mt-3
+                  mt-1.5
+                  text-sm
                   italic
-                  leading-5
+                  leading-[1.45]
                   text-gray-600
                 "
               >
@@ -272,7 +231,8 @@ function Instructor() {
 
               <p
                 className="
-                  mt-5
+                  mt-2
+                  text-xs
                   font-bold
                   text-[#FF6201]
                 "
@@ -288,17 +248,7 @@ function Instructor() {
 
             {/* Stats */}
 
-<InstructorStats />
-
-{/* CTA */}
-
-<div className="mt-12 flex flex-wrap gap-5">
-
-  
-
-  
-
-</div>
+            <InstructorStats />
 
           </div>
 

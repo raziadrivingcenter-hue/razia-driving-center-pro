@@ -49,11 +49,11 @@ function FooterBottom() {
 
   return (
     <>
-      <div className="my-14 h-px w-full bg-white/10" />
-      <div className="flex flex-col items-center justify-between gap-10 lg:flex-row">
-        <div className="flex items-center gap-5 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 backdrop-blur-md">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white">
-            <Star size={28} className="fill-yellow-400 text-yellow-400" />
+      <div className="my-8 h-px w-full bg-white/10" />
+      <div className="flex flex-col items-center justify-between gap-6 lg:flex-row">
+        <div className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white">
+            <Star size={20} className="fill-yellow-400 text-yellow-400" />
           </div>
           <div>
             <h4 className="font-bold text-white">Google Reviews</h4>
@@ -68,8 +68,8 @@ function FooterBottom() {
           <a href="https://wa.me/923094461407" target="_blank" rel="noreferrer" aria-label="WhatsApp" className="rounded-2xl bg-white/5 p-4 text-gray-300 transition-all duration-300 hover:-translate-y-2 hover:bg-[#25D366] hover:text-white"><WhatsAppIcon /></a>
         </div>
       </div>
-      <div className="mt-14 border-t border-white/10 pt-8">
-        <div className="flex flex-col items-center justify-between gap-5 text-center lg:flex-row">
+      <div className="mt-8 border-t border-white/10 pt-6">
+        <div className="flex flex-col items-center justify-between gap-4 text-center lg:flex-row">
           <p className="text-gray-500">© 2026 Razia Driving Center. All Rights Reserved.</p>
           <p className="font-medium text-gray-400">Learn Today. Drive Forever.</p>
         </div>

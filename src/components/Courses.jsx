@@ -9,19 +9,19 @@ function Courses({ onCustomBooking }) {
     <section
       id="courses"
       data-aos="fade-up"
-      className="bg-gray-50 py-24"
+      className="bg-gray-50 py-8 md:py-10"
     >
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-6xl px-6">
 
         <SectionTitle
           badge="Professional Courses"
           title="Choose Your Driving Course"
-          subtitle="Professional one-to-one driving lessons designed to help you become a safe and confident driver on Lahore's roads."
+          subtitle="One-to-one driving lessons designed to help you become a safe and confident driver on Lahore's roads."
         />
 
         {/* Standard Courses */}
 
-        <div className="mt-16 grid gap-10 md:grid-cols-3">
+        <div className="mt-6 grid gap-4 md:grid-cols-3 md:gap-5">
 
           {courses.map((course) => (
 
@@ -47,7 +47,7 @@ function Courses({ onCustomBooking }) {
 
         {/* Custom Course Builder */}
 
-        <div className="mx-auto mt-16 max-w-5xl">
+        <div className="mx-auto mt-6 max-w-6xl">
 
           <GlowCard>
 

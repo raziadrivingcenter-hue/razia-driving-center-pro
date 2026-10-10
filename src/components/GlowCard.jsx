@@ -7,7 +7,7 @@ function GlowCard({ children, className = "" }) {
         className="
           absolute
           -inset-1
-          rounded-3xl
+          rounded-2xl
           bg-gradient-to-r
           from-[#FF3131]
           via-[#FF6201]
@@ -24,7 +24,7 @@ function GlowCard({ children, className = "" }) {
       <div
         className="
           relative
-          rounded-3xl
+          rounded-2xl
           bg-white
           transition-all
           duration-500

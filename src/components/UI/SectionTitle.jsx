@@ -13,9 +13,9 @@ function SectionTitle({
             inline-block
             rounded-full
             bg-orange-100
-            px-4
-            py-2
-            text-sm
+            px-3
+            py-1.5
+            text-xs
             font-semibold
             text-[#FF6201]
           "
@@ -26,12 +26,12 @@ function SectionTitle({
 
       <h2
         className="
-          mt-5
-          text-4xl
+          mt-3
+          text-2xl
           font-black
-          leading-tight
+          leading-[1.2]
           text-gray-900
-          md:text-5xl
+          md:text-3xl
         "
       >
         {title}
@@ -41,10 +41,10 @@ function SectionTitle({
         <p
           className="
             mx-auto
-            mt-5
-            max-w-2xl
-            text-lg
-            leading-8
+            mt-2
+            max-w-xl
+            text-sm
+            leading-[1.45]
             text-gray-600
           "
         >
