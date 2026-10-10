@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { Menu } from "lucide-react";
-import logo from "../assets/logo.png";
 import { motion } from "framer-motion";
 import { useRouter } from "../router";
+
+import logo from "../assets/logo-white.png";
 
 const SERVICE_ROUTES = ["/driving-school-gulberg-lahore/", "/driving-school-gulberg-lahore"];
 
 function Navbar({ onBookNow }) {
   const { route, navigateToSection } = useRouter();
   const isServicePage = SERVICE_ROUTES.includes(route);
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
 
@@ -21,312 +21,160 @@ function Navbar({ onBookNow }) {
       navigateToSection(sectionId);
     }
   };
+
   useEffect(() => {
-  const sections = [
-    "home",
-    "courses",
-    "reviews",
-    "about",
-    "contact",
-  ];
+    const sections = [
+      "home",
+      "courses",
+      "reviews",
+      "about",
+      "contact",
+    ];
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
-    },
-    {
-      threshold: 0.5,
-    }
-  );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      {
+        threshold: 0.5,
+      }
+    );
 
-  sections.forEach((id) => {
-    const section = document.getElementById(id);
+    sections.forEach((id) => {
+      const section = document.getElementById(id);
 
-    if (section) observer.observe(section);
-  });
+      if (section) observer.observe(section);
+    });
 
-  return () => observer.disconnect();
-}, []);
- useEffect(() => {
-  const handleScroll = () => {
-    setScrolled(window.scrollY > 40);
-  };
-
-  window.addEventListener("scroll", handleScroll);
-
-  return () => window.removeEventListener("scroll", handleScroll);
+    return () => observer.disconnect();
   }, []);
 
-const navLinks = [
-  { name: "Home", href: "#home" },
-  { name: "Courses", href: "#courses" },
-  { name: "Reviews", href: "#reviews" },
-  { name: "About", href: "#about" },
-  { name: "Contact", href: "#contact" },
-];
+  const navLinks = [
+    { name: "Home", href: "#home" },
+    { name: "Courses", href: "#courses" },
+    { name: "Reviews", href: "#reviews" },
+    { name: "About", href: "#about" },
+    { name: "Contact", href: "#contact" },
+  ];
 
   return (
     <>
-      {/* Navbar */}
+      {/* Navbar — orange gradient, white text */}
       <motion.nav
-      initial={{
-  y: -80,
-  opacity: 0,
-}}
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#FF3131] to-[#FF6201]"
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
 
-animate={{
-  y: 0,
-  opacity: 1,
-}}
-
-transition={{
-  duration: 0.8,
-}}
-  className={`
-fixed
-top-0
-left-0
-right-0
-z-50
-transition-all
-duration-500
-${
-  scrolled
-    ? "bg-white/80 backdrop-blur-2xl shadow-xl border-b border-white/30"
-    : "bg-transparent border-b border-transparent"
-}
-`}
->
-
-        <div
-  className={`
-    mx-auto
-    flex
-    max-w-7xl
-    items-center
-    justify-between
-    px-6
-    transition-all
-    duration-500
-    ${
-      scrolled
-        ? "py-3"
-        : "py-5"
-    }
-  `}
->
-
-          {/* Logo */}
+          {/* Brand */}
           <a
             href={isServicePage ? "/" : "#home"}
             onClick={(e) => handleNavClick(e, "home")}
-            className="
-              flex
-              flex-col
-              items-center
-              gap-[3px]
-            "
+            className="flex items-center gap-2 leading-tight"
           >
             <img
               src={logo}
               alt="Razia Driving Center"
-              width="180"
-              height="20"
-              className={`
-  w-auto
-  transition-all
-  duration-500
-  hover:scale-105 hover:rotate-1
-  ${
-    scrolled
-      ? "h-4"
-      : "h-5"
-  }
-`}
+              className="h-8 w-8 rounded-full object-contain"
             />
-            <span
-              className="
-                bg-gradient-to-r
-                from-[#FF3131]
-                to-[#FF6201]
-                bg-clip-text
-                text-transparent
-                font-semibold
-                tracking-[0.18em]
-              "
-              style={{ fontSize: "12px", lineHeight: 1 }}
-            >
-              DRIVING CENTER
+
+            <span className="flex flex-col">
+              <span className="text-base font-extrabold text-white">
+                Razia Driving Center
+              </span>
+              <span className="text-[11px] font-medium text-white/80">
+                Learn Today. Drive Forever.
+              </span>
             </span>
           </a>
 
           {/* Desktop Navigation */}
-          <div className="hidden items-center gap-8 md:flex">
-
-            <a
-              href={isServicePage ? "/" : "#home"}
-              onClick={(e) => handleNavClick(e, "home")}
-              className="
-relative
-font-medium
-text-gray-700
-transition-all
-duration-300
-hover:text-[#FF6201]
-after:absolute
-after:left-0
-after:-bottom-1
-after:h-[2px]
-after:w-0
-after:bg-[#FF6201]
-after:transition-all
-after:duration-300
-hover:after:w-full
-"
-            >
-              Home
-            </a>
-
-            <a
-              href={isServicePage ? "/#courses" : "#courses"}
-              onClick={(e) => handleNavClick(e, "courses")}
-              className="
-relative
-font-medium
-text-gray-700
-transition-all
-duration-300
-hover:text-[#FF6201]
-after:absolute
-after:left-0
-after:-bottom-1
-after:h-[2px]
-after:w-0
-after:bg-[#FF6201]
-after:transition-all
-after:duration-300
-hover:after:w-full
-"
-            >
-              Courses
-            </a>
-
-            <a
-              href={isServicePage ? "/#reviews" : "#reviews"}
-              onClick={(e) => handleNavClick(e, "reviews")}
-              className="
-relative
-font-medium
-text-gray-700
-transition-all
-duration-300
-hover:text-[#FF6201]
-after:absolute
-after:left-0
-after:-bottom-1
-after:h-[2px]
-after:w-0
-after:bg-[#FF6201]
-after:transition-all
-after:duration-300
-hover:after:w-full
-"
-            >
-              Reviews
-            </a>
-
-            <a
-              href={isServicePage ? "/#about" : "#about"}
-              onClick={(e) => handleNavClick(e, "about")}
-              className="
-relative
-font-medium
-text-gray-700
-transition-all
-duration-300
-hover:text-[#FF6201]
-after:absolute
-after:left-0
-after:-bottom-1
-after:h-[2px]
-after:w-0
-after:bg-[#FF6201]
-after:transition-all
-after:duration-300
-hover:after:w-full
-"
-            >
-              About
-            </a>
-
-            <a
-              href={isServicePage ? "/#contact" : "#contact"}
-              onClick={(e) => handleNavClick(e, "contact")}
-              className="
-relative
-font-medium
-text-gray-700
-transition-all
-duration-300
-hover:text-[#FF6201]
-after:absolute
-after:left-0
-after:-bottom-1
-after:h-[2px]
-after:w-0
-after:bg-[#FF6201]
-after:transition-all
-after:duration-300
-hover:after:w-full
-"
-            >
-              Contact
-            </a>
-
+          <div className="hidden items-center gap-7 md:flex">
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={isServicePage ? "/" + link.href : link.href}
+                onClick={(e) => handleNavClick(e, link.href.slice(1))}
+                className={`
+                  relative
+                  text-sm
+                  font-medium
+                  transition-colors
+                  duration-200
+                  hover:text-white
+                  ${activeSection === link.href.slice(1) ? "text-white" : "text-white/80"}
+                `}
+              >
+                {link.name}
+              </a>
+            ))}
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
 
-            {/* Desktop Button */}
+            {/* Book Now */}
             <button
-  onClick={onBookNow}
-  className="
-    hidden
-    md:inline-flex
-    items-center
-    justify-center
-    rounded-2xl
-    bg-gradient-to-r
-    from-[#FF3131]
-    to-[#FF6201]
-    px-6
-    py-3
-    font-bold
-    text-white
-    shadow-lg
-    transition-all
-    duration-300
-    hover:-translate-y-1
-    hover:scale-105
-    hover:shadow-2xl
-  "
->
-  Book Now
-</button>
+              onClick={onBookNow}
+              className="
+                hidden
+                md:inline-flex
+                items-center
+                justify-center
+                rounded-full
+                bg-white
+                px-4
+                py-2
+                text-xs
+                font-bold
+                text-[#FF3131]
+                transition-transform
+                duration-200
+                hover:-translate-y-0.5
+              "
+            >
+              Book Now
+            </button>
+
+            {/* WhatsApp Pill */}
+            <a
+              href="https://wa.me/923094461407"
+              target="_blank"
+              rel="noreferrer"
+              className="
+                hidden
+                md:inline-flex
+                items-center
+                justify-center
+                rounded-full
+                bg-[#25D366]
+                px-4
+                py-2
+                text-xs
+                font-bold
+                text-white
+                transition-transform
+                duration-200
+                hover:-translate-y-0.5
+              "
+            >
+              WhatsApp
+            </a>
 
             {/* Mobile Hamburger */}
             <button
               onClick={() => setMenuOpen(true)}
               aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={menuOpen}
-              className="rounded-xl p-2 transition hover:bg-gray-100 md:hidden"
+              className="rounded-lg p-2 text-white transition hover:bg-white/15 md:hidden"
             >
-              <Menu size={30} />
+              <Menu size={26} />
             </button>
 
           </div>
@@ -339,12 +187,12 @@ hover:after:w-full
       {menuOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 md:hidden">
 
-          <div className="absolute right-0 h-full w-72 bg-white p-8 shadow-2xl transition-all duration-300 ease-out">
+          <div className="absolute right-0 h-full w-72 bg-white p-8 shadow-2xl">
 
             {/* Close Button */}
             <button
               onClick={() => setMenuOpen(false)}
-              className="mb-8 text-3xl font-bold transition hover:text-[#FF6201]"
+              className="mb-8 text-2xl font-bold transition hover:text-[#FF6201]"
             >
               ✕
             </button>
@@ -352,70 +200,34 @@ hover:after:w-full
             {/* Menu Links */}
             <div className="flex flex-col gap-3 text-lg font-semibold">
 
-              <a
-                href={isServicePage ? "/" : "#home"}
-                onClick={(e) => { handleNavClick(e, "home"); setMenuOpen(false); }}
-                className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
-              >
-                Home
-              </a>
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={isServicePage ? "/" + link.href : link.href}
+                  onClick={(e) => { handleNavClick(e, link.href.slice(1)); setMenuOpen(false); }}
+                  className="rounded-lg px-3 py-2 text-gray-800 transition-all duration-200 hover:translate-x-1 hover:bg-orange-50 hover:text-[#FF6201]"
+                >
+                  {link.name}
+                </a>
+              ))}
 
+              {/* Mobile WhatsApp */}
               <a
-                href={isServicePage ? "/#courses" : "#courses"}
-                onClick={(e) => { handleNavClick(e, "courses"); setMenuOpen(false); }}
-                className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
+                href="https://wa.me/923094461407"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex items-center justify-center rounded-full bg-[#25D366] px-5 py-2.5 text-sm font-bold text-white"
               >
-                Courses
-              </a>
-
-              <a
-                href={isServicePage ? "/#reviews" : "#reviews"}
-                onClick={(e) => { handleNavClick(e, "reviews"); setMenuOpen(false); }}
-                className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
-              >
-                Reviews
-              </a>
-
-              <a
-                href={isServicePage ? "/#about" : "#about"}
-                onClick={(e) => { handleNavClick(e, "about"); setMenuOpen(false); }}
-                className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
-              >
-                About
-              </a>
-
-              <a
-                href={isServicePage ? "/#contact" : "#contact"}
-                onClick={(e) => { handleNavClick(e, "contact"); setMenuOpen(false); }}
-                className="rounded-lg px-3 py-2 transition-all duration-300 hover:translate-x-2 hover:bg-orange-100 hover:text-[#FF6201]"
-              >
-                Contact
+                Chat on WhatsApp
               </a>
 
               {/* Mobile Book Button */}
               <button
-  onClick={onBookNow}
-  className="
-  hidden
-  rounded-xl
-  bg-gradient-to-r
-  from-[#FF3131]
-  to-[#FF6201]
-  px-6
-  py-3
-  font-semibold
-  text-white
-  shadow-lg
-  transition-all
-  duration-300
-  hover:-translate-y-1
-  hover:scale-105
-  hover:shadow-2xl
-  md:block
-  "
->
-  Book Now
-</button>
+                onClick={() => { onBookNow(); setMenuOpen(false); }}
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201] px-5 py-2.5 text-sm font-bold text-white"
+              >
+                Book a Course
+              </button>
 
             </div>
 

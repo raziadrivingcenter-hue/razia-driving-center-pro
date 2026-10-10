@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import { fallbackReviews } from "../GoogleReviews/reviewsData";
 
 function StarRow({ rating }) {
@@ -22,6 +23,7 @@ function StarRow({ rating }) {
 function ReviewCard({ review }) {
   const { name, rating, review: text, photoUrl } = review;
   const initial = (name || "U").charAt(0).toUpperCase();
+  const [imgError, setImgError] = useState(false);
 
   return (
     <div
@@ -51,12 +53,13 @@ function ReviewCard({ review }) {
           flexShrink: 0,
         }}
       >
-        {photoUrl ? (
+        {photoUrl && !imgError ? (
           <img
             src={photoUrl}
             alt=""
             width="0.38in"
             height="0.38in"
+            onError={() => setImgError(true)}
             style={{ objectFit: "cover", display: "block" }}
           />
         ) : (
