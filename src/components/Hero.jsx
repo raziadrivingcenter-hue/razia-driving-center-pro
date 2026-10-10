@@ -26,28 +26,28 @@ import {
 
 import ReviewWall from "./Hero/ReviewWall";
 
-// Scattered road-sign icons: { Icon, size, top, bottom, left, right, opacity }.
-// Larger signs pushed toward edges; center-left (headline + buttons) kept clearer.
+// Scattered road-sign icons: { Icon, size, top, bottom, left, opacity }.
+// All signs on the LEFT side — right side is reserved for the review wall.
 const signs = [
   // large (96–120px)
-  { Icon: GiStopSign,            size: 110, top: "3%",  right: "6%",  opacity: 0.18 },
-  { Icon: BiNoEntry,             size: 100, bottom: "6%", right: "10%", opacity: 0.16 },
-  { Icon: GiDirectionSign,       size: 96,  top: "45%", right: "3%",  opacity: 0.20 },
+  { Icon: GiStopSign,            size: 110, top: "3%",  left: "4%",  opacity: 0.18 },
+  { Icon: BiNoEntry,             size: 100, bottom: "6%", left: "10%", opacity: 0.16 },
+  { Icon: GiDirectionSign,       size: 96,  top: "45%", left: "1%",  opacity: 0.20 },
   // medium (56–72px)
-  { Icon: BsSignYield,           size: 64,  bottom: "4%", left: "3%",  opacity: 0.15 },
-  { Icon: MdOutlineRoundaboutLeft, size: 68, top: "3%", left: "2%", opacity: 0.18 },
-  { Icon: GiHazardSign,          size: 60,  top: "22%", right: "22%", opacity: 0.16 },
-  { Icon: GiCrossroad,           size: 60,  bottom: "28%", right: "22%", opacity: 0.14 },
-  { Icon: MdOutlineLocalParking, size: 56,  top: "62%", right: "15%", opacity: 0.20 },
+  { Icon: BsSignYield,           size: 64,  bottom: "4%", left: "20%", opacity: 0.15 },
+  { Icon: MdOutlineRoundaboutLeft, size: 68, top: "3%", left: "30%", opacity: 0.18 },
+  { Icon: GiHazardSign,          size: 60,  top: "22%", left: "18%", opacity: 0.16 },
+  { Icon: GiCrossroad,           size: 60,  bottom: "28%", left: "24%", opacity: 0.14 },
+  { Icon: MdOutlineLocalParking, size: 56,  top: "62%", left: "12%", opacity: 0.20 },
   // small (28–40px)
-  { Icon: GiSpeedometer,         size: 36,  top: "15%", right: "35%", opacity: 0.16 },
-  { Icon: MdOutlineSchool,       size: 32,  bottom: "18%", right: "35%", opacity: 0.18 },
-  { Icon: GiTrafficCone,         size: 36,  top: "50%", right: "28%", opacity: 0.14 },
-  { Icon: GiLevelCrossing,       size: 32,  bottom: "42%", right: "6%",  opacity: 0.18 },
-  { Icon: GiRoad,                size: 28,  bottom: "50%", left: "4%",  opacity: 0.15 },
-  { Icon: BsSignNoParking,       size: 32,  top: "72%", left: "3%",  opacity: 0.16 },
-  { Icon: TbArrowRoundaboutRight, size: 40, bottom: "8%", right: "32%", opacity: 0.14 },
-  { Icon: TbParkingCircle,       size: 32,  top: "12%", right: "48%", opacity: 0.18 },
+  { Icon: GiSpeedometer,         size: 36,  top: "15%", left: "38%", opacity: 0.16 },
+  { Icon: MdOutlineSchool,       size: 32,  bottom: "18%", left: "36%", opacity: 0.18 },
+  { Icon: GiTrafficCone,         size: 36,  top: "50%", left: "28%", opacity: 0.14 },
+  { Icon: GiLevelCrossing,       size: 32,  bottom: "42%", left: "6%",  opacity: 0.18 },
+  { Icon: GiRoad,                size: 28,  bottom: "50%", left: "18%", opacity: 0.15 },
+  { Icon: BsSignNoParking,       size: 32,  top: "72%", left: "22%", opacity: 0.16 },
+  { Icon: TbArrowRoundaboutRight, size: 40, bottom: "8%", left: "36%", opacity: 0.14 },
+  { Icon: TbParkingCircle,       size: 32,  top: "12%", left: "42%", opacity: 0.18 },
 ];
 
 function Hero({ onBookNow }) {
