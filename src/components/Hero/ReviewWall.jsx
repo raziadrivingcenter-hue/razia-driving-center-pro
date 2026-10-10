@@ -148,10 +148,10 @@ function ReviewWall() {
 
   if (reviews.length === 0) return null;
 
-  // Rows of 3 (last row may have fewer)
+  // Rows of 4 (last row may have fewer)
   const rows = [];
-  for (let i = 0; i < reviews.length; i += 3) {
-    rows.push(reviews.slice(i, i + 3));
+  for (let i = 0; i < reviews.length; i += 4) {
+    rows.push(reviews.slice(i, i + 4));
   }
 
   return (
