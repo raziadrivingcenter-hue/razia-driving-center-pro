@@ -6,6 +6,14 @@
 /advanced-driving-lahore/         /advanced-driving-lahore/index.html          200
 /free-driving-guide-lahore/       /free-driving-guide-lahore/index.html        200
 /driving-courses-lahore/          /driving-courses-lahore/index.html           200
+/driving-school-dha-lahore/       /driving-school-dha-lahore/index.html       200
+/driving-school-johar-town-lahore/ /driving-school-johar-town-lahore/index.html 200
+/driving-school-model-town-lahore/ /driving-school-model-town-lahore/index.html 200
+/blog/how-to-learn-driving-lahore/ /blog/how-to-learn-driving-lahore/index.html 200
+/blog/manual-vs-automatic-car/    /blog/manual-vs-automatic-car/index.html    200
+/blog/pass-driving-test-lahore/   /blog/pass-driving-test-lahore/index.html   200
+/blog/driving-tips-beginners-lahore/ /blog/driving-tips-beginners-lahore/index.html 200
+/blog/driving-course-cost-lahore/ /blog/driving-course-cost-lahore/index.html 200
 
 # Canonical: redirect www to root domain
 https://www.raziadrivingcenter.com/*    https://raziadrivingcenter.com/:splat   301

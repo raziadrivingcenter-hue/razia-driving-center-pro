@@ -150,6 +150,51 @@ function FooterLinks() {
             </a>
           </li>
 
+          <li>
+            <a
+              href="/driving-school-dha-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Driving School in DHA
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="/driving-school-johar-town-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Driving School in Johar Town
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="/driving-school-model-town-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Driving School in Model Town
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="/blog/how-to-learn-driving-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              How to Learn Driving
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="/blog/driving-course-cost-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Driving Course Cost
+            </a>
+          </li>
+
         </ul>
 
       </div>
