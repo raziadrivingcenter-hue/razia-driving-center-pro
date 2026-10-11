@@ -181,7 +181,7 @@ $$;
 
 -- Grant execute to anon
 GRANT EXECUTE ON FUNCTION public.submit_booking_v2(
-    text, text, text, numeric, numeric, bigint, text, text, text
+    text, text, bigint, text, numeric, numeric, text, text, text
 ) TO anon;
 
 -- -----------------------------------------------------------------------------
