@@ -22,6 +22,12 @@
 /*.ico
   Cache-Control: public, max-age=604800
 
+# OpenAPI spec — short cache, correct content type
+/api/v1/openapi.json
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+
 # HTML should always revalidate (entry point serves the latest built assets)
 /*.html
   Cache-Control: public, max-age=0, must-revalidate

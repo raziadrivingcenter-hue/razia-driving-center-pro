@@ -1,6 +1,9 @@
 # Favicon — browsers auto-request /favicon.ico; redirect to the PNG
 /favicon.ico    /favicon-32.png    301
 
+# OpenAPI spec — serve as static JSON
+/api/v1/openapi.json    /api/v1/openapi.json    200
+
 # Static SEO landing pages — served as real files, not the SPA.
 # These rules must come BEFORE the catch-all below.
 /driving-school-gulberg-lahore/    /driving-school-gulberg-lahore/index.html    200

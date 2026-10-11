@@ -55,3 +55,9 @@ Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-on
 - Blog — Driving Tips for Beginners: https://raziadrivingcenter.com/blog/driving-tips-beginners-lahore/
 - Blog — Driving Course Cost: https://raziadrivingcenter.com/blog/driving-course-cost-lahore/
 - Blog — Apply Learner License Online Punjab: https://raziadrivingcenter.com/blog/how-to-apply-learner-license-online-punjab/
+
+## API (for AI agents)
+- Availability: GET /api/v1/availability?date=YYYY-MM-DD
+- Bookings: POST /api/v1/bookings
+- Calculate Fee: POST /api/v1/calculate-fee
+- OpenAPI Spec: https://raziadrivingcenter.com/api/v1/openapi.json

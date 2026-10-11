@@ -16,6 +16,9 @@ export const ROUND_TRIP_MULTIPLIER = 2;
 // Pick & Drop service is only available up to this distance.
 export const MAX_DISTANCE_KM = 20;
 
+// PLUS Plan gets the first N kilometers of distance free.
+export const PLUS_FREE_KM = 2;
+
 // Minimum address length used by the booking form's own validation.
 // Kept here so the distance UI and the engine share one source of truth.
 export const MIN_ADDRESS_LENGTH = 5;
@@ -37,6 +40,16 @@ export const PICK_DROP_COURSE_CONFIG = {
     durationDays: 15,
     fee: 21750,
   },
+};
+
+// --- Plan type detection -----------------------------------------------------
+// Maps course IDs/names to plan type slug for pricing logic.
+
+export const getPlanType = (courseId) => {
+  if (courseId === "Economy Driving Course" || courseId === "PLUS Plan") return "plus";
+  if (courseId === "Basic Plan") return "basic";
+  if (courseId === "Pro Driver Course" || courseId === "PRO+ Plan") return "pro";
+  return null;
 };
 
 // --- Safe numeric helpers ----------------------------------------------------
@@ -86,46 +99,70 @@ export const getCourseFee = (courseId, { customPrice } = {}) => {
 
 // --- Core calculation --------------------------------------------------------
 // Total Pick & Drop Cost = Distance × Rs. 50 × Duration (days) × 2 (round trip)
-// Returns a structured breakdown. Pure math only — every input is sanitized so
-// the result is never NaN or Infinity, and never negative.
+// PLUS Plan: first 2 km are free. Returns a structured breakdown. Pure math only.
 
-export const calculatePickDropCharges = (distanceKm, durationDays) => {
+export const calculatePickDropCharges = (distanceKm, durationDays, planType = null) => {
   const distance = sanitizeDistance(distanceKm);
   const duration = sanitizeDuration(durationDays);
 
+  // Determine chargeable distance based on plan type
+  let chargeableKm = distance;
+  let freeKm = 0;
+
+  if (planType === "plus" || planType === "PLUS Plan" || planType === "Economy Driving Course") {
+    freeKm = Math.min(distance, PLUS_FREE_KM);
+    chargeableKm = Math.max(0, distance - PLUS_FREE_KM);
+  }
+
   const pickDropCharges = Math.round(
-    distance * RATE_PER_KM * duration * ROUND_TRIP_MULTIPLIER
+    chargeableKm * RATE_PER_KM * duration * ROUND_TRIP_MULTIPLIER
   );
 
   return {
     distanceKm: distance,
+    chargeableKm,
+    freeKm,
     durationDays: duration,
     ratePerKm: RATE_PER_KM,
     roundTripMultiplier: ROUND_TRIP_MULTIPLIER,
     maxDistanceKm: MAX_DISTANCE_KM,
+    plusFreeKmApplied: freeKm > 0,
     pickDropCharges,
   };
 };
 
 // --- Convenience: total payable ----------------------------------------------
 // When the customer does not require Pick & Drop, charges are zero.
+// planType: "plus" | "basic" | "pro" | null — determines free km eligibility.
 
 export const calculateTotalPayable = (
   courseId,
   distanceKm,
   hasPickDrop,
-  { customPrice, customDays } = {}
+  { customPrice, customDays, planType = null } = {}
 ) => {
   const courseFee = getCourseFee(courseId, { customPrice });
   const durationDays = getCourseDurationDays(courseId, { customDays });
+  // Auto-detect plan type from course ID if not explicitly provided
+  const resolvedPlanType = planType || getPlanType(courseId);
 
-  const { pickDropCharges } = hasPickDrop
-    ? calculatePickDropCharges(distanceKm, durationDays)
-    : { pickDropCharges: 0 };
+  const pickDropResult = hasPickDrop
+    ? calculatePickDropCharges(distanceKm, durationDays, resolvedPlanType)
+    : {
+        distanceKm: 0,
+        chargeableKm: 0,
+        freeKm: 0,
+        pickDropCharges: 0,
+        plusFreeKmApplied: false,
+      };
 
   return {
     courseFee,
-    pickDropCharges,
-    totalPayable: courseFee + pickDropCharges,
+    pickDropCharges: pickDropResult.pickDropCharges,
+    totalPayable: courseFee + pickDropResult.pickDropCharges,
+    distanceKm: pickDropResult.distanceKm,
+    chargeableKm: pickDropResult.chargeableKm,
+    freeKm: pickDropResult.freeKm,
+    plusFreeKmApplied: pickDropResult.plusFreeKmApplied,
   };
 };

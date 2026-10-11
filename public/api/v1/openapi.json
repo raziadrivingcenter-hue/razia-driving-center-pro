@@ -1,0 +1,371 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Razia Driving Center — Booking API",
+    "description": "REST API for AI booking agents to check availability, calculate fees, and submit driving course reservations for Razia Driving Center, Lahore.\n\n**Base URL:** `https://raziadrivingcenter.com`\n\n**Pricing Formula:**\n- Distance Fee = `chargeable_km × 50 PKR × total_days × 2` (round trip)\n- PLUS Plan: first 2 km of distance are FREE (0 PKR)\n- Max distance: 20 km\n\n**Course Packages:**\n| Plan | Days | Fee (PKR) |\n|------|------|-----------|\n| basic | 7 | 9,999 |\n| plus | 10 | 14,500 |\n| pro | 15 | 21,750 |",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Razia Driving Center",
+      "phone": "+92 309 4461407",
+      "whatsapp": "https://wa.me/923094461407",
+      "address": "28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://raziadrivingcenter.com",
+      "description": "Production"
+    }
+  ],
+  "paths": {
+    "/api/v1/availability": {
+      "get": {
+        "operationId": "getAvailability",
+        "summary": "Get available booking slots for a date",
+        "description": "Returns all available time slots for a given date. Each slot has a unique `id` that can be used when creating a booking.",
+        "tags": ["Availability"],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "description": "Date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-10-15"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of available slots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityResponse"
+                },
+                "example": {
+                  "date": "2026-10-15",
+                  "slots": [
+                    {
+                      "id": 1,
+                      "slot_date": "2026-10-15",
+                      "time_start": "08:00:00",
+                      "time_end": "10:00:00",
+                      "status": "available",
+                      "instructor_type": "female"
+                    }
+                  ],
+                  "count": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or missing date parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid or missing date parameter. Use YYYY-MM-DD."
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream service error"
+          }
+        }
+      }
+    },
+    "/api/v1/bookings": {
+      "post": {
+        "operationId": "createBooking",
+        "summary": "Submit a new booking",
+        "description": "Creates a booking for a customer against an available slot. The slot is atomically marked as booked. Returns a booking ID and WhatsApp link for confirmation.",
+        "tags": ["Bookings"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingRequest"
+              },
+              "example": {
+                "customer_name": "Ahmed Khan",
+                "phone_number": "0300-1234567",
+                "pickup_address": "House 123, Street 5, Gulberg III, Lahore",
+                "distance_km": 5,
+                "total_fee": 17500,
+                "slot_id": 1,
+                "plan_type": "plus",
+                "notes": "Prefer morning lesson"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                },
+                "example": {
+                  "success": true,
+                  "bookingId": "12345",
+                  "status": "pending",
+                  "whatsappLink": "https://wa.me/923094461407?text=..."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error — missing required fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                "example": {
+                  "error": "Validation failed",
+                  "details": ["customer_name is required"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slot no longer available (already booked)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "This slot is no longer available. Please choose another."
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream service error"
+          }
+        }
+      }
+    },
+    "/api/v1/calculate-fee": {
+      "post": {
+        "operationId": "calculateFee",
+        "summary": "Calculate driving course fee",
+        "description": "Computes the total payable amount for a driving course including pick & drop charges. Use a plan_type of `basic`, `plus`, or `pro` for standard packages, or pass custom `course_fee` and `total_days`.\n\n**PLUS Plan benefit:** The first 2 km of distance are entirely free. Only the distance beyond 2 km is charged.",
+        "tags": ["Pricing"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculateFeeRequest"
+              },
+              "examples": {
+                "plusPlan": {
+                  "summary": "PLUS Plan with 5 km distance",
+                  "value": {
+                    "plan_type": "plus",
+                    "distance_km": 5,
+                    "has_pick_drop": true
+                  }
+                },
+                "basicPlan": {
+                  "summary": "Basic Plan with 3 km distance",
+                  "value": {
+                    "plan_type": "basic",
+                    "distance_km": 3,
+                    "has_pick_drop": true
+                  }
+                },
+                "customPlan": {
+                  "summary": "Custom course with explicit pricing",
+                  "value": {
+                    "course_fee": 12000,
+                    "total_days": 8,
+                    "distance_km": 10,
+                    "has_pick_drop": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fee calculation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculateFeeResponse"
+                },
+                "example": {
+                  "plan": "PLUS Plan",
+                  "planType": "plus",
+                  "courseFee": 14500,
+                  "distanceFee": 3000,
+                  "totalFee": 17500,
+                  "breakdown": {
+                    "distanceKm": 5,
+                    "chargeableKm": 3,
+                    "freeKm": 2,
+                    "ratePerKm": 50,
+                    "days": 10,
+                    "roundTripMultiplier": 2,
+                    "distanceFee": 3000,
+                    "hasPickDrop": true,
+                    "plusFreeKmApplied": true
+                  },
+                  "formula": "(5 km - 2 km free) × 50 × 10 days × 2 = 3000"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid plan_type or missing custom pricing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid plan_type or missing course_fee/total_days",
+                  "validPlans": ["basic", "plus", "pro"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Slot": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "slot_date": { "type": "string", "format": "date", "example": "2026-10-15" },
+          "time_start": { "type": "string", "format": "time", "example": "08:00:00" },
+          "time_end": { "type": "string", "format": "time", "example": "10:00:00" },
+          "status": { "type": "string", "enum": ["available", "booked", "blocked"] },
+          "instructor_type": { "type": "string", "enum": ["female", "male"] }
+        }
+      },
+      "AvailabilityResponse": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "slots": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Slot" }
+          },
+          "count": { "type": "integer" }
+        }
+      },
+      "BookingRequest": {
+        "type": "object",
+        "required": ["customer_name", "phone_number", "slot_id"],
+        "properties": {
+          "customer_name": { "type": "string", "example": "Ahmed Khan" },
+          "phone_number": { "type": "string", "example": "0300-1234567" },
+          "pickup_address": { "type": "string", "nullable": true, "example": "House 123, Street 5, Gulberg III" },
+          "distance_km": { "type": "number", "nullable": true, "example": 5 },
+          "total_fee": { "type": "number", "nullable": true, "example": 17500 },
+          "slot_id": { "type": "integer", "example": 1 },
+          "plan_type": { "type": "string", "nullable": true, "example": "plus" },
+          "notes": { "type": "string", "nullable": true }
+        }
+      },
+      "BookingResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "bookingId": { "type": "string" },
+          "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled"] },
+          "whatsappLink": { "type": "string", "format": "uri" }
+        }
+      },
+      "CalculateFeeRequest": {
+        "type": "object",
+        "properties": {
+          "plan_type": {
+            "type": "string",
+            "description": "Standard plan slug: basic, plus, or pro",
+            "example": "plus"
+          },
+          "course_fee": {
+            "type": "number",
+            "description": "Custom course fee (used when plan_type is not a standard plan)",
+            "example": 12000
+          },
+          "total_days": {
+            "type": "number",
+            "description": "Custom course duration in days",
+            "example": 8
+          },
+          "distance_km": {
+            "type": "number",
+            "description": "One-way distance from center to pickup area",
+            "example": 5
+          },
+          "has_pick_drop": {
+            "type": "boolean",
+            "description": "Whether pick & drop service is requested. Defaults to true if distance_km > 0.",
+            "example": true
+          }
+        }
+      },
+      "CalculateFeeResponse": {
+        "type": "object",
+        "properties": {
+          "plan": { "type": "string" },
+          "planType": { "type": "string" },
+          "courseFee": { "type": "number" },
+          "distanceFee": { "type": "number" },
+          "totalFee": { "type": "number" },
+          "breakdown": {
+            "type": "object",
+            "properties": {
+              "distanceKm": { "type": "number" },
+              "chargeableKm": { "type": "number" },
+              "freeKm": { "type": "number" },
+              "ratePerKm": { "type": "number" },
+              "days": { "type": "number" },
+              "roundTripMultiplier": { "type": "number" },
+              "distanceFee": { "type": "number" },
+              "hasPickDrop": { "type": "boolean" },
+              "plusFreeKmApplied": { "type": "boolean" }
+            }
+          },
+          "formula": { "type": "string" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "details": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
