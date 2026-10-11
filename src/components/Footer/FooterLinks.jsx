@@ -195,6 +195,15 @@ function FooterLinks() {
             </a>
           </li>
 
+          <li>
+            <a
+              href="/blog/how-to-apply-learner-license-online-punjab/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Apply Learner License Online
+            </a>
+          </li>
+
         </ul>
 
       </div>
