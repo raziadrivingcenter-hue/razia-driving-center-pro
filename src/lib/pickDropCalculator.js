@@ -14,7 +14,7 @@ export const RATE_PER_KM = 50;
 export const ROUND_TRIP_MULTIPLIER = 2;
 
 // Pick & Drop service is only available up to this distance.
-export const MAX_DISTANCE_KM = 30;
+export const MAX_DISTANCE_KM = 20;
 
 // Minimum address length used by the booking form's own validation.
 // Kept here so the distance UI and the engine share one source of truth.

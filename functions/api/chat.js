@@ -29,7 +29,7 @@ Pick & Drop means: Instructor aapke ghar se pick karegi, aapke **area mein train
 Total = Distance (km) × Rs. 50 × Course Duration (days) × 2 (round trip)
 - Distance = one-way kilometers from center to customer's area (for calculation)
 - If customer gives you a distance and course, ALWAYS calculate and show the total
-- Pick & Drop is available up to 30 KM only
+- Pick & Drop is available up to 20 KM only
 
 ## FREE 2 KM Pick & Drop Rule (IMPORTANT — always apply correctly)
 - **PLUS Plan only**: First 2 KM of Pick & Drop are FREE. After 2 KM, charge only for the remaining distance.

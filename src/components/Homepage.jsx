@@ -38,6 +38,31 @@ function Homepage() {
     setBookingOpen(true);
   };
 
+  // Read ?book= query param and open the booking wizard with that course.
+  const handleBookParam = () => {
+    const params = new URLSearchParams(window.location.search);
+    const book = params.get("book");
+    if (!book) return;
+
+    const courseMap = {
+      basic: "Basic Plan",
+      plus: "Economy Driving Course",
+      pro: "Pro Driver Course",
+    };
+
+    if (courseMap[book]) {
+      openBooking({ course: courseMap[book] });
+    } else if (book === "custom") {
+      const days = params.get("days") || "";
+      const minutes = params.get("minutes") || "";
+      const price = params.get("price") || "";
+      openBooking({ course: "Custom Course", days, minutes, price });
+    }
+
+    // Clean the URL without reloading.
+    window.history.replaceState({}, "", window.location.pathname);
+  };
+
   // Premium Loading Logic — Phase 1C: finish as soon as DOM is ready,
   // do not wait for all images/resources (that blocks LCP).
   useEffect(() => {
@@ -67,6 +92,13 @@ function Homepage() {
       clearTimeout(fallback);
     };
   }, []);
+
+  // Handle ?book= param after loading completes.
+  useEffect(() => {
+    if (!loading) {
+      handleBookParam();
+    }
+  }, [loading]);
 
   // AOS
   useEffect(() => {

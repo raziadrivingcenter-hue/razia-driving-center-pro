@@ -30,7 +30,7 @@ const features = [
   },
   {
     icon: Users,
-    title: "5,218 Students",
+    title: "5,221 Students",
     description:
       "Thousands of successful students have learned driving with us since 2016.",
   },
@@ -38,7 +38,7 @@ const features = [
     icon: Award,
     title: "5.0 on Google",
     description:
-      "Rated 5.0 stars from 133 verified Google reviews.",
+      "Rated 5.0 stars from 136 verified Google reviews.",
   },
   {
     icon: Clock,

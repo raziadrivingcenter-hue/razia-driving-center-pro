@@ -172,7 +172,7 @@ function Hero({ onBookNow }) {
           {/* Fact Row */}
 
           <p className="mt-5 text-xs text-white/70">
-            5.0 Google Rating · 133 Reviews · 5,218+ Students Trained · Est. 2016
+            5.0 Google Rating · 136 Reviews · 5,221+ Students Trained · Est. 2016
           </p>
         </motion.div>
 

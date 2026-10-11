@@ -108,7 +108,7 @@ const faqStructuredData = {
       name: "How is Razia Driving Center rated on Google?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Razia Driving Center is rated 5.0 out of 5 on Google, based on 133 verified Google reviews.",
+        text: "Razia Driving Center is rated 5.0 out of 5 on Google, based on 136 verified Google reviews.",
       },
     },
     {
@@ -186,7 +186,7 @@ const faqs = [
   {
     question: "How is Razia Driving Center rated on Google?",
     answer:
-      "Razia Driving Center is rated 5.0 out of 5 on Google, based on 133 verified Google reviews.",
+      "Razia Driving Center is rated 5.0 out of 5 on Google, based on 136 verified Google reviews.",
   },
   {
     question: "When was Razia Driving Center established?",

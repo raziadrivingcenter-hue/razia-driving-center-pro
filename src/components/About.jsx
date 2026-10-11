@@ -103,7 +103,7 @@ function About() {
             />
 
             <h3 className="mt-2 text-xl font-black">
-              5,218
+              5,221
             </h3>
 
             <p className="mt-0.5 text-xs text-gray-600">
@@ -124,7 +124,7 @@ function About() {
             </h3>
 
             <p className="mt-0.5 text-xs text-gray-600">
-              133 Google Reviews
+              136 Google Reviews
             </p>
 
           </div>

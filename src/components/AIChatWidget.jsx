@@ -791,7 +791,7 @@ function calculatePickDropCharges(distanceKm, courseName) {
   const course = COURSE_PRICING[courseName];
   if (!course || !distanceKm) return 0;
 
-  const rawDist = Math.min(parseFloat(distanceKm) || 0, 30); // clamp to 30 KM max
+  const rawDist = Math.min(parseFloat(distanceKm) || 0, 20); // clamp to 20 KM max
 
   // PLUS Plan gets first 2 KM free
   const chargeableDist = courseName === "PLUS Plan" ? Math.max(rawDist - 2, 0) : rawDist;

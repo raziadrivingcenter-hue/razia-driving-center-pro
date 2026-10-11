@@ -3,7 +3,7 @@ import { useEffect } from "react";
 const DEFAULT_META = {
   title: "Razia Driving Center | Driving School in Gulberg 2, Lahore",
   description:
-    "Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-one driving lessons with an experienced female instructor. Rated 5.0 from 133 Google reviews. Established 2016.",
+    "Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-one driving lessons with an experienced female instructor. Rated 5.0 from 136 Google reviews. Established 2016.",
   canonical: "https://raziadrivingcenter.com/",
 };
 

@@ -144,7 +144,7 @@ function Instructor() {
               </h3>
 
               <p className="text-xs text-gray-700">
-                133 Google Reviews
+                136 Google Reviews
               </p>
 
             </div>

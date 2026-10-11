@@ -156,9 +156,9 @@ function ServicePage() {
               <div className="mt-6 space-y-5">
                 {[
                   { label: "Based in", value: "Gulberg 2, Lahore" },
-                  { label: "Students trained", value: "5,218+" },
+                  { label: "Students trained", value: "5,221+" },
                   { label: "Experience", value: "20+ years" },
-                  { label: "Google rating", value: "5.0 from 133 reviews" },
+                  { label: "Google rating", value: "5.0 from 136 reviews" },
                   { label: "Training hours", value: "8:00 AM – 8:00 PM daily" },
                   { label: "Lesson type", value: "One-to-one, manual car" },
                 ].map(({ label, value }) => (
@@ -196,7 +196,7 @@ function ServicePage() {
               },
               {
                 icon: Users,
-                title: "5,218+ Students",
+                title: "5,221+ Students",
                 text: "Thousands of successful students trained across Lahore since 2016.",
               },
               {

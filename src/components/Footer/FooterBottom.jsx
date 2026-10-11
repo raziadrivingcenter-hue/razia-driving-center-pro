@@ -26,7 +26,7 @@ const WhatsAppIcon = () => (
 );
 
 function FooterBottom() {
-  const [stats, setStats] = useState({ rating: "5.0", count: 133 });
+  const [stats, setStats] = useState({ rating: "5.0", count: 136 });
 
   useEffect(() => {
     let cancelled = false;

@@ -262,7 +262,7 @@ function BookingStep2({
                     }
                     error={
                       Number(formData.distance) > 30
-                        ? "Sorry, Pick & Drop Service is available up to 30 KM."
+                        ? "Sorry, Pick & Drop Service is available up to 20 KM."
                         : ""
                     }
                     errorIcon={XCircle}
@@ -309,7 +309,7 @@ function BookingStep2({
                 {Number(formData.distance) > 30 && (
                   <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-400">
                     <XCircle size={12} className="shrink-0 text-red-400" />
-                    Sorry, Pick & Drop Service is available up to 30 KM.
+                    Sorry, Pick & Drop Service is available up to 20 KM.
                   </p>
                 )}
 
