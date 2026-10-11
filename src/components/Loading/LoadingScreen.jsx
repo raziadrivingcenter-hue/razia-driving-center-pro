@@ -1,295 +1,171 @@
-import Steering from "../../assets/Steering.svg";
-import PremiumCar from "./PremiumCar";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import logo from "../../assets/logo-white.png";
 
-const loadingTexts = [
-  "Welcome to Razia Driving Center",
-  "Preparing Professional Lessons",
-  "Loading Driving Experience",
-  "Almost Ready...",
-];
-
 function LoadingScreen() {
-  const [textIndex, setTextIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTextIndex((prev) => (prev + 1) % loadingTexts.length);
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <motion.div
       initial={{ opacity: 1 }}
       exit={{
         opacity: 0,
-        scale: 1.03,
-        filter: "blur(10px)",
+        scale: 1.02,
+        filter: "blur(8px)",
       }}
       transition={{
-        duration: 0.8,
+        duration: 0.7,
         ease: "easeInOut",
       }}
       className="
-      fixed
-      inset-0
-      z-[99999]
-      flex
-      flex-col
-      items-center
-      justify-center
-      overflow-hidden
-      bg-gradient-to-br
-      from-[#FF3131]
-      to-[#FF6201]
-      pointer-events-none
-      will-change-transform
+        fixed
+        inset-0
+        z-[99999]
+        flex
+        flex-col
+        items-center
+        justify-center
+        overflow-hidden
+        bg-gradient-to-br
+        from-[#FF3131]
+        to-[#FF6201]
+        pointer-events-none
+        will-change-transform
       "
     >
-      {/* Large Background Ring */}
+      {/* Subtle Background Pattern — Road Lines */}
 
-      
+      <div className="absolute inset-0 overflow-hidden opacity-[0.07]">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(90deg, white 1px, transparent 1px),
+            linear-gradient(white 1px, transparent 1px)
+          `,
+          backgroundSize: "60px 60px",
+        }} />
+      </div>
 
-      {/* Glow 1 */}
+      {/* Soft Glow Orbs */}
 
       <motion.div
         animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.3, 0.55, 0.3],
+          scale: [1, 1.4, 1],
+          opacity: [0.2, 0.4, 0.2],
         }}
         transition={{
           repeat: Infinity,
-          duration: 3,
+          duration: 4,
+          ease: "easeInOut",
         }}
-        className="
-        absolute
-        h-96
-        w-96
-        rounded-full
-        bg-white/20
-        blur-[120px]
-        "
+        className="absolute top-1/4 left-1/4 h-80 w-80 rounded-full bg-white/20 blur-[100px]"
       />
-
-      {/* Glow 2 */}
 
       <motion.div
         animate={{
           scale: [1.2, 1, 1.2],
-          opacity: [0.15, 0.3, 0.15],
+          opacity: [0.15, 0.25, 0.15],
         }}
         transition={{
           repeat: Infinity,
           duration: 5,
+          ease: "easeInOut",
         }}
-        className="
-        absolute
-        h-[500px]
-        w-[500px]
-        rounded-full
-        bg-orange-300/20
-        blur-[150px]
-        "
+        className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-yellow-200/20 blur-[120px]"
       />
 
-      {/* Steering Wheel */}
+      {/* Center Content */}
 
-<motion.img
-  src={Steering}
-  alt="Steering Wheel"
-  draggable={false}
-  animate={{
-    rotate: 360,
-    scale: [1, 1.04, 1],
-  }}
-  transition={{
-    rotate: {
-      repeat: Infinity,
-      duration: 2.2,
-      ease: "linear",
-    },
-    scale: {
-      repeat: Infinity,
-      duration: 1.5,
-      ease: "easeInOut",
-    },
-  }}
-  className="
-    mb-8
-    w-24
-    select-none
-    drop-shadow-[0_15px_35px_rgba(255,255,255,0.35)]
-  "
-/>
+      <div className="relative z-10 flex flex-col items-center">
 
-      {/* Logo */}
+        {/* Logo with Pulse */}
 
-      <motion.img
-        src={logo}
-        alt="Razia Driving Center"
-        width="480"
-        height="228"
-        fetchpriority="high"
-        initial={{
-          opacity: 0,
-          scale: 0.7,
-          y: 35,
-        }}
-        animate={{
-          opacity: 1,
-          scale: 1,
-          y: 0,
-        }}
-        transition={{
-          duration: 1,
-          ease: "easeOut",
-        }}
-        className="
-        w-60
-        select-none
-        drop-shadow-[0_20px_50px_rgba(255,255,255,.40)]
-        "
-      />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="relative"
+        >
+          {/* Pulse Ring */}
 
-      {/* Animated Loading Text */}
+          <motion.div
+            animate={{
+              scale: [1, 1.15, 1],
+              opacity: [0.5, 0, 0.5],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 2,
+              ease: "easeInOut",
+            }}
+            className="absolute inset-0 -m-4 rounded-full border-2 border-white/30"
+          />
 
-      <motion.p
-        key={textIndex}
-        initial={{
-          opacity: 0,
-          y: 12,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        exit={{
-          opacity: 0,
-        }}
-        transition={{
-          duration: 0.35,
-        }}
-        className="
-        mt-10
-        text-sm
-        font-semibold
-        uppercase
-        tracking-[0.35em]
-        text-white/90
-        text-center
-        "
-      >
-        {loadingTexts[textIndex]}
-      </motion.p>
+          <motion.img
+            src={logo}
+            alt="Razia Driving Center"
+            fetchpriority="high"
+            className="
+              relative
+              w-44
+              select-none
+              drop-shadow-[0_10px_30px_rgba(0,0,0,0.15)]
+            "
+          />
+        </motion.div>
 
-      {/* ========================= */}
-{/* Premium Driving Road */}
-{/* ========================= */}
+        {/* Tagline */}
 
-<div className="relative mt-12 w-[360px]">
-
-  {/* Road */}
-
-  <div
-    className="
-    relative
-    h-5
-    overflow-hidden
-    rounded-full
-    bg-white/15
-    backdrop-blur-xl
-    "
-  >
-
-    {/* Moving Lane */}
-
-    <motion.div
-      animate={{
-        x: [-60, 0],
-      }}
-      transition={{
-        repeat: Infinity,
-        duration: 0.45,
-        ease: "linear",
-      }}
-      className="
-      absolute
-      inset-0
-      flex
-      items-center
-      gap-5
-      "
-    >
-      {Array.from({ length: 20 }).map((_, i) => (
-        <div
-          key={i}
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
           className="
-          h-[3px]
-          w-8
-          rounded-full
-          bg-white/70
+            mt-6
+            text-sm
+            font-medium
+            uppercase
+            tracking-[0.3em]
+            text-white/70
           "
-        />
-      ))}
-    </motion.div>
+        >
+          Learn Today. Drive Forever.
+        </motion.p>
 
-  </div>
+        {/* Progress Bar */}
 
-  {/* Car + Road Reflection */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.4 }}
+          className="mt-12 w-48"
+        >
+          <div className="h-1 overflow-hidden rounded-full bg-white/15">
+            <motion.div
+              animate={{
+                x: ["-100%", "100%"],
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 1.2,
+                ease: "easeInOut",
+              }}
+              className="h-full w-1/2 rounded-full bg-white/80"
+            />
+          </div>
+        </motion.div>
 
-<motion.div
-  initial={{ x: -30 }}
-  animate={{
-    x: 290,
-  }}
-  transition={{
-    x: {
-      duration: 1.8,
-      ease: "easeInOut",
-    },
-  }}
-  className="
-    absolute
-    -top-8
-    z-20
-  "
->
+      </div>
 
-  {/* Road Reflection */}
+      {/* Bottom Branding */}
 
-  <motion.div
-    animate={{
-      opacity: [0.18, 0.35, 0.18],
-      scaleX: [1, 1.15, 1],
-    }}
-    transition={{
-      repeat: Infinity,
-      duration: 0.9,
-    }}
-    className="
-      absolute
-      left-8
-      top-10
-      h-3
-      w-10
-      rounded-full
-      bg-gradient-to-r
-      from-yellow-200/50
-      via-yellow-100/20
-      to-transparent
-      blur-xl
-    "
-  />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+        className="absolute bottom-10 text-center"
+      >
+        <p className="text-[11px] font-medium tracking-widest text-white/40">
+          RAZIA DRIVING CENTER &bull; LAHORE
+        </p>
+      </motion.div>
 
-  <PremiumCar />
-
-</motion.div>
-
-</div>
     </motion.div>
   );
 }
