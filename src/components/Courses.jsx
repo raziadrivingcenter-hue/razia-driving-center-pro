@@ -1,3 +1,5 @@
+import { MapPin } from "lucide-react";
+
 import CustomCourseCard from "./CustomCourseCard";
 import SectionTitle from "./UI/SectionTitle";
 import GlowCard from "./GlowCard";
@@ -58,8 +60,8 @@ function Courses({ onCustomBooking }) {
               {/* Left — Icon & Heading */}
 
               <div className="flex items-start gap-4 md:w-1/3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF3131] to-[#FF6201] text-white text-2xl">
-                  &#x1F697;
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF3131] to-[#FF6201] text-white">
+                  <MapPin size={28} strokeWidth={2.5} />
                 </div>
                 <div>
                   <h3 className="text-xl font-extrabold text-gray-900">
