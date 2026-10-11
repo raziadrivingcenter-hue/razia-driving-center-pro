@@ -5,6 +5,7 @@
 /practical-driving-lessons-lahore/ /practical-driving-lessons-lahore/index.html  200
 /advanced-driving-lahore/         /advanced-driving-lahore/index.html          200
 /free-driving-guide-lahore/       /free-driving-guide-lahore/index.html        200
+/driving-courses-lahore/          /driving-courses-lahore/index.html           200
 
 # Canonical: redirect www to root domain
 https://www.raziadrivingcenter.com/*    https://raziadrivingcenter.com/:splat   301

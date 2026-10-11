@@ -75,4 +75,16 @@ xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
 
   </url>
 
+  <url>
+
+    <loc>https://raziadrivingcenter.com/driving-courses-lahore/</loc>
+
+    <lastmod>2026-10-11</lastmod>
+
+    <changefreq>monthly</changefreq>
+
+    <priority>0.8</priority>
+
+  </url>
+
 </urlset>

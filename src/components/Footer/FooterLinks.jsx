@@ -141,6 +141,15 @@ function FooterLinks() {
             </a>
           </li>
 
+          <li>
+            <a
+              href="/driving-courses-lahore/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Driving Courses &amp; Prices
+            </a>
+          </li>
+
         </ul>
 
       </div>
