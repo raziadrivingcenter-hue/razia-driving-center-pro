@@ -115,10 +115,10 @@ GRANT EXECUTE ON FUNCTION public.get_available_slots(date) TO anon;
 CREATE OR REPLACE FUNCTION public.submit_booking_v2(
     p_customer_name   text,
     p_phone_number    text,
+    p_slot_id         bigint,
     p_pickup_address  text   DEFAULT NULL,
     p_distance_km     numeric DEFAULT NULL,
     p_total_fee       numeric DEFAULT NULL,
-    p_slot_id         bigint,
     p_plan_type       text   DEFAULT NULL,
     p_notes           text   DEFAULT NULL,
     p_source          text   DEFAULT 'api-v1'
