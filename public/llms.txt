@@ -57,7 +57,13 @@ Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-on
 - Blog — Apply Learner License Online Punjab: https://raziadrivingcenter.com/blog/how-to-apply-learner-license-online-punjab/
 
 ## API (for AI agents)
-- Availability: GET /api/v1/availability?date=YYYY-MM-DD
-- Bookings: POST /api/v1/bookings
-- Calculate Fee: POST /api/v1/calculate-fee
+- Availability: GET /api/v1/availability?date=YYYY-MM-DD  → 30-min slots, multi-day blocking
+- Bookings: POST /api/v1/bookings  → multi-day reservation with travel buffer
+- Calculate Fee: POST /api/v1/calculate-fee  → price with PLUS 2km free
 - OpenAPI Spec: https://raziadrivingcenter.com/api/v1/openapi.json
+
+## Slot System Rules
+- 30-min training slots, operating hours 8:00 AM – 8:00 PM
+- Travel buffer: distance_km × 5 min each way
+- Booking blocks (slot_time − travel_time) to (slot_time + 30 min) for ALL course days
+- Example: 12:30 slot, 3km → blocked 12:15–13:00 every day of the course
