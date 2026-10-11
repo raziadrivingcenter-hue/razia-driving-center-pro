@@ -1,6 +1,8 @@
 import { Check, X } from "lucide-react";
 
-function BookingProgress({ step, onClose }) {
+const STEP_LABELS = ["Info", "Course", "Slot", "Confirm"];
+
+function BookingProgress({ step, totalSteps = 4, onClose }) {
   return (
     <div className="relative bg-gradient-to-r from-[#FF3131] to-[#FF6201] px-5 pb-4 pt-4">
 
@@ -9,19 +11,8 @@ function BookingProgress({ step, onClose }) {
       <button
         onClick={onClose}
         className="
-          absolute
-          right-3
-          top-3
-          flex
-          h-7
-          w-7
-          items-center
-          justify-center
-          rounded-lg
-          text-white/80
-          transition
-          hover:bg-white/20
-          hover:text-white
+          absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg
+          text-white/80 transition hover:bg-white/20 hover:text-white
         "
       >
         <X size={16} />
@@ -32,12 +23,12 @@ function BookingProgress({ step, onClose }) {
       </h2>
 
       <p className="mt-0.5 text-xs text-white/80">
-        Complete your booking in 3 simple steps.
+        Complete your booking in {totalSteps} simple steps.
       </p>
 
       <div className="mt-4 flex items-center">
 
-        {[1, 2, 3].map((number) => (
+        {Array.from({ length: totalSteps }, (_, i) => i + 1).map((number) => (
           <div
             key={number}
             className="flex flex-1 items-center"
@@ -47,17 +38,7 @@ function BookingProgress({ step, onClose }) {
 
             <div
               className={`
-              flex
-              h-8
-              w-8
-              items-center
-              justify-center
-              rounded-full
-              border-2
-              text-sm
-              font-bold
-              transition-all
-              duration-500
+              flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500
 
               ${
                 step > number
@@ -79,18 +60,11 @@ function BookingProgress({ step, onClose }) {
 
             {/* Line */}
 
-            {number !== 3 && (
+            {number !== totalSteps && (
               <div
                 className={`
-                h-0.5
-                flex-1
-                transition-all
-                duration-500
-                ${
-                  step > number
-                    ? "bg-white"
-                    : "bg-white/30"
-                }
+                h-0.5 flex-1 transition-all duration-500
+                ${step > number ? "bg-white" : "bg-white/30"}
                 `}
               />
             )}
@@ -98,6 +72,22 @@ function BookingProgress({ step, onClose }) {
           </div>
         ))}
 
+      </div>
+
+      {/* Step Labels */}
+
+      <div className="mt-2 flex justify-between">
+        {STEP_LABELS.slice(0, totalSteps).map((label, i) => (
+          <span
+            key={label}
+            className={`
+              text-[10px] font-medium transition-colors duration-300
+              ${step > i + 1 ? "text-white" : step === i + 1 ? "text-white" : "text-white/50"}
+            `}
+          >
+            {label}
+          </span>
+        ))}
       </div>
 
     </div>

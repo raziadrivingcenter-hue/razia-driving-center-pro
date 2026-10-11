@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import BookingProgress from "./BookingProgress";
 import BookingStep1 from "./BookingStep1";
 import BookingStep2 from "./BookingStep2";
+import BookingStep2Slot from "./BookingStep2Slot";
 import BookingStep3 from "./BookingStep3";
 import {
   calculatePickDropCharges,
@@ -29,7 +30,7 @@ function BookingWizard({
     pickup: "",
     address: "",
     distance: "",
-    time: "",
+    slot_time: "",
     notes: "",
     preferred_date: "",
 
@@ -104,7 +105,7 @@ function BookingWizard({
       pickup: "",
       address: "",
       distance: "",
-      time: "",
+      slot_time: "",
       notes: "",
       preferred_date: "",
 
@@ -183,7 +184,7 @@ function BookingWizard({
           saturate-[1.2]
         "
       >
-        <BookingProgress step={step} onClose={onClose} />
+        <BookingProgress step={step} totalSteps={4} onClose={onClose} />
 
         <AnimatePresence mode="wait">
 
@@ -225,11 +226,21 @@ function BookingWizard({
             )}
 
             {step === 3 && (
+              <BookingStep2Slot
+                formData={formData}
+                setFormData={setFormData}
+                pricing={pricing}
+                next={() => setStep(4)}
+                back={() => setStep(2)}
+              />
+            )}
+
+            {step === 4 && (
               <BookingStep3
                 formData={formData}
                 setFormData={setFormData}
                 pricing={pricing}
-                back={() => setStep(2)}
+                back={() => setStep(3)}
                 onClose={onClose}
               />
             )}
