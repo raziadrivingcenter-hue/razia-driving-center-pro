@@ -1,54 +1,7 @@
 import { motion } from "framer-motion";
-import {
-  GiStopSign,
-  GiSpeedometer,
-  GiTrafficCone,
-  GiDirectionSign,
-  GiHazardSign,
-  GiLevelCrossing,
-  GiRoad,
-  GiCrossroad,
-} from "react-icons/gi";
-import {
-  BsSignYield,
-  BsSignNoParking,
-} from "react-icons/bs";
-import { BiNoEntry } from "react-icons/bi";
-import {
-  MdOutlineRoundaboutLeft,
-  MdOutlineLocalParking,
-  MdOutlineSchool,
-} from "react-icons/md";
-import {
-  TbArrowRoundaboutRight,
-  TbParkingCircle,
-} from "react-icons/tb";
 
 import ReviewWall from "./Hero/ReviewWall";
-
-// Scattered road-sign icons: { Icon, size, top, bottom, left, opacity }.
-// All signs on the LEFT side — right side is reserved for the review wall.
-const signs = [
-  // large (96–120px)
-  { Icon: GiStopSign,            size: 110, top: "3%",  left: "4%",  opacity: 0.18 },
-  { Icon: BiNoEntry,             size: 100, bottom: "6%", left: "10%", opacity: 0.16 },
-  { Icon: GiDirectionSign,       size: 96,  top: "45%", left: "1%",  opacity: 0.20 },
-  // medium (56–72px)
-  { Icon: BsSignYield,           size: 64,  bottom: "4%", left: "20%", opacity: 0.15 },
-  { Icon: MdOutlineRoundaboutLeft, size: 68, top: "3%", left: "30%", opacity: 0.18 },
-  { Icon: GiHazardSign,          size: 60,  top: "22%", left: "18%", opacity: 0.16 },
-  { Icon: GiCrossroad,           size: 60,  bottom: "28%", left: "24%", opacity: 0.14 },
-  { Icon: MdOutlineLocalParking, size: 56,  top: "62%", left: "12%", opacity: 0.20 },
-  // small (28–40px)
-  { Icon: GiSpeedometer,         size: 36,  top: "15%", left: "38%", opacity: 0.16 },
-  { Icon: MdOutlineSchool,       size: 32,  bottom: "18%", left: "36%", opacity: 0.18 },
-  { Icon: GiTrafficCone,         size: 36,  top: "50%", left: "28%", opacity: 0.14 },
-  { Icon: GiLevelCrossing,       size: 32,  bottom: "42%", left: "6%",  opacity: 0.18 },
-  { Icon: GiRoad,                size: 28,  bottom: "50%", left: "18%", opacity: 0.15 },
-  { Icon: BsSignNoParking,       size: 32,  top: "72%", left: "22%", opacity: 0.16 },
-  { Icon: TbArrowRoundaboutRight, size: 40, bottom: "8%", left: "36%", opacity: 0.14 },
-  { Icon: TbParkingCircle,       size: 32,  top: "12%", left: "42%", opacity: 0.18 },
-];
+import RoadSignPattern from "./Hero/RoadSignPattern";
 
 function Hero({ onBookNow }) {
   return (
@@ -67,28 +20,8 @@ function Hero({ onBookNow }) {
         md:pb-12
       "
     >
-      {/* Embossed road-sign pattern layer.
-          Above the orange gradient, below the text. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0"
-      >
-        {signs.map(({ Icon, size, top, bottom, left, right, opacity }, i) => (
-          <Icon
-            key={i}
-            size={size}
-            color="white"
-            style={{
-              position: "absolute",
-              top,
-              bottom,
-              left,
-              right,
-              opacity,
-            }}
-          />
-        ))}
-      </div>
+      {/* Embossed Pakistani road-sign pattern — even grid, white silhouettes */}
+      <RoadSignPattern />
 
       <div className="relative z-10 mx-auto flex max-w-6xl items-center gap-10 px-6 md:px-8 lg:gap-12">
         {/* Left column: headline, description, buttons, fact */}
