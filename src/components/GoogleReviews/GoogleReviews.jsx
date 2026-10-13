@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import googleLogo from "../../assets/google-logo.png";
-import fallbackReviews from "./reviewsData";
+import fallbackReviews, { yandexReviews } from "./reviewsData";
 import MasonryReviews from "./MasonryReviews";
 
 function GoogleReviews() {
@@ -39,8 +39,10 @@ function GoogleReviews() {
     };
   }, []);
 
-  // Use API reviews if loaded, otherwise fallback to hardcoded data
-  const displayReviews = reviews || fallbackReviews;
+  // Use API reviews if loaded, otherwise fallback to hardcoded data.
+  // Always prepend Yandex reviews so they appear regardless of API status.
+  const baseReviews = reviews || fallbackReviews;
+  const displayReviews = [...yandexReviews, ...baseReviews];
 
   return (
     <section
