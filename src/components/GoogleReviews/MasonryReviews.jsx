@@ -1,11 +1,19 @@
 // =============================================================================
 // MasonryReviews — Magic UI-style review wall.
-// Desktop: CSS columns (3 col @1024-1280, 4 col @1281+)
+// Desktop: CSS columns (3 col @1024-1280, 4 col @1280+)
 // Mobile: single stacked column
+// Supports Google and Yandex Maps review sources.
 // =============================================================================
 
 import { useState } from "react";
 import googleLogo from "../../assets/google-logo.png";
+import yandexLogo from "../../assets/yandex-logo.png";
+import saimaProfile from "../../assets/saima-usman-profile-picture.jpg";
+
+// Local profile-picture lookup (Vite hashes these at build time)
+const LOCAL_PROFILES = {
+  "saima-usman-profile-picture.jpg": saimaProfile,
+};
 
 /* ── Star display ── */
 function Stars({ rating }) {
@@ -28,6 +36,19 @@ function Stars({ rating }) {
 function ReviewCard({ review }) {
   const [expanded, setExpanded] = useState(false);
 
+  const isYandex = review.source === "yandex";
+  const platformLogo = isYandex ? yandexLogo : googleLogo;
+  const platformLabel = isYandex ? "Yandex review" : "Google review";
+  const platformAlt = isYandex ? "Yandex Maps" : "Google";
+
+  // Resolve profile picture: explicit local asset, API photoUrl, or null
+  let profileSrc = null;
+  if (review.profilePicture && LOCAL_PROFILES[review.profilePicture]) {
+    profileSrc = LOCAL_PROFILES[review.profilePicture];
+  } else if (review.photoUrl) {
+    profileSrc = review.photoUrl;
+  }
+
   const needsClamp = review.review.length > 160;
 
   return (
@@ -46,12 +67,12 @@ function ReviewCard({ review }) {
         hover:shadow-md
       "
     >
-      {/* Header: avatar + name + google badge */}
+      {/* Header: avatar + name + platform badge */}
       <div className="flex items-start gap-3">
         {/* Avatar or initial fallback */}
-        {review.photoUrl ? (
+        {profileSrc ? (
           <img
-            src={review.photoUrl}
+            src={profileSrc}
             alt={`${review.name} profile photo`}
             className="h-10 w-10 shrink-0 rounded-full object-cover"
           />
@@ -83,14 +104,14 @@ function ReviewCard({ review }) {
               {review.name}
             </h4>
             <img
-              src={googleLogo}
-              alt="Google"
+              src={platformLogo}
+              alt={platformAlt}
               width="16"
               height="16"
               className="h-4 w-4 shrink-0"
             />
           </div>
-          <p className="text-xs text-gray-400">Google review</p>
+          <p className="text-xs text-gray-400">{platformLabel}</p>
         </div>
       </div>
 

@@ -59,6 +59,20 @@ export const fallbackReviews = [
     review:
       "One of the best driving schools in Lahore. Professional, friendly and highly experienced female instructor. Highly recommended.",
   },
+
+  // ── Yandex Maps review ──────────────────────────────────────────────
+  {
+    id: 7,
+    name: "Saima Usman",
+    rating: 5,
+    time: "3 months ago",
+    verified: true,
+    source: "yandex",
+    photoUrl: null,
+    profilePicture: "saima-usman-profile-picture.jpg",
+    review:
+      "I learned driving from her 11 years ago and now my son is learning. She is a great instructor.",
+  },
 ];
 
 export default fallbackReviews;
