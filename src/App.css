@@ -37,3 +37,8 @@
   position: relative;
   z-index: 2;
 }
+
+/* Yandex review card — subtle left accent */
+[data-source="yandex"] {
+  border-left: 3px solid #FF0000;
+}

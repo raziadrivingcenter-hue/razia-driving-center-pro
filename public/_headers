@@ -1,6 +1,8 @@
-# Long-cache for Vite's hashed assets (content hash in filename = immutable)
+# Long-cache for Vite's hashed assets (content hash in filename).
+# stale-while-revalidate lets edge revalidate in the background so a stale
+# SPA-fallback cached during a deploy window doesn't lock in for a year.
 /assets/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=604800
 
 # Favicons — 24h cache
 /favicon.ico

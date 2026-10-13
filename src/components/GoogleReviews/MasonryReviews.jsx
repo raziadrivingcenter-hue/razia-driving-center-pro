@@ -53,6 +53,7 @@ function ReviewCard({ review }) {
 
   return (
     <article
+      {...(isYandex ? { "data-source": "yandex" } : {})}
       className="
         break-inside-avoid
         mb-5
