@@ -185,6 +185,7 @@ function BookingStep2Slot({ formData, setFormData, pricing, next, back }) {
           type="button"
           onClick={back}
           className="
+            btn-interactive
             rounded-xl border border-white/25 px-5 py-2.5 text-sm font-semibold text-gray-200
             transition hover:bg-white/10
           "
@@ -197,6 +198,7 @@ function BookingStep2Slot({ formData, setFormData, pricing, next, back }) {
           onClick={next}
           disabled={!canContinue}
           className="
+            btn-interactive
             h-[42px] rounded-xl bg-gradient-to-r from-[#FF3131] to-[#FF6201]
             px-6 text-sm font-bold text-white shadow-lg transition-all duration-300
             hover:-translate-y-0.5 hover:shadow-xl

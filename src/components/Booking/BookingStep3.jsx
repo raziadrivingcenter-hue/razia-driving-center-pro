@@ -122,6 +122,7 @@ function BookingStep3({
             type="button"
             onClick={onClose}
             className="
+              btn-interactive
               rounded-xl border border-white/25 px-5 py-2.5 text-sm font-semibold
               text-gray-200 transition hover:bg-white/10
             "
@@ -133,6 +134,7 @@ function BookingStep3({
             type="button"
             onClick={handleInformWhatsApp}
             className="
+              btn-interactive
               h-[42px] rounded-xl bg-gradient-to-r from-[#FF3131] to-[#FF6201]
               px-5 text-sm font-bold text-white shadow-lg transition
               hover:-translate-y-0.5 hover:shadow-xl
@@ -252,6 +254,7 @@ function BookingStep3({
         <button
           onClick={back}
           className="
+            btn-interactive
             rounded-xl border border-white/25 px-5 py-2.5 text-sm font-semibold
             text-gray-200 transition hover:bg-white/10
           "
@@ -263,6 +266,7 @@ function BookingStep3({
           onClick={handleBooking}
           disabled={loading}
           className="
+            btn-interactive
             flex h-[42px] min-w-[180px] items-center justify-center gap-3 rounded-xl
             bg-gradient-to-r from-[#FF3131] to-[#FF6201] px-6 text-sm font-bold
             text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl

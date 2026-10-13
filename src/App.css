@@ -1,1 +1,39 @@
+/* =============================================================================
+   Interactive Button Hover Effect
+   Usage: Add class "btn-interactive" to any button or <a> tag.
+   Creates a light sweep/shine animation on hover.
+   Works with any existing button color (white, orange, green, etc).
+   ============================================================================= */
 
+.btn-interactive {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-interactive::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 100%
+  );
+  transition: left 0.5s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.btn-interactive:hover::before {
+  left: 100%;
+}
+
+/* Ensure button text stays above the sweep */
+.btn-interactive > * {
+  position: relative;
+  z-index: 2;
+}

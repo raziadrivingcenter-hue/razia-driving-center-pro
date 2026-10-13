@@ -127,6 +127,7 @@ function Hero({ onBookNow }) {
             <button
               onClick={onBookNow}
               className="
+                btn-interactive
                 inline-flex
                 items-center
                 justify-center
@@ -150,6 +151,7 @@ function Hero({ onBookNow }) {
               target="_blank"
               rel="noreferrer"
               className="
+                btn-interactive
                 inline-flex
                 items-center
                 justify-center

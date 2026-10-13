@@ -484,6 +484,7 @@ function BookingStep2({
           type="button"
           onClick={back}
           className="
+            btn-interactive
             rounded-xl
             border
             border-white/25
@@ -509,6 +510,7 @@ function BookingStep2({
               formData.address.trim().length < 5)
           }
           className="
+            btn-interactive
             h-[42px]
             rounded-xl
             bg-gradient-to-r

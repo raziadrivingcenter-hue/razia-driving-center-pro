@@ -282,7 +282,7 @@ function CustomCourseCard({ onBook }) {
               price: calculatedPrice,
             })
           }
-          className="h-11 w-full rounded-lg border-2 border-[#FF5A3D] bg-white text-sm font-bold uppercase tracking-wide text-[#FF5A3D] shadow-sm transition-all duration-200 hover:scale-[1.02] hover:bg-[#FFF5F2] hover:shadow-md active:scale-[0.98] md:w-[75%]"
+          className="btn-interactive h-11 w-full rounded-lg border-2 border-[#FF5A3D] bg-white text-sm font-bold uppercase tracking-wide text-[#FF5A3D] shadow-sm transition-all duration-200 hover:scale-[1.02] hover:bg-[#FFF5F2] hover:shadow-md active:scale-[0.98] md:w-[75%]"
         >
           Book This Package
         </button>

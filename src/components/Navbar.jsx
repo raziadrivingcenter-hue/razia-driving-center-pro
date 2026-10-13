@@ -210,6 +210,7 @@ function Navbar({ onBookNow }) {
             <button
               onClick={onBookNow}
               className="
+                btn-interactive
                 hidden
                 md:inline-flex
                 items-center
@@ -235,6 +236,7 @@ function Navbar({ onBookNow }) {
               target="_blank"
               rel="noreferrer"
               className="
+                btn-interactive
                 hidden
                 md:inline-flex
                 items-center
@@ -343,7 +345,7 @@ function Navbar({ onBookNow }) {
                 href="https://wa.me/923094461407"
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-flex items-center justify-center rounded-full bg-[#25D366] px-5 py-2.5 text-sm font-bold text-white"
+                className="btn-interactive mt-2 inline-flex items-center justify-center rounded-full bg-[#25D366] px-5 py-2.5 text-sm font-bold text-white"
               >
                 Chat on WhatsApp
               </a>
@@ -351,7 +353,7 @@ function Navbar({ onBookNow }) {
               {/* Mobile Book Button */}
               <button
                 onClick={() => { onBookNow(); setMenuOpen(false); }}
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201] px-5 py-2.5 text-sm font-bold text-white"
+                className="btn-interactive inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201] px-5 py-2.5 text-sm font-bold text-white"
               >
                 Book a Course
               </button>

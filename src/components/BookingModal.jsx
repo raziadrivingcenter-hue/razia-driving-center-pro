@@ -206,7 +206,7 @@ Please contact me.`;
 
           <button
             onClick={handleBooking}
-            className="w-full rounded-xl bg-gradient-to-r from-[#FF3131] to-[#FF6201] py-4 font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl"
+            className="btn-interactive w-full rounded-xl bg-gradient-to-r from-[#FF3131] to-[#FF6201] py-4 font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl"
           >
             Book on WhatsApp
           </button>

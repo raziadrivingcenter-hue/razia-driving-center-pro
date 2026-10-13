@@ -9,6 +9,7 @@ function PrimaryButton({
   hideArrow = false,
 }) {
   const buttonClasses = `
+    btn-interactive
     group
     inline-flex
     items-center

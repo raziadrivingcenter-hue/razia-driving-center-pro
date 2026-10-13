@@ -122,6 +122,7 @@ function BookingStep1({
           onClick={next}
           disabled={!canContinue}
           className="
+            btn-interactive
             h-[42px]
             w-[130px]
             rounded-xl
