@@ -1,7 +1,47 @@
-import ReviewsCarousel from "./ReviewsCarousel";
+import { useState, useEffect } from "react";
 import googleLogo from "../../assets/google-logo.png";
+import fallbackReviews from "./reviewsData";
+import MasonryReviews from "./MasonryReviews";
 
 function GoogleReviews() {
+  const [reviews, setReviews] = useState(null); // null = loading
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadReviews = async () => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+        const response = await fetch("/api/reviews", {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+
+        if (!cancelled && data.reviews && data.reviews.length > 0) {
+          // Cap at 16 — never invent, never exceed what the API gives
+          setReviews(data.reviews.slice(0, 16));
+        }
+        // If empty or not configured, silently use fallback below
+      } catch (error) {
+        console.warn("Reviews fetch failed, using fallback:", error.message);
+      }
+    };
+
+    loadReviews();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Use API reviews if loaded, otherwise fallback to hardcoded data
+  const displayReviews = reviews || fallbackReviews;
+
   return (
     <section
       id="reviews"
@@ -64,10 +104,10 @@ function GoogleReviews() {
 
         </div>
 
-        {/* Reviews Slider */}
+        {/* Reviews Masonry Wall */}
 
         <div className="mt-6">
-          <ReviewsCarousel />
+          <MasonryReviews reviews={displayReviews} />
         </div>
 
         {/* CTA */}
