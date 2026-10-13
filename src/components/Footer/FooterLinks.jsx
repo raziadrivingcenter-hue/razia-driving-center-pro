@@ -204,6 +204,15 @@ function FooterLinks() {
             </a>
           </li>
 
+          <li>
+            <a
+              href="/driving-test-practice/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Driving Test Practice Game
+            </a>
+          </li>
+
         </ul>
 
       </div>

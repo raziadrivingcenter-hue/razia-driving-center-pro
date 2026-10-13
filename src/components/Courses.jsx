@@ -122,6 +122,57 @@ function Courses({ onCustomBooking }) {
 
         </div>
 
+        {/* Practice game promo */}
+
+        <div className="mx-auto mt-6 max-w-6xl">
+          <a
+            href="/driving-test-practice/"
+            className="
+              flex
+              items-center
+              justify-between
+              gap-4
+              rounded-2xl
+              border
+              border-orange-100
+              bg-gradient-to-r
+              from-orange-50
+              to-white
+              p-5
+              transition-shadow
+              duration-200
+              hover:shadow-md
+            "
+          >
+            <div>
+              <h3 className="text-lg font-extrabold text-gray-900">
+                Practise the L-Track &amp; Parking
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                A free top-down driving game — reverse into the L and park in
+                the bay. Desktop keyboard practice.
+              </p>
+            </div>
+            <span
+              className="
+                shrink-0
+                rounded-lg
+                bg-gradient-to-r
+                from-[#FF3131]
+                to-[#FF6201]
+                px-4
+                py-2.5
+                text-sm
+                font-bold
+                text-white
+                shadow
+              "
+            >
+              Play →
+            </span>
+          </a>
+        </div>
+
       </div>
     </section>
   );

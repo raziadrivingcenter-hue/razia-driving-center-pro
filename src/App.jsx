@@ -2,9 +2,9 @@ import { lazy, Suspense } from "react";
 import { useRouter } from "./router";
 import Homepage from "./components/Homepage";
 
-// Lazy-load the service page so its ~25 KB of code is only downloaded
-// when the visitor actually navigates to /driving-school-gulberg-lahore/.
+// Lazy-load so their code is only downloaded when the visitor navigates there.
 const ServicePage = lazy(() => import("./components/ServicePage"));
+const DrivingGame = lazy(() => import("./components/DrivingGame/DrivingGame"));
 
 function App() {
   const { route } = useRouter();
@@ -16,6 +16,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <ServicePage />
+      </Suspense>
+    );
+  }
+
+  if (route === "/driving-test-practice/" || route === "/driving-test-practice") {
+    return (
+      <Suspense fallback={null}>
+        <DrivingGame />
       </Suspense>
     );
   }
