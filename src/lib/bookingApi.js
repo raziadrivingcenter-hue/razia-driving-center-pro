@@ -9,8 +9,9 @@ const API_BASE = import.meta.env.VITE_BOOKING_API_URL || "";
 
 /**
  * Fetch available slots for a given date.
+ * Reads from slot_availability table (synced by SOD software).
  * @param {string} date — YYYY-MM-DD
- * @returns {{ date, availableSlots: [{time, display}], blockedSlots: [{time, display, reason}], totalSlots, availableCount, blockedCount }}
+ * @returns {{ date, availableSlots, blockedSlots, vehicles, synced, availableCount, blockedCount }}
  */
 export async function fetchAvailability(date) {
   const res = await fetch(`${API_BASE}/api/v1/availability?date=${encodeURIComponent(date)}`, {
@@ -27,15 +28,23 @@ export async function fetchAvailability(date) {
     date: data.date,
     operatingHours: data.operating_hours,
     slotDurationMin: data.slot_duration_min,
-    availableSlots: data.available_slots.map((s) => ({
+    availableSlots: (data.available_slots || []).map((s) => ({
       time: s.time,
+      end: s.end,
       display: s.display,
+      vehicleId: s.vehicle_id,
+      vehicleName: s.vehicle_name,
     })),
-    blockedSlots: data.blocked_slots.map((s) => ({
+    blockedSlots: (data.blocked_slots || []).map((s) => ({
       time: s.time,
+      end: s.end,
       display: s.display,
       reason: s.reason,
+      studentName: s.student_name,
     })),
+    vehicles: data.vehicles || [],
+    synced: data.synced,
+    note: data.note,
     totalSlots: data.total_slots,
     availableCount: data.available_count,
     blockedCount: data.blocked_count,
@@ -43,9 +52,9 @@ export async function fetchAvailability(date) {
 }
 
 /**
- * Submit a booking to the API.
- * @param {object} booking — { customer_name, phone_number, slot_time, course_start_date, duration_days, plan_type, distance_km, pickup_address, area, course_fee, distance_fee, total_fee, notes }
- * @returns {{ success, bookingId, status, travelTimeMin, whatsappLink }}
+ * Submit a booking request to booking_requests table.
+ * @param {object} booking — { customer_name, phone_number, plan_type, email, area, slot_time, course_start_date, duration_days, distance_km, notes, source }
+ * @returns {{ success, bookingId, status, message, whatsappLink }}
  */
 export async function submitBooking(booking) {
   const res = await fetch(`${API_BASE}/api/v1/bookings`, {
@@ -53,13 +62,6 @@ export async function submitBooking(booking) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(booking),
   });
-
-  if (res.status === 409) {
-    const err = await res.json();
-    const error = new Error(err.error || "Slot conflict");
-    error.code = "SLOT_CONFLICT";
-    throw error;
-  }
 
   if (res.status === 400) {
     const err = await res.json();
@@ -78,7 +80,7 @@ export async function submitBooking(booking) {
     success: data.success,
     bookingId: data.bookingId,
     status: data.status,
-    travelTimeMin: data.travel_time_min,
+    message: data.message,
     whatsappLink: data.whatsappLink,
   };
 }
@@ -111,13 +113,12 @@ export async function calculateFee({ planType, courseFee, totalDays, distanceKm 
 }
 
 /**
- * Static slot system info (mirrors API rules).
+ * Static slot system info.
  */
 export function getSlotSystemInfo() {
   return {
-    slotDurationMin: 30,
+    slotDurationMin: 60,
     operatingHours: { start: "08:00", end: "20:00" },
-    travelTimePerKm: 5,
     maxDistanceKm: 20,
     ratePerKm: 50,
     plusFreeKm: 2,

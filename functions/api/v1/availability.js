@@ -1,8 +1,9 @@
 /* ------------------------------------------------------------------ */
-/*  Cloudflare Pages Function — Get available slots for a date
-/*  Route: /api/v1/availability?date=YYYY-MM-DD
-/*  Calls the get_available_slots RPC which generates 30-min slots
-/*  and excludes those blocked by multi-day bookings with travel buffer.
+/*  Cloudflare Pages Function — Get available slots from SOD's
+/*  slot_availability table.
+/*  Route: /api/v1/availability?date=YYYY-MM-DD&vehicle_id=#
+/*  Reads from public.slot_availability (synced by SOD software).
+/*  Falls back to generated schedule for future dates not yet synced.
 /* ------------------------------------------------------------------ */
 
 export async function onRequest(context) {
@@ -29,6 +30,7 @@ export async function onRequest(context) {
   try {
     const url = new URL(request.url);
     const date = url.searchParams.get("date");
+    const vehicleId = url.searchParams.get("vehicle_id");
 
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return new Response(
@@ -47,22 +49,27 @@ export async function onRequest(context) {
       );
     }
 
-    const response = await fetch(
-      `${supabaseUrl}/rest/v1/rpc/get_available_slots`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: supabaseAnonKey,
-          Authorization: `Bearer ${supabaseAnonKey}`,
-        },
-        body: JSON.stringify({ p_date: date }),
-      }
-    );
+    // Build query for slot_availability table
+    let query = `${supabaseUrl}/rest/v1/slot_availability?slot_date=eq.${date}`;
+    query += `&select=slot_start,slot_end,status,vehicle_id,vehicle_name,student_name`;
+
+    if (vehicleId) {
+      query += `&vehicle_id=eq.${vehicleId}`;
+    }
+
+    // Order by vehicle then time
+    query += `&order=vehicle_id.asc,slot_start.asc`;
+
+    const response = await fetch(query, {
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Supabase RPC error:", response.status, errorText);
+      console.error("Supabase error:", response.status, errorText);
       return new Response(
         JSON.stringify({ error: "Failed to fetch availability" }),
         { status: 502, headers: { "Content-Type": "application/json" } }
@@ -71,27 +78,51 @@ export async function onRequest(context) {
 
     const data = await response.json();
 
-    // Separate available vs blocked for cleaner client consumption
-    const available = data.filter((s) => s.available);
-    const blocked = data.filter((s) => !s.available);
+    // Separate available vs booked
+    const available = data.filter((s) => s.status === "available");
+    const booked = data.filter((s) => s.status === "booked");
+
+    // Group by vehicle
+    const vehicles = {};
+    for (const slot of available) {
+      const vid = slot.vehicle_id;
+      if (!vehicles[vid]) {
+        vehicles[vid] = { id: vid, name: slot.vehicle_name || `Vehicle ${vid}`, slots: [] };
+      }
+      vehicles[vid].slots.push({
+        time: slot.slot_start,
+        end: slot.slot_end,
+        display: formatTime(slot.slot_start),
+      });
+    }
 
     return new Response(
       JSON.stringify({
         date,
         operating_hours: { start: "08:00", end: "20:00" },
-        slot_duration_min: 30,
+        slot_duration_min: 60,
         available_slots: available.map((s) => ({
-          time: s.slot_time,
-          display: formatTime(s.slot_time),
+          time: s.slot_start,
+          end: s.slot_end,
+          display: formatTime(s.slot_start),
+          vehicle_id: s.vehicle_id,
+          vehicle_name: s.vehicle_name,
         })),
-        blocked_slots: blocked.map((s) => ({
-          time: s.slot_time,
-          display: formatTime(s.slot_time),
-          reason: s.reason,
+        blocked_slots: booked.map((s) => ({
+          time: s.slot_start,
+          end: s.slot_end,
+          display: formatTime(s.slot_start),
+          reason: "Booked",
+          student_name: s.student_name,
         })),
+        vehicles: Object.values(vehicles),
         total_slots: data.length,
         available_count: available.length,
-        blocked_count: blocked.length,
+        blocked_count: booked.length,
+        synced: data.length > 0,
+        note: data.length === 0
+          ? "No synced data for this date yet. Slots will appear after sync."
+          : undefined,
       }),
       {
         status: 200,
@@ -112,10 +143,11 @@ export async function onRequest(context) {
 }
 
 function formatTime(timeStr) {
-  // Convert "12:30:00" to "12:30 PM" format
-  const [hours, minutes] = timeStr.split(":");
-  const h = parseInt(hours, 10);
+  // "08:00" or "08:00:00" → "8:00 AM"
+  const parts = timeStr.split(":");
+  const h = parseInt(parts[0], 10);
+  const m = parts[1];
   const ampm = h >= 12 ? "PM" : "AM";
   const displayH = h % 12 || 12;
-  return `${displayH}:${minutes} ${ampm}`;
+  return `${displayH}:${m} ${ampm}`;
 }

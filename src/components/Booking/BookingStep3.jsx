@@ -67,27 +67,22 @@ function BookingStep3({
     } catch (err) {
       setLoading(false);
 
-      if (err.code === "SLOT_CONFLICT") {
-        setError(
-          "This time slot was just booked by someone else. Please go back and pick a different date or time."
-        );
-        return;
-      }
-
       if (err.code === "VALIDATION_ERROR") {
         setError(err.details?.join(", ") || "Please check your input and try again.");
         return;
       }
 
-      setError("Sorry, we couldn't submit your booking right now. Please try again.");
+      setError("Sorry, we couldn't submit your booking request right now. Please try again.");
     }
   };
 
   const handleInformWhatsApp = () => {
     const whatsappMessage =
       `Hello Razia Driving Center Team\n\n` +
-      `I have submitted my booking through your website\n\n` +
-      `My Booking ID # ${bookingId}`;
+      `I have submitted a booking request through your website\n\n` +
+      `Request ID # ${bookingId}\n` +
+      `Course: ${formData.course}\n` +
+      `Preferred: ${formData.slot_time || "Any"} on ${formData.preferred_date || "Flexible"}`;
 
     const whatsappURL =
       `https://wa.me/923094461407?text=${encodeURIComponent(whatsappMessage)}`;
@@ -104,20 +99,20 @@ function BookingStep3({
         </div>
 
         <h2 className="text-xl font-black text-white">
-          Booking Submitted Successfully!
+          Booking Request Submitted!
         </h2>
 
         <p className="mt-2 text-sm text-gray-300">
-          Your driving course has been reserved.
+          Our team will review and confirm your booking shortly.
         </p>
 
         <p className="mt-3 text-sm font-semibold text-[#FF6201]">
-          Booking ID # {bookingId}
+          Request ID # {bookingId}
         </p>
 
         {formData.slot_time && (
           <p className="mt-2 text-xs text-gray-400">
-            Slot: {formData.slot_time} every day for {pricing.durationDays} days
+            Preferred: {formData.slot_time} • {pricing.durationDays} days
           </p>
         )}
 
