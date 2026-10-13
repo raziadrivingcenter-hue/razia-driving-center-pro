@@ -22,16 +22,21 @@ function CarMesh({ flashing }) {
   const bodyColor = flashing ? "#dc2626" : "#2563eb";
   return (
     <group>
+      {/* Long axis along local +Z to match heading convention (heading 0 = +Z).
+          Three.js boxGeometry args = [width(X), height(Y), depth(Z)].
+          CAR_LEN is the body depth (Z); CAR_WID is the body width (X). */}
       <mesh position={[0, 0.4, 0]} castShadow>
-        <boxGeometry args={[CAR_LEN, 0.5, CAR_WID]} />
+        <boxGeometry args={[CAR_WID, 0.5, CAR_LEN]} />
         <meshStandardMaterial color={bodyColor} metalness={0.3} roughness={0.5} />
       </mesh>
-      <mesh position={[-0.2, 0.85, 0]} castShadow>
-        <boxGeometry args={[CAR_LEN * 0.45, 0.4, CAR_WID * 0.8]} />
+      {/* Cabin — length along Z to match the body. */}
+      <mesh position={[0, 0.85, -0.2]} castShadow>
+        <boxGeometry args={[CAR_WID * 0.8, 0.4, CAR_LEN * 0.45]} />
         <meshStandardMaterial color="#1e3a5f" metalness={0.2} roughness={0.4} />
       </mesh>
-      {[[CAR_HALF_LEN * 0.7, CAR_HALF_WID], [CAR_HALF_LEN * 0.7, -CAR_HALF_WID],
-        [-CAR_HALF_LEN * 0.7, CAR_HALF_WID], [-CAR_HALF_LEN * 0.7, -CAR_HALF_WID]].map(([x, z], i) => (
+      {/* Wheels — width along X, length along Z. Axle (cylinder axis) along X. */}
+      {[[CAR_HALF_WID, CAR_HALF_LEN * 0.7], [CAR_HALF_WID, -CAR_HALF_LEN * 0.7],
+        [-CAR_HALF_WID, CAR_HALF_LEN * 0.7], [-CAR_HALF_WID, -CAR_HALF_LEN * 0.7]].map(([x, z], i) => (
           <mesh key={i} position={[x, 0.3, z]} rotation={[0, 0, Math.PI / 2]} castShadow>
             <cylinderGeometry args={[0.3, 0.3, 0.25, 12]} />
             <meshStandardMaterial color="#111" roughness={0.8} />
@@ -210,7 +215,8 @@ function CarController({ track, onState, carRef }) {
       onCollisionStart={handleCollision}
       colliders={false}
     >
-      <CuboidCollider args={[CAR_HALF_LEN, 0.4, CAR_HALF_WID]} />
+      {/* Collider half-extents [halfX, halfY, halfZ]: body is CAR_WID wide (X), CAR_LEN long (Z). */}
+      <CuboidCollider args={[CAR_HALF_WID, 0.4, CAR_HALF_LEN]} />
       <CarMesh flashing={false} />
     </RigidBody>
   );
@@ -239,7 +245,7 @@ function TrackObjects({ track }) {
 
       {(track.parkedCars || []).map((car, i) => (
         <RigidBody key={`p${i}`} type="fixed" position={[car.x, 0.5, car.z]} rotation={[0, car.heading, 0]} colliders={false}>
-          <CuboidCollider args={[CAR_HALF_LEN, 0.4, CAR_HALF_WID]} />
+          <CuboidCollider args={[CAR_HALF_WID, 0.4, CAR_HALF_LEN]} />
           <CarMesh flashing={false} />
         </RigidBody>
       ))}

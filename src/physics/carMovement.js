@@ -70,9 +70,12 @@ export function stepCar(state, input, dt) {
     // speedNorm goes 0 (stopped) → 1 (max speed). Steering = max at 0, min at 1.
     const speedNorm = Math.min(absSpeed / cfg.maxForward, 1);
     const rate = cfg.steerRate * (cfg.steerHighSpeedFactor + (1 - cfg.steerHighSpeedFactor) * (1 - speedNorm));
-    // Reverse steering sign when going backward (rear swings opposite)
+    // Reverse steering sign when going backward (rear swings opposite).
+    // Negative sign: steer=+1 (D / right) must DECREASE heading so the car
+    // turns toward screen-right. The chase camera looks down +Z with +Y up,
+    // so camera-right = cross(+Z,+Y) = -X, and heading decreases toward -X.
     const dir = newSpeed > 0 ? 1 : -1;
-    newHeading = heading + steer * rate * dir * dt;
+    newHeading = heading - steer * rate * dir * dt;
   }
 
   return { speed: newSpeed, heading: newHeading };

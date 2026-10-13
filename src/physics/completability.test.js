@@ -35,11 +35,13 @@ function driveToward(state, x, z, tx, tz) {
   const MIN_REV = -0.65;
 
   let throttle, steer;
+  // stepCar uses newHeading = heading - steer*rate*dir*dt, so to turn toward
+  // a target angle we need steer = -angleError (opposite the old convention).
   if (Math.abs(fwdErr) <= Math.abs(revErr)) {
-    steer = Math.max(-1, Math.min(1, fwdErr * 1.5));
+    steer = Math.max(-1, Math.min(1, -fwdErr * 1.5));
     throttle = dist > 2.0 ? 0.7 : MIN_FWD;
   } else {
-    steer = Math.max(-1, Math.min(1, -revErr * 1.5));
+    steer = Math.max(-1, Math.min(1, revErr * 1.5));
     throttle = dist > 2.0 ? -0.7 : MIN_REV;
   }
 
