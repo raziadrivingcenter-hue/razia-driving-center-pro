@@ -103,7 +103,7 @@ function DrivingGame() {
               This practice game works best on a computer with a keyboard.
             </div>
           ) : (
-            <GameCanvas mode={mode} />
+            <GameCanvas key={mode} mode={mode} />
           )}
         </div>
 
