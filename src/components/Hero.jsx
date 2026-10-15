@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Users, Star, MessageSquareText, Calendar } from "lucide-react";
-import Floating3DParticles from "./Hero/Floating3DParticles";
 import HeroFeaturesMarquee from "./Hero/HeroFeaturesMarquee";
 
 const fadeUp = {
@@ -16,18 +15,7 @@ function Hero({ onBookNow }) {
       id="home"
       className="font-raleway relative overflow-hidden bg-white py-20 md:py-28 lg:py-32"
     >
-      {/* Premium 3D particle field — brand orange on white, subtle depth */}
-      <Floating3DParticles
-        quantity={180}
-        color="#FF6201"
-        size={3.5}
-        opacity={0.14}
-        drift={0.5}
-        depth={0.45}
-        className="z-0"
-      />
-
-      <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-8">
+      <div className="relative mx-auto max-w-6xl px-6 md:px-8">
         <div className="max-w-[720px]">
           {/* Location label */}
           <motion.div
@@ -89,21 +77,19 @@ function Hero({ onBookNow }) {
                 h-12
                 items-center
                 justify-center
-                rounded-full
-                bg-gradient-to-r
-                from-[#FF3131]
-                to-[#FF6201]
+                rounded-md
+                bg-gray-900
                 px-7
                 text-sm
                 font-semibold
                 text-white
                 shadow-md
-                shadow-orange-500/20
+                shadow-gray-900/10
                 transition-all
                 duration-200
                 hover:-translate-y-0.5
+                hover:bg-gray-800
                 hover:shadow-lg
-                hover:shadow-orange-500/30
               "
             >
               Book a Course
@@ -118,19 +104,19 @@ function Hero({ onBookNow }) {
                 h-12
                 items-center
                 justify-center
-                rounded-full
-                bg-[#25D366]
+                rounded-md
+                border-2
+                border-[#25D366]
+                bg-transparent
                 px-7
                 text-sm
                 font-semibold
-                text-white
-                shadow-md
-                shadow-green-500/20
+                text-[#25D366]
                 transition-all
                 duration-200
                 hover:-translate-y-0.5
-                hover:shadow-lg
-                hover:shadow-green-500/30
+                hover:bg-[#25D366]
+                hover:text-white
               "
             >
               Chat on WhatsApp
