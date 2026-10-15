@@ -1,6 +1,6 @@
 // =============================================================================
 // Track definitions — data-driven layouts for L-Track and Parking.
-// All dimensions in metres. Car is 1.8m wide × 4m long.
+// All dimensions in metres. Car is 1.5m wide × 3.6m long.
 // Coordinate convention: heading 0 faces +Z, heading π/2 faces +X.
 //
 // The player must REVERSE into both tracks (press S). The car starts facing
@@ -11,9 +11,10 @@
 // clears them by at least 1.0m (hit radius is 0.6m).
 // =============================================================================
 
+// Realistic Suzuki Wagon R approximate dimensions (metres).
 export const CAR_DIMENSIONS = {
-  length: 4.0,
-  width: 1.8,
+  length: 3.6,
+  width: 1.5,
 };
 
 export const WALL = {
@@ -43,21 +44,46 @@ export const CONE = {
 function buildLTrack() {
   const start = { x: 0, z: 12, heading: 0 };
 
+  // Clean L-shaped corridor with NO gaps and NO entry-blocking walls.
+  // Long leg: x ∈ [-3, 3], z ∈ [-3, 12]. Short leg: x ∈ [3, 10], z ∈ [-8, -3].
+  // The corner at (3, -3) is bounded by long-leg-right (z ≥ -3) meeting
+  // short-leg-lower (x ≥ 3). Car passes through the corner between them.
   const walls = [
     // Long leg: left wall (x = -3)
-    { x: -3, z: 3.5, w: WALL.thickness, d: 16 },
-    // Long leg: right wall (x = 3), stops before corner at z = -5
-    { x: 3, z: 5.5, w: WALL.thickness, d: 11 },
-    // Corner wall connecting long leg to short leg
-    { x: 3, z: -6.5, w: WALL.thickness, d: 3 },
+    { x: -3, z: 4.5, w: WALL.thickness, d: 15 },
+    // Long leg: right wall (x = 3), extends down to the corner at z = -3
+    { x: 3, z: 4.5, w: WALL.thickness, d: 15 },
     // Short leg: upper wall (z = -8)
-    { x: 6.8, z: -8, w: 7, d: WALL.thickness },
+    { x: 6.5, z: -8, w: 7, d: WALL.thickness },
     // Short leg: lower wall (z = -3)
-    { x: 6.8, z: -3, w: 7, d: WALL.thickness },
+    { x: 6.5, z: -3, w: 7, d: WALL.thickness },
   ];
 
-  // Finish box: 5m × 3m, aligned with short leg (car enters heading π/2)
-  const finish = { x: 5.5, z: -6.5, w: 5.0, d: 3.0 };
+  // Finish box: 5m × 3m, fits within short leg (x ∈ [3,10], z ∈ [-8,-3]).
+  // Car at (7.5, -5) heading π/2 has footprint x∈[5.7,9.3] z∈[-5.75,-4.25] — fully inside.
+  const finish = { x: 5, z: -6.5, w: 5.0, d: 3.0 };
+
+  // Road surface segments (rendered as asphalt planes, distinct from ground).
+  const roadSegments = [
+    // Long leg: x ∈ [-3, 3], z ∈ [-3, 12]
+    { x: 0, z: 4.5, w: 6, d: 15 },
+    // Short leg: x ∈ [3, 10], z ∈ [-8, -3]
+    { x: 6.5, z: -5.5, w: 7, d: 5 },
+  ];
+
+  // Ordered checkpoint gates the car must pass through (in sequence) before
+  // the finish box counts. Each is an axis-aligned box (x,z = min corner)
+  // large enough for the full 3.6m × 1.5m car footprint (footprintInsideBox
+  // requires all 4 corners inside), positioned on the path the car actually
+  // follows. Prevents skipping the turn or crossing boundaries.
+  const checkpoints = [
+    // CP1: long leg — car reverses down the corridor at x≈0, z≈5 (heading 0)
+    { x: -3, z: 0, w: 6, d: 10 },
+    // CP2: corner — car arcs through the turn around (1, -3.5)
+    { x: -3, z: -8, w: 8, d: 9 },
+    // CP3: short leg — car reverses into the end section at x≈5, z≈-5
+    { x: 2, z: -8, w: 6, d: 6 },
+  ];
 
   // Cones at corridor edges — car drives down center, clears them by >1m
   const cones = [];
@@ -71,7 +97,7 @@ function buildLTrack() {
   cones.push({ x: 9.5, z: -7.8 });
   cones.push({ x: 9.5, z: -3.2 });
 
-  return { key: "ltrack", start, walls, cones, finish, groundSize: 38 };
+  return { key: "ltrack", start, walls, cones, finish, roadSegments, checkpoints, groundSize: 38 };
 }
 
 /* ── Track B: Parking ──
@@ -117,6 +143,23 @@ function buildParking() {
     d: 3.0,
   };
 
+  // Road surface segments.
+  const roadSegments = [
+    // Road: x ∈ [-1.5, 5.5], z ∈ [-1, 13]
+    { x: 2, z: 6, w: 7, d: 14 },
+    // Bay floor: x ∈ [-13, -8], z ∈ [-4, 4]
+    { x: bayX - bayW / 2, z: bayZ, w: bayW, d: bayD },
+  ];
+
+  // Ordered checkpoint gates. Each box is large enough for the full 3.6m × 1.5m
+  // car footprint (footprintInsideBox requires all 4 corners inside).
+  const checkpoints = [
+    // CP1: road — car reverses along the road (heading 0)
+    { x: 0, z: 6, w: 7, d: 4.5 },
+    // CP2: bay entry — car arcs from road into the bay (turning)
+    { x: -4, z: 1, w: 9, d: 7 },
+  ];
+
   // Cones at bay corners (car drives down center, clears them)
   const cones = [
     { x: bayX - bayW, z: bayZ - bayD / 2 },
@@ -125,7 +168,7 @@ function buildParking() {
     { x: bayX, z: bayZ + bayD / 2 },
   ];
 
-  return { key: "parking", start, walls, cones, parkedCars, finish, groundSize: 32 };
+  return { key: "parking", start, walls, cones, parkedCars, finish, roadSegments, checkpoints, groundSize: 32 };
 }
 
 export const TRACKS = {

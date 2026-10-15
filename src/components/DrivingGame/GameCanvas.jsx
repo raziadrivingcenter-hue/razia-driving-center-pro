@@ -9,6 +9,7 @@ import GameScene from "./GameScene";
 export default function GameCanvas({ mode }) {
   const [hits, setHits] = useState(0);
   const [status, setStatus] = useState("playing");
+  const [resetSignal, setResetSignal] = useState(0);
   const carRef = useRef(null);
 
   const handleState = useCallback((state) => {
@@ -21,6 +22,8 @@ export default function GameCanvas({ mode }) {
   const handleRestart = useCallback(() => {
     setHits(0);
     setStatus("playing");
+    // Signal GameScene to reset car position, heading, and progress.
+    setResetSignal((n) => n + 1);
     if (carRef.current) {
       carRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
       carRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
@@ -46,6 +49,7 @@ export default function GameCanvas({ mode }) {
             mode={mode}
             onState={handleState}
             carRef={carRef}
+            resetSignal={resetSignal}
           />
         </Canvas>
 

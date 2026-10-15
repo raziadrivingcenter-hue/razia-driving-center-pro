@@ -49,18 +49,27 @@ test("steering has zero effect when stationary", () => {
   assert.strictEqual(next.heading, 0, "heading unchanged at zero speed");
 });
 
-test("steering is stronger at low speed than high speed", () => {
-  // Low speed steering
+test("steering produces a tighter turn radius at low speed than high speed", () => {
+  // With the bicycle model, curvature = tan(steerAngle) / wheelbase. The
+  // speed-dependent steering reduction means the effective steering angle is
+  // SMALLER at high speed, so the turn radius is LARGER (wider turn).
+  // Heading delta per frame actually *increases* with speed (yawRate ∝ speed),
+  // so we compare turn radius, not heading delta.
+  //
+  // Build up steering angle at low speed (full authority) and high speed
+  // (reduced authority), then compare the resulting turn radius.
   let low = { speed: 1, heading: 0 };
-  for (let i = 0; i < 10; i++) low = stepCar(low, { throttle: 0.1, steer: 1 }, DT);
-  const lowDelta = Math.abs(low.heading);
+  for (let i = 0; i < 60; i++) low = stepCar(low, { throttle: 0.1, steer: 1 }, DT);
+  const lowRadius = Math.abs(low.speed / (-low.speed * Math.tan(low.steerAngle) / CONFIG.wheelbase + 1e-10));
 
-  // High speed steering
   let high = { speed: 7, heading: 0 };
-  for (let i = 0; i < 10; i++) high = stepCar(high, { throttle: 0.1, steer: 1 }, DT);
-  const highDelta = Math.abs(high.heading);
+  for (let i = 0; i < 60; i++) high = stepCar(high, { throttle: 0.1, steer: 1 }, DT);
+  const highRadius = Math.abs(high.speed / (-high.speed * Math.tan(high.steerAngle) / CONFIG.wheelbase + 1e-10));
 
-  assert.ok(lowDelta > highDelta, "low speed should turn more than high speed");
+  // Turn radius R = wheelbase / tan(steerAngle). At low speed, steerAngle is
+  // larger → R is smaller → tighter turn.
+  assert.ok(lowRadius < highRadius,
+    `low-speed turn radius (${lowRadius.toFixed(2)}m) should be tighter than high-speed (${highRadius.toFixed(2)}m)`);
 });
 
 test("steer right (D) turns car to the right in forward and reverse", () => {
@@ -167,4 +176,129 @@ test("car corners rotate with heading", () => {
   // At 90°, front should point +X. Corner 0 (front-right) → (2, -1)
   const c90 = carCorners(0, 0, Math.PI / 2, 4, 2);
   assert.ok(c90[0].x > 0 && c90[0].z < 0, "corner 0 forward +X at 90°");
+});
+
+// --- New bicycle-model acceptance tests ---
+
+test("holding steering at zero speed does not spin the car", () => {
+  // The core fix: at v=0, yaw rate must be zero regardless of steer input.
+  let state = { speed: 0, heading: 0 };
+  for (let i = 0; i < 30; i++) {
+    state = stepCar(state, { throttle: 0, steer: 1 }, DT);
+  }
+  assert.strictEqual(state.heading, 0, "car must not rotate at zero speed");
+  assert.strictEqual(state.speed, 0, "car must remain stationary");
+});
+
+test("forward motion with right steering produces a curved right turn", () => {
+  let state = { speed: 3, heading: 0 };
+  for (let i = 0; i < 60; i++) {
+    state = stepCar(state, { throttle: 0.3, steer: 1 }, DT);
+  }
+  assert.ok(state.heading < 0, "heading must decrease (turn right)");
+  // After 1 second at ~3 m/s, heading should have changed meaningfully.
+  assert.ok(Math.abs(state.heading) > 0.05, "heading change should be visible");
+});
+
+test("forward motion with left steering produces a curved left turn", () => {
+  let state = { speed: 3, heading: 0 };
+  for (let i = 0; i < 60; i++) {
+    state = stepCar(state, { throttle: 0.3, steer: -1 }, DT);
+  }
+  assert.ok(state.heading > 0, "heading must increase (turn left)");
+});
+
+test("reverse steering produces the correct reversing arc", () => {
+  // Reversing with steer right (D, +1): rear swings right, nose swings left.
+  // Nose swinging left = heading increases.
+  let state = { speed: -2, heading: 0 };
+  for (let i = 0; i < 60; i++) {
+    state = stepCar(state, { throttle: -0.3, steer: 1 }, DT);
+  }
+  assert.ok(state.heading > 0, "reverse + D must increase heading");
+});
+
+test("heading changes gradually with distance travelled (not instant)", () => {
+  // After a short burst of steering, heading should be small (not a big jump).
+  const state = stepCar({ speed: 3, heading: 0 }, { throttle: 0, steer: 1 }, DT);
+  // One frame at 60fps: heading change should be small.
+  assert.ok(Math.abs(state.heading) < 0.05, "heading change per frame must be gradual");
+});
+
+test("straight driving does not introduce unintended yaw", () => {
+  let state = { speed: 4, heading: 0.5 };
+  for (let i = 0; i < 120; i++) {
+    state = stepCar(state, { throttle: 0.5, steer: 0 }, DT);
+  }
+  assert.strictEqual(state.heading, 0.5, "heading must stay constant with no steering");
+});
+
+test("steering angle state is exposed and bounded", () => {
+  let state = { speed: 3, heading: 0 };
+  for (let i = 0; i < 60; i++) {
+    state = stepCar(state, { throttle: 0.3, steer: 1 }, DT);
+  }
+  assert.ok(typeof state.steerAngle === "number", "steerAngle must be in state");
+  assert.ok(Math.abs(state.steerAngle) <= CONFIG.maxSteerAngle + 0.01,
+    "steerAngle must not exceed maxSteerAngle");
+});
+
+test("steering returns toward center when input released", () => {
+  // Build up steering angle.
+  let state = { speed: 3, heading: 0 };
+  for (let i = 0; i < 30; i++) {
+    state = stepCar(state, { throttle: 0.3, steer: 1 }, DT);
+  }
+  const steered = state.steerAngle;
+  assert.ok(Math.abs(steered) > 0.1, "steerAngle should be significant");
+
+  // Release steering — angle should decay toward zero.
+  for (let i = 0; i < 60; i++) {
+    state = stepCar(state, { throttle: 0.3, steer: 0 }, DT);
+  }
+  assert.ok(Math.abs(state.steerAngle) < Math.abs(steered),
+    "steerAngle should return toward center");
+});
+
+test("front wheels visually agree with vehicle path (sign check)", () => {
+  // Forward + steer right: heading decreases, steerAngle > 0.
+  const fwd = stepCar({ speed: 3, heading: 0 }, { throttle: 0, steer: 1 }, 0.1);
+  assert.ok(fwd.steerAngle > 0, "steerAngle positive for D (right)");
+  assert.ok(fwd.heading < 0, "heading decreases for right turn");
+
+  // Forward + steer left: heading increases, steerAngle < 0.
+  const fwdLeft = stepCar({ speed: 3, heading: 0 }, { throttle: 0, steer: -1 }, 0.1);
+  assert.ok(fwdLeft.steerAngle < 0, "steerAngle negative for A (left)");
+  assert.ok(fwdLeft.heading > 0, "heading increases for left turn");
+});
+
+test("stationary car does not drift after releasing controls (regression for post-stop yaw)", () => {
+  // Drive forward, build up some steering, then release all input and coast
+  // to a stop. Once stopped, the heading must remain stable — no residual
+  // steerAngle or yaw should accumulate.
+  let state = { speed: 0, heading: 0.3, steerAngle: 0 };
+
+  // Accelerate and steer for a while.
+  for (let i = 0; i < 90; i++) {
+    state = stepCar(state, { throttle: 0.5, steer: 0.7 }, DT);
+  }
+
+  // Release all input — coast to stop.
+  let guard = 0;
+  while (Math.abs(state.speed) > 0 && guard < 600) {
+    state = stepCar(state, { throttle: 0, steer: 0 }, DT);
+    guard++;
+  }
+  assert.strictEqual(state.speed, 0, "car should come to a stop");
+  const stoppedHeading = state.heading;
+
+  // Now sit with no input for 600 frames (10 seconds) and confirm the heading
+  // does not change at all.
+  for (let i = 0; i < 600; i++) {
+    state = stepCar(state, { throttle: 0, steer: 0 }, DT);
+  }
+  assert.strictEqual(state.speed, 0, "car must remain stopped");
+  assert.strictEqual(state.steerAngle, 0, "steerAngle must be zero when stopped with no input");
+  assert.strictEqual(state.heading, stoppedHeading,
+    "heading must be stable after stopping — no post-stop yaw drift");
 });

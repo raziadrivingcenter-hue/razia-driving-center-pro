@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * Canvas-based dotted background that randomly glows and dims.
- * - Uses a stable grid of dots.
+ * - Grid mode: stable grid of dots (default).
+ * - Scatter mode: randomly placed dots clustered toward the center,
+ *   thinning out at the edges — looks like a cloud around content.
  * - Each dot gets its own phase + speed producing organic shimmering.
  * - Handles high-DPI and resizes via ResizeObserver.
  */
 export const DottedGlowBackground = ({
   className,
+  style,
   gap = 12,
   radius = 2,
   color = "rgba(0,0,0,0.7)",
@@ -23,6 +26,8 @@ export const DottedGlowBackground = ({
   speedMin = 0.4,
   speedMax = 1.3,
   speedScale = 1,
+  scatter = false,
+  scatterCount = 320,
 }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -134,24 +139,43 @@ export const DottedGlowBackground = ({
     ro.observe(container);
     resize();
 
-    // Precompute dot metadata for a grid and regenerate on resize
+    // Precompute dot metadata and regenerate on resize
     let dots = [];
 
     const regenDots = () => {
       dots = [];
       const { width, height } = container.getBoundingClientRect();
-      const cols = Math.ceil(width / gap) + 2;
-      const rows = Math.ceil(height / gap) + 2;
       const min = Math.min(speedMin, speedMax);
       const max = Math.max(speedMin, speedMax);
-      for (let i = -1; i < cols; i++) {
-        for (let j = -1; j < rows; j++) {
-          const x = i * gap + (j % 2 === 0 ? 0 : gap * 0.5); // offset every other row
-          const y = j * gap;
+      const span = Math.max(max - min, 0);
+      const cx = width / 2;
+      const cy = height / 2;
+
+      if (scatter) {
+        // Cloud mode: random positions, denser near center, thinning at edges.
+        // Use pow() to bias the radius toward the middle.
+        for (let i = 0; i < scatterCount; i++) {
+          const r = Math.pow(Math.random(), 1.8) * Math.max(width, height) * 0.6;
+          const theta = Math.random() * Math.PI * 2;
+          // elliptical spread so it covers the canvas nicely
+          const x = cx + Math.cos(theta) * r * 1.1;
+          const y = cy + Math.sin(theta) * r * 0.8;
           const phase = Math.random() * Math.PI * 2;
-          const span = Math.max(max - min, 0);
           const speed = min + Math.random() * span;
           dots.push({ x, y, phase, speed });
+        }
+      } else {
+        // Grid mode (original)
+        const cols = Math.ceil(width / gap) + 2;
+        const rows = Math.ceil(height / gap) + 2;
+        for (let i = -1; i < cols; i++) {
+          for (let j = -1; j < rows; j++) {
+            const x = i * gap + (j % 2 === 0 ? 0 : gap * 0.5);
+            const y = j * gap;
+            const phase = Math.random() * Math.PI * 2;
+            const speed = min + Math.random() * span;
+            dots.push({ x, y, phase, speed });
+          }
         }
       }
     };
@@ -253,13 +277,15 @@ export const DottedGlowBackground = ({
     speedMin,
     speedMax,
     speedScale,
+    scatter,
+    scatterCount,
   ]);
 
   return (
     <div
       ref={containerRef}
       className={className}
-      style={{ position: "absolute", inset: 0 }}
+      style={{ position: "absolute", inset: 0, ...style }}
     >
       <canvas
         ref={canvasRef}
