@@ -16,20 +16,7 @@ function Hero({ onBookNow }) {
       id="home"
       className="font-raleway relative overflow-hidden bg-white py-20 md:py-28 lg:py-32"
     >
-      {/* Dotted glow background — brand orange shimmer, masked to center */}
-      <DottedGlowBackground
-        className="pointer-events-none opacity-70"
-        gap={14}
-        radius={1.8}
-        color="rgba(120,120,120,0.5)"
-        glowColor="rgba(255,98,1,0.9)"
-        opacity={1}
-        speedMin={0.3}
-        speedMax={1.5}
-        speedScale={1}
-      />
-
-      <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-8">
+      <div className="relative mx-auto max-w-6xl px-6 md:px-8">
         <div className="max-w-[720px]">
           {/* Location label */}
           <motion.div
@@ -45,14 +32,34 @@ function Hero({ onBookNow }) {
             </span>
           </motion.div>
 
-          {/* H1 — per-letter hover on desktop */}
-          <motion.h1
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
-            className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-950 md:text-5xl lg:text-6xl"
-          >
+          {/* Heading + description — dotted glow radiates around the text
+              and fades out naturally at the edges (no fitted box) */}
+          <div className="relative mt-4">
+            <DottedGlowBackground
+              className="pointer-events-none"
+              gap={12}
+              radius={1.5}
+              color="rgba(80,80,80,0.55)"
+              glowColor="rgba(255,98,1,0.9)"
+              opacity={1}
+              speedMin={0.35}
+              speedMax={1.6}
+              speedScale={1}
+              style={{
+                WebkitMaskImage:
+                  "radial-gradient(ellipse 95% 90% at 50% 45%, #000 30%, transparent 78%)",
+                maskImage:
+                  "radial-gradient(ellipse 95% 90% at 50% 45%, #000 30%, transparent 78%)",
+              }}
+            />
+            <div className="relative z-10">
+              <motion.h1
+                variants={fadeUp}
+                initial="hidden"
+                animate="show"
+                transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
+                className="text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-950 md:text-5xl lg:text-6xl"
+              >
             {title.split("").map((char, i) => (
               <span
                 key={i}
@@ -136,6 +143,8 @@ function Hero({ onBookNow }) {
               Chat on WhatsApp
             </a>
           </motion.div>
+            </div>
+          </div>
 
           {/* Social proof — lucide icons + mini text, company-logo feel */}
           <motion.div
