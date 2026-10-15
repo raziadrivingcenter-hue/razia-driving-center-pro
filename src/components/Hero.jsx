@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Users, Star, MessageSquareText, Calendar } from "lucide-react";
+import Floating3DParticles from "./Hero/Floating3DParticles";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -14,13 +15,18 @@ function Hero({ onBookNow }) {
       id="home"
       className="font-raleway relative overflow-hidden bg-white py-20 md:py-28 lg:py-32"
     >
-      {/* Ambient accent glow — purely decorative, right side stays free of content */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-40 -top-24 h-[520px] w-[520px] rounded-full bg-gradient-to-br from-orange-200/40 via-orange-100/20 to-transparent blur-3xl md:h-[640px] md:w-[640px]"
+      {/* Premium 3D particle field — brand orange on white, subtle depth */}
+      <Floating3DParticles
+        quantity={180}
+        color="#FF6201"
+        size={3.5}
+        opacity={0.14}
+        drift={0.5}
+        depth={0.45}
+        className="z-0"
       />
 
-      <div className="relative mx-auto max-w-6xl px-6 md:px-8">
+      <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-8">
         <div className="max-w-[720px]">
           {/* Location label */}
           <motion.div
