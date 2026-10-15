@@ -32,8 +32,9 @@ function Hero({ onBookNow }) {
             </span>
           </motion.div>
 
-          {/* Heading + description — scattered cloud of dots radiates around
-              the text and dissolves into white at the edges (no box) */}
+          {/* Heading + description — cloud of dots radiates around the text.
+              Canvas extends well beyond the text; each dot fades by distance
+              from center, so the pattern dissolves with no hard edge. */}
           <div className="relative mt-4">
             <DottedGlowBackground
               className="pointer-events-none"
@@ -45,17 +46,13 @@ function Hero({ onBookNow }) {
               speedMax={1.5}
               speedScale={1}
               scatter
-              scatterCount={380}
+              scatterCount={420}
               style={{
-                top: "-120px",
-                bottom: "-80px",
-                left: "-160px",
-                right: "-60px",
+                top: "-140px",
+                bottom: "-100px",
+                left: "-200px",
+                right: "-80px",
                 inset: "auto",
-                WebkitMaskImage:
-                  "radial-gradient(ellipse 80% 75% at 38% 45%, rgba(0,0,0,1) 25%, rgba(0,0,0,0.45) 55%, transparent 82%)",
-                maskImage:
-                  "radial-gradient(ellipse 80% 75% at 38% 45%, rgba(0,0,0,1) 25%, rgba(0,0,0,0.45) 55%, transparent 82%)",
               }}
             />
             <div className="relative z-10">
