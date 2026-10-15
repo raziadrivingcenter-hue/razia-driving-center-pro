@@ -60,7 +60,22 @@ async function getAccessToken(env) {
 
   if (!res.ok) {
     const errText = await res.text();
-    console.error("Google token refresh failed:", res.status, errText);
+    // Extract only sanitized error fields — never log the full response
+    // body, client secrets, tokens, or credentials.
+    let sanitizedError = null;
+    try {
+      const errJson = JSON.parse(errText);
+      sanitizedError = {
+        error: errJson.error || null,
+        error_description: errJson.error_description || null,
+      };
+    } catch {
+      // Response was not JSON — omit body entirely
+    }
+    console.error("Google token refresh failed", {
+      status: res.status,
+      error: sanitizedError,
+    });
     throw new Error("Token refresh failed");
   }
 
