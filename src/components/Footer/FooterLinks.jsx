@@ -91,6 +91,15 @@ function FooterLinks() {
             </a>
           </li>
 
+          <li>
+            <a
+              href="/terms/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Terms of Service
+            </a>
+          </li>
+
         </ul>
 
       </div>

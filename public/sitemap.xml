@@ -219,4 +219,16 @@ xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
 
   </url>
 
+  <url>
+
+    <loc>https://raziadrivingcenter.com/terms/</loc>
+
+    <lastmod>2026-10-16</lastmod>
+
+    <changefreq>yearly</changefreq>
+
+    <priority>0.5</priority>
+
+  </url>
+
 </urlset>

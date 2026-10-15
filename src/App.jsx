@@ -6,6 +6,7 @@ import Homepage from "./components/Homepage";
 const ServicePage = lazy(() => import("./components/ServicePage"));
 const DrivingGame = lazy(() => import("./components/DrivingGame/DrivingGame"));
 const PrivacyPolicy = lazy(() => import("./components/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./components/TermsOfService"));
 
 function App() {
   const { route } = useRouter();
@@ -33,6 +34,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <PrivacyPolicy />
+      </Suspense>
+    );
+  }
+
+  if (route === "/terms/" || route === "/terms") {
+    return (
+      <Suspense fallback={null}>
+        <TermsOfService />
       </Suspense>
     );
   }
