@@ -255,11 +255,32 @@ export async function onRequest(context) {
       );
     }
 
+    // TEMPORARY DIAGNOSTICS — remove after identifying the root cause.
+    // Categorizes the failure stage without exposing any secrets or
+    // internal details. upstreamStatus is only included when a real
+    // HTTP status code is available from Google.
+    let errorCategory = "unknown";
+    let upstreamStatus = null;
+
+    if (error.message === "timeout") {
+      errorCategory = "timeout";
+    } else if (error.message === "Token refresh failed") {
+      errorCategory = "token_refresh_failed";
+    } else if (error.message.startsWith("GBP API returned")) {
+      errorCategory = "gbp_api_error";
+      const statusMatch = error.message.match(/(\d{3})/);
+      if (statusMatch) upstreamStatus = parseInt(statusMatch[1], 10);
+    }
+
+    const diagnostics = { errorCategory };
+    if (upstreamStatus !== null) diagnostics.upstreamStatus = upstreamStatus;
+
     return new Response(
       JSON.stringify({
         error: "Reviews temporarily unavailable",
         reviews: [],
         configured: true,
+        diagnostics,
       }),
       {
         status: 503,
