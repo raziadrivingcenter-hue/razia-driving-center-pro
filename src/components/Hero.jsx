@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Users, Star, MessageSquareText, Calendar } from "lucide-react";
-import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 import HeroFeaturesMarquee from "./Hero/HeroFeaturesMarquee";
 
 const fadeUp = {
@@ -32,36 +31,14 @@ function Hero({ onBookNow }) {
             </span>
           </motion.div>
 
-          {/* Heading + description — cloud of dots radiates around the text.
-              Canvas extends well beyond the text; each dot fades by distance
-              from center, so the pattern dissolves with no hard edge. */}
-          <div className="relative mt-4">
-            <DottedGlowBackground
-              className="pointer-events-none"
-              radius={2}
-              color="rgb(75,75,75)"
-              glowColor="rgba(255,98,1,0.9)"
-              opacity={1}
-              speedMin={0.3}
-              speedMax={1.5}
-              speedScale={1}
-              scatter
-              scatterCount={520}
-              style={{
-                top: "-140px",
-                bottom: "-100px",
-                left: "-200px",
-                right: "-80px",
-              }}
-            />
-            <div className="relative z-10">
-              <motion.h1
-                variants={fadeUp}
-                initial="hidden"
-                animate="show"
-                transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
-                className="text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-950 md:text-5xl lg:text-6xl"
-              >
+          {/* Heading + description */}
+          <motion.h1
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
+            className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-950 md:text-5xl lg:text-6xl"
+          >
             {title.split("").map((char, i) => (
               <span
                 key={i}
@@ -145,8 +122,6 @@ function Hero({ onBookNow }) {
               Chat on WhatsApp
             </a>
           </motion.div>
-            </div>
-          </div>
 
           {/* Social proof — lucide icons + mini text, company-logo feel */}
           <motion.div
