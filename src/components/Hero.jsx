@@ -47,9 +47,9 @@ function Hero({ onBookNow }) {
               speedScale={1}
               style={{
                 WebkitMaskImage:
-                  "radial-gradient(ellipse 95% 90% at 50% 45%, #000 30%, transparent 78%)",
+                  "radial-gradient(ellipse 100% 95% at 50% 45%, rgba(0,0,0,1) 38%, rgba(0,0,0,0.55) 55%, transparent 78%)",
                 maskImage:
-                  "radial-gradient(ellipse 95% 90% at 50% 45%, #000 30%, transparent 78%)",
+                  "radial-gradient(ellipse 100% 95% at 50% 45%, rgba(0,0,0,1) 38%, rgba(0,0,0,0.55) 55%, transparent 78%)",
               }}
             />
             <div className="relative z-10">
