@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Users, Star, MessageSquareText, Calendar } from "lucide-react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -127,6 +128,32 @@ function Hero({ onBookNow }) {
             >
               Chat on WhatsApp
             </a>
+          </motion.div>
+
+          {/* Social proof — lucide icons + mini text, company-logo feel */}
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.5, delay: 0.32, ease: "easeOut" }}
+            className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3"
+          >
+            <span className="flex items-center gap-1.5 text-xs text-gray-400">
+              <Users size={14} strokeWidth={1.8} />
+              <span className="font-semibold text-gray-600">5,221+</span> students
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-gray-400">
+              <Star size={14} strokeWidth={1.8} />
+              <span className="font-semibold text-gray-600">5.0</span> rating
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-gray-400">
+              <MessageSquareText size={14} strokeWidth={1.8} />
+              <span className="font-semibold text-gray-600">136</span> reviews
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-gray-400">
+              <Calendar size={14} strokeWidth={1.8} />
+              <span className="font-semibold text-gray-600">Est. 2016</span>
+            </span>
           </motion.div>
         </div>
       </div>

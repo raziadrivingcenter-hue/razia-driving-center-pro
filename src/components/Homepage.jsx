@@ -12,7 +12,6 @@ import BookingWizard from "./Booking/BookingWizard";
 import ScrollProgress from "./ScrollProgress";
 import Navbar from "./Navbar";
 import Hero from "./Hero";
-import Stats from "./Stats";
 import Courses from "./Courses";
 import WhyChoose from "./WhyChoose";
 import GoogleReviews from "./GoogleReviews/GoogleReviews";
@@ -120,8 +119,6 @@ function Homepage() {
         <Navbar onBookNow={() => openBooking()} />
 
         <Hero onBookNow={() => openBooking()} />
-
-        <Stats />
 
         <Courses onCustomBooking={openBooking} />
 
