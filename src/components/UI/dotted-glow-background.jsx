@@ -142,6 +142,11 @@ export const DottedGlowBackground = ({
     // Precompute dot metadata and regenerate on resize
     let dots = [];
 
+    // Per-dot edge fade: returns 1 near center, ramping to 0 at the edges.
+    // normDist is the elliptical distance from center (0 at center, ~1+ at edges).
+    const edgeFade = (normDist) =>
+      Math.max(0, 1 - Math.pow(normDist * 1.15, 2.4));
+
     const regenDots = () => {
       dots = [];
       const { width, height } = container.getBoundingClientRect();
@@ -150,6 +155,8 @@ export const DottedGlowBackground = ({
       const span = Math.max(max - min, 0);
       const cx = width / 2;
       const cy = height / 2;
+      const halfW = width / 2;
+      const halfH = height / 2;
 
       if (scatter) {
         // Cloud mode: random positions, denser near center, thinning at edges.
@@ -162,10 +169,12 @@ export const DottedGlowBackground = ({
           const y = cy + Math.sin(theta) * r * 0.8;
           const phase = Math.random() * Math.PI * 2;
           const speed = min + Math.random() * span;
-          dots.push({ x, y, phase, speed });
+          const normDist =
+            Math.sqrt(((x - cx) / halfW) ** 2 + ((y - cy) / halfH) ** 2);
+          dots.push({ x, y, phase, speed, fade: edgeFade(normDist) });
         }
       } else {
-        // Grid mode (original)
+        // Grid mode (original) — also faded at the edges.
         const cols = Math.ceil(width / gap) + 2;
         const rows = Math.ceil(height / gap) + 2;
         for (let i = -1; i < cols; i++) {
@@ -174,7 +183,9 @@ export const DottedGlowBackground = ({
             const y = j * gap;
             const phase = Math.random() * Math.PI * 2;
             const speed = min + Math.random() * span;
-            dots.push({ x, y, phase, speed });
+            const normDist =
+              Math.sqrt(((x - cx) / halfW) ** 2 + ((y - cy) / halfH) ** 2);
+            dots.push({ x, y, phase, speed, fade: edgeFade(normDist) });
           }
         }
       }
@@ -222,7 +233,10 @@ export const DottedGlowBackground = ({
         // Linear triangle wave 0..1..0 for linear glow/dim
         const mod = (time * d.speed + d.phase) % 2;
         const lin = mod < 1 ? mod : 2 - mod; // 0..1..0
-        const a = 0.25 + 0.55 * lin; // 0.25..0.8 linearly
+        const a = (0.25 + 0.55 * lin) * d.fade; // shimmer * edge fade
+
+        // skip dots that have fully faded at the edges
+        if (a <= 0.01) continue;
 
         // draw glow when bright
         if (a > 0.6) {
