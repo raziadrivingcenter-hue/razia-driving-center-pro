@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Users, Star, MessageSquareText, Calendar } from "lucide-react";
 import Floating3DParticles from "./Hero/Floating3DParticles";
+import HeroFeaturesMarquee from "./Hero/HeroFeaturesMarquee";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -161,6 +162,8 @@ function Hero({ onBookNow }) {
               <span className="font-semibold text-gray-600">Est. 2016</span>
             </span>
           </motion.div>
+
+          <HeroFeaturesMarquee />
         </div>
       </div>
     </section>

@@ -115,3 +115,23 @@ html {
 .green-glow {
   animation: greenGlow 2s ease-in-out infinite;
 }
+/* ==========================================
+   Hero feature marquee (left → right loop)
+   ========================================== */
+
+@keyframes marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 32s linear infinite;
+}
+
+.animate-marquee-left:hover {
+  animation-play-state: paused;
+}
