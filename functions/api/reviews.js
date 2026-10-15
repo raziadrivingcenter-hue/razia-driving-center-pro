@@ -83,28 +83,59 @@ async function getAccessToken(env) {
   return data.access_token;
 }
 
-// Fetch reviews from Google Business Profile API
+// Fetch reviews from Google Business Profile API with pagination.
+// Collects up to MAX_PAGES * pageSize reviews so the marquee can display
+// 40+ reviews when the API makes them available.
 async function fetchReviewsFromGoogle(env, accessToken) {
-  const url = GBP_REVIEWS_URL.replace("{accountId}", env.GBP_ACCOUNT_ID)
-    .replace("{locationId}", env.GBP_LOCATION_ID);
+  const allReviews = [];
+  let nextPageToken = undefined;
+  let aggregate = {}; // totalReviewCount, averageRating (same on every page)
+  const MAX_PAGES = 5; // 5 * 20 = up to 100 reviews
 
-  const separator = url.includes("?") ? "&" : "?";
-  const fullUrl = `${url}${separator}pageSize=20&orderBy=updateTime desc`;
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const url = GBP_REVIEWS_URL.replace("{accountId}", env.GBP_ACCOUNT_ID)
+      .replace("{locationId}", env.GBP_LOCATION_ID);
 
-  const res = await fetch(fullUrl, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/json",
-    },
-  });
+    const separator = url.includes("?") ? "&" : "?";
+    let query = `pageSize=20&orderBy=updateTime desc`;
+    if (nextPageToken) {
+      query += `&pageToken=${encodeURIComponent(nextPageToken)}`;
+    }
+    const fullUrl = `${url}${separator}${query}`;
 
-  if (!res.ok) {
-    const errText = await res.text();
-    console.error("GBP API error:", res.status, errText);
-    throw new Error(`GBP API returned ${res.status}`);
+    const res = await fetch(fullUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("GBP API error:", res.status, errText);
+      throw new Error(`GBP API returned ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    // Capture location-level aggregates (identical across pages)
+    if (data.totalReviewCount !== undefined) aggregate.totalReviewCount = data.totalReviewCount;
+    if (data.averageRating !== undefined) aggregate.averageRating = data.averageRating;
+
+    if (data.reviews && data.reviews.length > 0) {
+      allReviews.push(...data.reviews);
+    }
+
+    // Stop when there are no more pages
+    nextPageToken = data.nextPageToken || undefined;
+    if (!nextPageToken) break;
   }
 
-  return res.json();
+  return {
+    reviews: allReviews,
+    totalReviewCount: aggregate.totalReviewCount,
+    averageRating: aggregate.averageRating,
+  };
 }
 
 // Normalize Google API review → frontend shape

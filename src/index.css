@@ -135,3 +135,46 @@ html {
 .animate-marquee-left:hover {
   animation-play-state: paused;
 }
+/* ==========================================
+   Vertical review marquee (up / down loop)
+   ========================================== */
+
+@keyframes marquee-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes marquee-down {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-marquee-up {
+  animation: marquee-up var(--marquee-duration, 30s) linear infinite;
+}
+
+.animate-marquee-down {
+  animation: marquee-down var(--marquee-duration, 30s) linear infinite;
+}
+
+/* Pause any vertical marquee column on hover */
+.animate-marquee-up:hover,
+.animate-marquee-down:hover {
+  animation-play-state: paused;
+}
+
+/* Respect reduced-motion preference: freeze the marquee */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-up,
+  .animate-marquee-down {
+    animation: none !important;
+  }
+}

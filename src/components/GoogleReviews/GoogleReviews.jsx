@@ -2,9 +2,23 @@ import { useState, useEffect } from "react";
 import googleLogo from "../../assets/google-logo.png";
 import fallbackReviews, { yandexReviews } from "./reviewsData";
 import MasonryReviews from "./MasonryReviews";
+import MarqueeReviews from "./MarqueeReviews";
 
 function GoogleReviews() {
   const [reviews, setReviews] = useState(null); // null = loading
+  // Detect reduced-motion preference (lazy init avoids setState-in-effect)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
+
+  // Live-update if the user toggles the OS setting during the session
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e) => setPrefersReducedMotion(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -23,9 +37,10 @@ function GoogleReviews() {
 
         const data = await response.json();
 
+        // Use whatever the API returns (supports 40+ via server-side pagination).
+        // Never invent reviews — only use real data the endpoint provides.
         if (!cancelled && data.reviews && data.reviews.length > 0) {
-          // Cap at 16 — never invent, never exceed what the API gives
-          setReviews(data.reviews.slice(0, 16));
+          setReviews(data.reviews);
         }
         // If empty or not configured, silently use fallback below
       } catch (error) {
@@ -106,10 +121,14 @@ function GoogleReviews() {
 
         </div>
 
-        {/* Reviews Masonry Wall */}
+        {/* Reviews — animated marquee, or static masonry for reduced motion */}
 
         <div className="mt-6">
-          <MasonryReviews reviews={displayReviews} />
+          {prefersReducedMotion ? (
+            <MasonryReviews reviews={displayReviews} />
+          ) : (
+            <MarqueeReviews reviews={displayReviews} />
+          )}
         </div>
 
         {/* CTA */}
