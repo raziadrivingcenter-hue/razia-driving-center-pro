@@ -32,24 +32,30 @@ function Hero({ onBookNow }) {
             </span>
           </motion.div>
 
-          {/* Heading + description — dotted glow radiates around the text
-              and fades out naturally at the edges (no fitted box) */}
+          {/* Heading + description — scattered cloud of dots radiates around
+              the text and dissolves into white at the edges (no box) */}
           <div className="relative mt-4">
             <DottedGlowBackground
               className="pointer-events-none"
-              gap={12}
-              radius={1.5}
-              color="rgba(80,80,80,0.55)"
+              radius={1.6}
+              color="rgba(70,70,70,0.5)"
               glowColor="rgba(255,98,1,0.9)"
               opacity={1}
-              speedMin={0.35}
-              speedMax={1.6}
+              speedMin={0.3}
+              speedMax={1.5}
               speedScale={1}
+              scatter
+              scatterCount={380}
               style={{
+                top: "-120px",
+                bottom: "-80px",
+                left: "-160px",
+                right: "-60px",
+                inset: "auto",
                 WebkitMaskImage:
-                  "radial-gradient(ellipse 100% 95% at 50% 45%, rgba(0,0,0,1) 38%, rgba(0,0,0,0.55) 55%, transparent 78%)",
+                  "radial-gradient(ellipse 80% 75% at 38% 45%, rgba(0,0,0,1) 25%, rgba(0,0,0,0.45) 55%, transparent 82%)",
                 maskImage:
-                  "radial-gradient(ellipse 100% 95% at 50% 45%, rgba(0,0,0,1) 38%, rgba(0,0,0,0.55) 55%, transparent 78%)",
+                  "radial-gradient(ellipse 80% 75% at 38% 45%, rgba(0,0,0,1) 25%, rgba(0,0,0,0.45) 55%, transparent 82%)",
               }}
             />
             <div className="relative z-10">
