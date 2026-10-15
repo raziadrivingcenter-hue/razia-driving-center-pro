@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Users, Star, MessageSquareText, Calendar } from "lucide-react";
+import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 import HeroFeaturesMarquee from "./Hero/HeroFeaturesMarquee";
 
 const fadeUp = {
@@ -15,7 +16,20 @@ function Hero({ onBookNow }) {
       id="home"
       className="font-raleway relative overflow-hidden bg-white py-20 md:py-28 lg:py-32"
     >
-      <div className="relative mx-auto max-w-6xl px-6 md:px-8">
+      {/* Dotted glow background — brand orange shimmer, masked to center */}
+      <DottedGlowBackground
+        className="pointer-events-none opacity-70"
+        gap={14}
+        radius={1.8}
+        color="rgba(120,120,120,0.5)"
+        glowColor="rgba(255,98,1,0.9)"
+        opacity={1}
+        speedMin={0.3}
+        speedMax={1.5}
+        speedScale={1}
+      />
+
+      <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-8">
         <div className="max-w-[720px]">
           {/* Location label */}
           <motion.div
