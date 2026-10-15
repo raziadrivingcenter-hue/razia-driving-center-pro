@@ -8,6 +8,18 @@ import {
   CarFront,
   UserRound,
   Gift,
+  CalendarClock,
+  BadgeIndianRupee,
+  Target,
+  Car,
+  ShieldAlert,
+  FileCheck,
+  HandCoins,
+  Truck,
+  Clock,
+  ThumbsUp,
+  MapPinHouse,
+  BadgeCheck,
 } from "lucide-react";
 
 // Feature → matching "referring logo" (lucide icon)
@@ -21,6 +33,18 @@ const FEATURES = [
   { icon: CarFront, label: "Pick & Drop Available" },
   { icon: UserRound, label: "Female Instructor Available" },
   { icon: Gift, label: "2 Km Free On Plus Plan" },
+  { icon: CalendarClock, label: "Flexible Scheduling" },
+  { icon: BadgeIndianRupee, label: "Affordable Prices" },
+  { icon: Target, label: "Test Preparation" },
+  { icon: Car, label: "Own Car Training" },
+  { icon: ShieldAlert, label: "Defensive Driving" },
+  { icon: FileCheck, label: "License Assistance" },
+  { icon: HandCoins, label: "Pay Per Lesson" },
+  { icon: Truck, label: "Heavy Vehicle Training" },
+  { icon: Clock, label: "Weekend Classes" },
+  { icon: ThumbsUp, label: "High Pass Rate" },
+  { icon: MapPinHouse, label: "Area Coverage" },
+  { icon: BadgeCheck, label: "Certified Course" },
 ];
 
 function FeatureItem({ icon: Icon, label }) {
