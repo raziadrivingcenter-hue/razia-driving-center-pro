@@ -38,15 +38,15 @@ function Hero({ onBookNow }) {
           <div className="relative mt-4">
             <DottedGlowBackground
               className="pointer-events-none"
-              radius={1.6}
-              color="rgba(70,70,70,0.5)"
+              radius={2}
+              color="rgb(75,75,75)"
               glowColor="rgba(255,98,1,0.9)"
               opacity={1}
               speedMin={0.3}
               speedMax={1.5}
               speedScale={1}
               scatter
-              scatterCount={420}
+              scatterCount={520}
               style={{
                 top: "-140px",
                 bottom: "-100px",
