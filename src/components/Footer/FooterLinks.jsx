@@ -82,6 +82,15 @@ function FooterLinks() {
             </a>
           </li>
 
+          <li>
+            <a
+              href="/privacy-policy/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Privacy Policy
+            </a>
+          </li>
+
         </ul>
 
       </div>

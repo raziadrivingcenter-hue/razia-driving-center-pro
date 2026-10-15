@@ -5,6 +5,7 @@ import Homepage from "./components/Homepage";
 // Lazy-load so their code is only downloaded when the visitor navigates there.
 const ServicePage = lazy(() => import("./components/ServicePage"));
 const DrivingGame = lazy(() => import("./components/DrivingGame/DrivingGame"));
+const PrivacyPolicy = lazy(() => import("./components/PrivacyPolicy"));
 
 function App() {
   const { route } = useRouter();
@@ -24,6 +25,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <DrivingGame />
+      </Suspense>
+    );
+  }
+
+  if (route === "/privacy-policy/" || route === "/privacy-policy") {
+    return (
+      <Suspense fallback={null}>
+        <PrivacyPolicy />
       </Suspense>
     );
   }
