@@ -52,7 +52,6 @@ function Hero({ onBookNow }) {
                 bottom: "-100px",
                 left: "-200px",
                 right: "-80px",
-                inset: "auto",
               }}
             />
             <div className="relative z-10">
