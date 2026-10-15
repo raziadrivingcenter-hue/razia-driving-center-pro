@@ -1,71 +1,101 @@
+import { motion } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0 },
+};
+
 function Hero({ onBookNow }) {
   const title = "Driving School in Gulberg 2, Lahore";
 
   return (
     <section
       id="home"
-      className="
-        w-full
-        bg-white
-        py-10
-        md:py-[4.5rem]
-      "
+      className="font-raleway relative overflow-hidden bg-white py-20 md:py-28 lg:py-32"
     >
-      <div className="mx-auto max-w-6xl px-6 md:px-8">
+      {/* Ambient accent glow — purely decorative, right side stays free of content */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-40 -top-24 h-[520px] w-[520px] rounded-full bg-gradient-to-br from-orange-200/40 via-orange-100/20 to-transparent blur-3xl md:h-[640px] md:w-[640px]"
+      />
+
+      <div className="relative mx-auto max-w-6xl px-6 md:px-8">
         <div className="max-w-[720px]">
           {/* Location label */}
-          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-gray-400">
-            Gulberg 2, Lahore
-          </span>
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="flex items-center gap-2"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-[#FF3131] to-[#FF6201]" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+              Gulberg 2, Lahore
+            </span>
+          </motion.div>
 
-          {/* H1 — each letter hoverable on desktop for a subtle bold shift */}
-          <h1
-            className="
-              mt-2
-              text-2xl
-              font-extrabold
-              leading-[1.15]
-              tracking-tight
-              text-black
-              md:text-3xl
-            "
+          {/* H1 — per-letter hover on desktop */}
+          <motion.h1
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
+            className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-950 md:text-5xl lg:text-6xl"
           >
             {title.split("").map((char, i) => (
               <span
                 key={i}
-                className="md:hover:font-black"
+                className="inline-block transition-all duration-200 ease-out md:hover:font-black md:hover:text-[#FF6201]"
               >
-                {char}
+                {char === " " ? " " : char}
               </span>
             ))}
-          </h1>
+          </motion.h1>
 
           {/* Supporting line */}
-          <p className="mt-4 max-w-[520px] text-sm leading-relaxed text-gray-500 md:text-base">
-            One-to-one lessons with Madam Razia. Pick-up, training in your area, then drop home.
-          </p>
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.5, delay: 0.16, ease: "easeOut" }}
+            className="mt-6 max-w-[540px] text-base leading-relaxed text-gray-500 md:text-lg"
+          >
+            One-to-one lessons with Madam Razia. Pick-up, training in your area,
+            then drop home.
+          </motion.p>
 
           {/* CTA Buttons */}
-          <div className="mt-6 flex flex-wrap items-center gap-3">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.5, delay: 0.24, ease: "easeOut" }}
+            className="mt-8 flex flex-wrap items-center gap-3"
+          >
             <button
               onClick={onBookNow}
               className="
+                btn-interactive
                 inline-flex
-                h-11
+                h-12
                 items-center
                 justify-center
                 rounded-full
                 bg-gradient-to-r
                 from-[#FF3131]
                 to-[#FF6201]
-                px-6
+                px-7
                 text-sm
-                font-bold
+                font-semibold
                 text-white
                 shadow-md
-                transition-transform
+                shadow-orange-500/20
+                transition-all
                 duration-200
                 hover:-translate-y-0.5
+                hover:shadow-lg
+                hover:shadow-orange-500/30
               "
             >
               Book a Course
@@ -75,25 +105,29 @@ function Hero({ onBookNow }) {
               target="_blank"
               rel="noreferrer"
               className="
+                btn-interactive
                 inline-flex
-                h-11
+                h-12
                 items-center
                 justify-center
                 rounded-full
                 bg-[#25D366]
-                px-6
+                px-7
                 text-sm
-                font-bold
+                font-semibold
                 text-white
                 shadow-md
-                transition-transform
+                shadow-green-500/20
+                transition-all
                 duration-200
                 hover:-translate-y-0.5
+                hover:shadow-lg
+                hover:shadow-green-500/30
               "
             >
               Chat on WhatsApp
             </a>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
