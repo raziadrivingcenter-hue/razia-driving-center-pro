@@ -4,7 +4,7 @@ import { useState } from "react";
 const BASE_MINUTES = 30;
 const BASE_DAYS = 10;
 const BASE_PRICE = 14500;
-const ORIGINAL_PRICE = 16000; // List price — used for the savings display.
+const ORIGINAL_PRICE = 16000;
 
 // Geometry for the circular progress ring (120px diameter).
 const RING_RADIUS = 50;
@@ -34,43 +34,40 @@ function CustomCourseCard({ onBook }) {
   const minutesPercent = ((minutes - 15) / (60 - 15)) * 100;
 
   return (
-    <div
-      className="mx-auto w-full rounded-2xl p-4 md:p-6"
-      style={{
-        background: "linear-gradient(135deg, #FFF9F5, #FFFBF7)",
-      }}
-    >
+    <div className="mx-auto w-full rounded-xl border border-gray-200 bg-white p-5 md:p-6">
+
       {/* ===== HEADER ===== */}
 
-      <span className="inline-block rounded-full bg-[#FF5A3D] px-3 py-1 text-[10px] font-bold uppercase tracking-[1px] text-white shadow-sm">
+      <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#FF6201]">
         Build Your Course
       </span>
 
-      <h2 className="mt-2 text-xl font-bold leading-tight text-[#1A1A1A] md:text-2xl">
+      <h2 className="mt-2 text-xl font-bold leading-tight text-gray-900 md:text-2xl">
         Custom Driving Experience
       </h2>
 
-      <p className="mt-1.5 text-sm leading-snug text-[#666]">
+      <p className="mt-1 text-sm text-gray-500">
         Design a plan that matches your schedule. Your price updates live.
       </p>
 
       {/* ===== TWO-COLUMN LAYOUT ===== */}
 
-      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
+      <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2">
+
         {/* ---------- LEFT COLUMN — controls ---------- */}
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-1 md:gap-5">
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-1 md:gap-6">
           {/* Training Duration */}
 
           <div className="flex flex-col items-center md:items-start">
             <label
               htmlFor="days-slider"
-              className="order-1 block text-[10px] font-semibold uppercase tracking-wide text-[#999]"
+              className="order-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400"
             >
               Training Duration
             </label>
 
-            <div className="order-2 md:order-3 mt-1 md:mt-2 flex items-baseline gap-1.5">
+            <div className="order-2 md:order-3 mt-1.5 flex items-baseline gap-1.5">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={days}
@@ -78,13 +75,13 @@ function CustomCourseCard({ onBook }) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.2 }}
-                  className="text-3xl font-black leading-none text-[#1A1A1A] md:text-4xl"
+                  className="text-3xl font-black leading-none text-gray-900 md:text-4xl"
                 >
                   {days}
                 </motion.span>
               </AnimatePresence>
 
-              <span className="text-xs font-bold uppercase tracking-wide text-[#999]">
+              <span className="text-xs font-bold uppercase tracking-wide text-gray-400">
                 Days
               </span>
             </div>
@@ -97,9 +94,9 @@ function CustomCourseCard({ onBook }) {
               step={1}
               value={days}
               onChange={(e) => setDays(Number(e.target.value))}
-              className="order-3 md:order-2 mt-2 md:mt-2 range-slider w-full"
+              className="order-3 md:order-2 mt-2 w-full range-slider"
               style={{
-                background: `linear-gradient(to right, #FF5A3D 0%, #FF5A3D ${daysPercent}%, #E5E7EB ${daysPercent}%, #E5E7EB 100%)`,
+                background: `linear-gradient(to right, #FF6201 0%, #FF6201 ${daysPercent}%, #E5E7EB ${daysPercent}%, #E5E7EB 100%)`,
               }}
             />
           </div>
@@ -109,12 +106,12 @@ function CustomCourseCard({ onBook }) {
           <div className="flex flex-col items-center md:items-start">
             <label
               htmlFor="minutes-slider"
-              className="order-1 block text-[10px] font-semibold uppercase tracking-wide text-[#999]"
+              className="order-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400"
             >
               Daily Lesson Duration
             </label>
 
-            <div className="order-2 md:order-3 mt-1 md:mt-2 flex items-baseline gap-1.5">
+            <div className="order-2 md:order-3 mt-1.5 flex items-baseline gap-1.5">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={minutes}
@@ -122,13 +119,13 @@ function CustomCourseCard({ onBook }) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.2 }}
-                  className="text-3xl font-black leading-none text-[#1A1A1A] md:text-4xl"
+                  className="text-3xl font-black leading-none text-gray-900 md:text-4xl"
                 >
                   {minutes}
                 </motion.span>
               </AnimatePresence>
 
-              <span className="text-xs font-bold uppercase tracking-wide text-[#999]">
+              <span className="text-xs font-bold uppercase tracking-wide text-gray-400">
                 Minutes
               </span>
             </div>
@@ -141,9 +138,9 @@ function CustomCourseCard({ onBook }) {
               step={5}
               value={minutes}
               onChange={(e) => setMinutes(Number(e.target.value))}
-              className="order-3 md:order-2 mt-2 md:mt-2 range-slider w-full"
+              className="order-3 md:order-2 mt-2 w-full range-slider"
               style={{
-                background: `linear-gradient(to right, #FF5A3D 0%, #FF5A3D ${minutesPercent}%, #E5E7EB ${minutesPercent}%, #E5E7EB 100%)`,
+                background: `linear-gradient(to right, #FF6201 0%, #FF6201 ${minutesPercent}%, #E5E7EB ${minutesPercent}%, #E5E7EB 100%)`,
               }}
             />
           </div>
@@ -152,14 +149,14 @@ function CustomCourseCard({ onBook }) {
         {/* ---------- RIGHT COLUMN — live preview ---------- */}
 
         <div className="lg:sticky lg:top-8 lg:self-start">
-          <div className="rounded-xl bg-white p-3 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
-            <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[#999]">
+          <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+            <h3 className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
               Your Training Plan
             </h3>
 
             {/* Circular progress ring */}
 
-            <div className="mt-2 flex flex-col items-center">
+            <div className="mt-3 flex flex-col items-center">
               <div className="relative h-[60px] w-[60px]">
                 <svg
                   className="h-full w-full -rotate-90"
@@ -173,8 +170,8 @@ function CustomCourseCard({ onBook }) {
                       x2="100%"
                       y2="0%"
                     >
-                      <stop offset="0%" stopColor="#FF5A3D" />
-                      <stop offset="100%" stopColor="#FF6201" />
+                      <stop offset="0%" stopColor="#FF6201" />
+                      <stop offset="100%" stopColor="#FF3131" />
                     </linearGradient>
                   </defs>
 
@@ -185,7 +182,7 @@ function CustomCourseCard({ onBook }) {
                     cy="60"
                     r={RING_RADIUS}
                     fill="none"
-                    stroke="#EEEEEE"
+                    stroke="#E5E7EB"
                     strokeWidth="10"
                   />
 
@@ -215,13 +212,13 @@ function CustomCourseCard({ onBook }) {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
                       transition={{ duration: 0.2 }}
-                      className="text-xs font-black text-[#1A1A1A]"
+                      className="text-xs font-black text-gray-900"
                     >
                       {totalHours.toFixed(1)}
                     </motion.span>
                   </AnimatePresence>
 
-                  <span className="text-[8px] font-bold uppercase tracking-wide text-[#999]">
+                  <span className="text-[8px] font-bold uppercase tracking-wide text-gray-400">
                     Hours
                   </span>
                 </div>
@@ -230,20 +227,20 @@ function CustomCourseCard({ onBook }) {
 
             {/* Breakdown rows */}
 
-            <div className="mt-2 space-y-1">
+            <div className="mt-3 space-y-1.5">
               <Row label="Training Days" value={String(days)} />
               <Row label="Daily Duration" value={`${minutes} Minutes`} />
             </div>
 
             {/* Estimated price */}
 
-            <div className="mt-2 rounded-lg px-3 py-2 text-white" style={{ background: "linear-gradient(135deg, #FF5A3D, #E94A2C)" }}>
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-white/90">
+            <div className="mt-3 rounded-lg border border-gray-100 bg-white px-3 py-2.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
                 Estimated Total
               </span>
 
               <div className="mt-0.5 flex items-baseline gap-1">
-                <span className="text-xs font-semibold text-white/90">Rs.</span>
+                <span className="text-sm font-bold text-gray-900">Rs.</span>
 
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -252,7 +249,7 @@ function CustomCourseCard({ onBook }) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -18 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="font-mono text-2xl font-bold leading-none"
+                    className="font-mono text-2xl font-black leading-none text-gray-900"
                   >
                     {calculatedPrice.toLocaleString()}
                   </motion.span>
@@ -260,7 +257,7 @@ function CustomCourseCard({ onBook }) {
               </div>
 
               {savings > 0 && (
-                <span className="mt-0.5 block text-[10px] font-semibold text-white/80">
+                <span className="mt-0.5 block text-[10px] font-semibold text-[#FF6201]">
                   SAVE RS. {savings.toLocaleString()}
                 </span>
               )}
@@ -271,7 +268,7 @@ function CustomCourseCard({ onBook }) {
 
       {/* ===== BOOK BUTTON ===== */}
 
-      <div className="mt-5 flex justify-center">
+      <div className="mt-6 flex justify-center">
         <button
           type="button"
           onClick={() =>
@@ -282,7 +279,7 @@ function CustomCourseCard({ onBook }) {
               price: calculatedPrice,
             })
           }
-          className="btn-interactive h-11 w-full rounded-lg border-2 border-[#FF5A3D] bg-white text-sm font-bold uppercase tracking-wide text-[#FF5A3D] shadow-sm transition-all duration-200 hover:scale-[1.02] hover:bg-[#FFF5F2] hover:shadow-md active:scale-[0.98] md:w-[75%]"
+          className="btn-interactive inline-flex h-11 w-full items-center justify-center rounded-md bg-gray-900 text-sm font-semibold uppercase tracking-wide text-white transition-colors duration-200 hover:bg-gray-800 active:scale-[0.98] md:w-[75%]"
         >
           Book This Package
         </button>
@@ -295,39 +292,37 @@ function CustomCourseCard({ onBook }) {
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 8px;
+          height: 6px;
           border-radius: 9999px;
           outline: none;
           cursor: pointer;
-          transition: opacity 0.2s ease;
         }
         .range-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 28px;
-          height: 28px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
-          background: #FF5A3D;
-          border: 4px solid #ffffff;
-          box-shadow: 0 2px 10px rgba(255, 90, 61, 0.45);
+          background: #FF6201;
+          border: 3px solid #ffffff;
+          box-shadow: 0 2px 8px rgba(255, 98, 1, 0.35);
           cursor: pointer;
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          transition: transform 0.15s ease;
         }
         .range-slider::-webkit-slider-thumb:hover {
-          transform: scale(1.15);
-          box-shadow: 0 3px 14px rgba(255, 90, 61, 0.55);
+          transform: scale(1.12);
         }
         .range-slider::-moz-range-thumb {
-          width: 28px;
-          height: 28px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
-          background: #FF5A3D;
-          border: 4px solid #ffffff;
-          box-shadow: 0 2px 10px rgba(255, 90, 61, 0.45);
+          background: #FF6201;
+          border: 3px solid #ffffff;
+          box-shadow: 0 2px 8px rgba(255, 98, 1, 0.35);
           cursor: pointer;
         }
         .range-slider::-moz-range-track {
-          height: 8px;
+          height: 6px;
           border-radius: 9999px;
         }
       `}</style>
@@ -340,7 +335,7 @@ function CustomCourseCard({ onBook }) {
 function Row({ label, value }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs text-[#999]">{label}</span>
+      <span className="text-xs text-gray-400">{label}</span>
 
       <AnimatePresence mode="wait">
         <motion.span
@@ -349,7 +344,7 @@ function Row({ label, value }) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -8 }}
           transition={{ duration: 0.15 }}
-          className="text-xs font-bold text-[#333]"
+          className="text-xs font-bold text-gray-700"
         >
           {value}
         </motion.span>

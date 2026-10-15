@@ -1,9 +1,4 @@
-import PremiumCard from "./UI/PremiumCard";
-import PrimaryButton from "./UI/PrimaryButton";
-import {
-  Clock3,
-  CheckCircle2,
-} from "lucide-react";
+import { Clock3, Check, Sparkles } from "lucide-react";
 
 function CourseCard({
   name,
@@ -12,139 +7,106 @@ function CourseCard({
   price,
   duration,
   features,
-  badge,
   titleIcon: TitleIcon,
   onBook,
+  popular = false,
 }) {
-  // Show only the first 4 features to keep the card compact.
-  const shortFeatures = features.slice(0, 4);
+  const savings =
+    oldPrice && price
+      ? parseInt(oldPrice.replace(/\D/g, "")) -
+        parseInt(price.replace(/\D/g, ""))
+      : 0;
 
   return (
-    <PremiumCard
-      className={`p-4 ${
-        badge ? "border-2 border-[#FF6201]" : ""
-      }`}
+    <div
+      className={`
+        relative overflow-hidden rounded-xl bg-white
+        shadow-sm transition-shadow duration-200
+        hover:shadow-md
+        ${popular
+          ? "border-2 border-[#FF6201]"
+          : "border border-gray-200 hover:border-gray-300"}
+      `}
     >
-      {/* Badges — stacked so they never overlap or clip */}
-
-      {(badge || name === "Economy Driving Course") && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {name === "Economy Driving Course" && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-2.5 py-1 text-[10px] font-bold tracking-wide text-white">
-              🚗 FREE Pick & Drop upto 2 KM
-            </span>
-          )}
-
-          {badge && (
-            <span
-              className="
-              inline-flex
-              items-center
-              gap-1
-              rounded-full
-              bg-gradient-to-r
-              from-[#FF3131]
-              to-[#FF6201]
-              px-2.5
-              py-1
-              text-[10px]
-              font-bold
-              tracking-wide
-              text-white
-              "
-            >
-              <badge.icon size={10} />
-
-              {badge.text}
-            </span>
-          )}
+      {/* Popular badge */}
+      {popular && (
+        <div className="absolute right-3 top-3 z-10">
+          <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#FF6201]">
+            <Sparkles size={10} />
+            Most Popular
+          </span>
         </div>
       )}
 
-      <div>
-        {/* Title */}
-
-        <h2 className="flex items-center gap-2 text-lg font-black leading-tight text-gray-900">
+      <div className="p-5">
+        {/* Plan name */}
+        <div className="flex items-center gap-2">
           {TitleIcon && (
-            <TitleIcon
-              size={18}
-              className="shrink-0 text-[#FF6201]"
-            />
+            <TitleIcon size={18} className="shrink-0 text-[#FF6201]" />
           )}
-
-          {title}
-        </h2>
-
-        {/* Price */}
-
-        <div className="mt-2 flex items-end gap-2">
-          <h2 className="text-2xl font-black leading-none text-[#FF3131]">
-            {price}
-          </h2>
-
-          <span className="pb-0.5 text-sm text-gray-500 line-through">
-            {oldPrice}
-          </span>
+          <h3 className="text-lg font-bold leading-tight text-gray-900">
+            {title}
+          </h3>
         </div>
 
+        {/* Pricing */}
+        <div className="mt-3 flex items-baseline gap-2">
+          <span className="text-3xl font-black leading-none text-gray-900">
+            {price}
+          </span>
+          {oldPrice && (
+            <span className="text-sm text-gray-400 line-through">
+              {oldPrice}
+            </span>
+          )}
+        </div>
+        {savings > 0 && (
+          <span className="mt-1 inline-block text-xs font-semibold text-[#FF6201]">
+            Save Rs. {savings.toLocaleString()}
+          </span>
+        )}
+
         {/* Duration */}
-
-        <div className="mt-2 flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
+        <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
           <Clock3 size={14} className="shrink-0 text-[#FF6201]" />
-
           <span className="text-xs font-semibold text-gray-700">
             {duration}
           </span>
         </div>
 
         {/* Features */}
-
-        <div className="mt-3 space-y-1.5">
-          {shortFeatures.map((feature) => {
-            const isObject = typeof feature === "object";
-            const Icon = isObject ? feature.icon : CheckCircle2;
-            const text = isObject ? feature.text : feature;
-            const iconColor = isObject
-              ? "text-[#FF6201]"
-              : "text-green-500";
+        <ul className="mt-4 space-y-2">
+          {features.map((feature) => {
+            const Icon = feature.icon || Check;
+            const iconColor = feature.icon ? "text-[#FF6201]" : "text-gray-400";
 
             return (
-              <div
-                key={text}
-                className="flex items-start gap-2"
-              >
-                <Icon
-                  size={15}
-                  className={`mt-0.5 shrink-0 ${iconColor}`}
-                />
-
-                <span className="text-xs leading-[1.4] text-gray-700">
-                  {text}
+              <li key={feature.text} className="flex items-start gap-2.5">
+                <Icon size={15} className={`mt-0.5 shrink-0 ${iconColor}`} />
+                <span className="text-sm leading-[1.45] text-gray-600">
+                  {feature.text}
                 </span>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
 
         {/* Divider */}
-
-        <div className="my-3 border-t border-gray-200"></div>
+        <div className="mt-4 border-t border-gray-100" />
 
         {/* CTA */}
-
-        <PrimaryButton
-          onClick={() =>
-            onBook?.({
-              course: name,
-            })
-          }
-          className="w-full py-2 text-sm"
-          hideArrow
+        <button
+          onClick={() => onBook?.({ course: name })}
+          className={`btn-interactive mt-4 inline-flex h-11 w-full items-center justify-center rounded-md text-sm font-semibold transition-colors duration-200
+            ${popular
+              ? "bg-[#FF6201] text-white hover:bg-[#e55600]"
+              : "bg-gray-900 text-white hover:bg-gray-800"
+            }`}
         >
           Book This Plan
-        </PrimaryButton>
+        </button>
       </div>
-    </PremiumCard>
+    </div>
   );
 }
 
