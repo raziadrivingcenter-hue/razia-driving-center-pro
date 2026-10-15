@@ -50,13 +50,19 @@ export async function onRequest(context) {
 
   const placeId = env.GOOGLE_PLACE_ID;
   const apiKey = env.GOOGLE_PLACES_API_KEY;
+  const hasPlaceId = Boolean(placeId);
+  const hasApiKey = Boolean(apiKey);
 
-  if (!placeId || !apiKey) {
+  if (!hasPlaceId || !hasApiKey) {
     return new Response(
       JSON.stringify({
         error: "Reviews not configured",
         reviews: [],
         configured: false,
+        diagnostics: {
+          GOOGLE_PLACE_ID_present: hasPlaceId,
+          GOOGLE_PLACES_API_KEY_present: hasApiKey,
+        },
       }),
       {
         status: 200,
