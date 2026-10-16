@@ -62,40 +62,57 @@ export async function onRequest(context) {
       );
     }
 
-    const bookingRecord = {
-      customer_name: String(body.customer_name).trim(),
-      customer_phone: String(body.customer_phone).trim(),
-      preferred_course: "Slot Booking",
-      status: "pending",
-      source: "slot-page",
-      preferred_date: body.preferred_date,
-      preferred_time: body.preferred_time,
-      message: `Slot booking via website: ${body.preferred_date} at ${body.preferred_time}`,
+    // Call the SECURITY DEFINER RPC. anon only needs EXECUTE on this
+    // function — it cannot read or write booking_requests directly, so
+    // student names/phones stay private.
+    const rpcPayload = {
+      p_customer_name: String(body.customer_name).trim(),
+      p_customer_phone: String(body.customer_phone).trim(),
+      p_preferred_date: body.preferred_date,
+      p_preferred_time: body.preferred_time,
     };
 
-    const response = await fetch(`${supabaseUrl}/rest/v1/booking_requests`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${supabaseAnonKey}`,
-        Prefer: "return=representation",
-      },
-      body: JSON.stringify(bookingRecord),
-    });
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/submit_slot_booking`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+          Prefer: "return=representation",
+        },
+        body: JSON.stringify(rpcPayload),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Supabase insert error:", response.status, errorText);
+      // Log a safe diagnostic (no credentials or personal data) for debugging.
+      console.error("Slot booking RPC failed:", response.status, errorText);
+      const status = response.status === 400 ? 400 : 503;
+      const errorBody = { error: "Booking submission failed" };
+      if (response.status === 400) {
+        errorBody.details = ["Please check your name and phone number."];
+      }
       return new Response(
-        JSON.stringify({ error: "Booking submission failed" }),
-        { status: 502, headers: { "Content-Type": "application/json" } }
+        JSON.stringify(errorBody),
+        { status, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const data = await response.json();
-    const bookingId = Array.isArray(data) ? data[0]?.id : data?.id;
-    const id = bookingId ? String(bookingId).slice(0, 8) : "N/A";
+    // RPC returns the new booking id (bigint). PostgREST serializes a scalar
+    // return as the raw value — could be "123" or JSON-encoded. Parse defensively.
+    const rawBody = await response.text();
+    let bookingId = "N/A";
+    if (rawBody) {
+      try {
+        const parsed = JSON.parse(rawBody);
+        bookingId = String(parsed).replace(/\D/g, "").slice(0, 8);
+      } catch {
+        bookingId = String(rawBody).replace(/\D/g, "").slice(0, 8);
+      }
+    }
 
     const date = body.preferred_date;
     const time = body.preferred_time;
@@ -103,11 +120,11 @@ export async function onRequest(context) {
     return new Response(
       JSON.stringify({
         success: true,
-        bookingId: id,
+        bookingId,
         status: "pending",
         message: "Slot reserved! Our team will contact you shortly to confirm.",
         whatsappLink: `https://wa.me/923094461407?text=${encodeURIComponent(
-          `Hello Razia Driving Center\n\nI want to book a slot.\nDate: ${date}\nTime: ${time}\nBooking ID: #${id}`
+          `Hello Razia Driving Center\n\nI want to book a slot.\nDate: ${date}\nTime: ${time}\nBooking ID: #${bookingId}`
         )}`,
       }),
       {
