@@ -42,6 +42,13 @@ function formatTime12(timeStr) {
   return `${displayH}:${m} ${ampm}`;
 }
 
+// Mask a booked slot's student name: first 3 letters visible, rest → *
+// "Rizwan" → "Riz***", "Ali" → "Ali"
+function maskName(name) {
+  if (!name) return "";
+  return name.slice(0, 3) + "*".repeat(Math.max(0, name.length - 3));
+}
+
 // "Today" / "Tomorrow" / "in N days"
 function daysLeftLabel(dateStr) {
   const today = new Date();
@@ -371,7 +378,7 @@ export default function SlotAvailability() {
                                       </span>
                                     </div>
                                     <span className="mt-0.5 block truncate text-[11px] text-gray-500">
-                                      {entry.studentName}
+                                      {maskName(entry.studentName)}
                                     </span>
                                   </div>
                                 );
