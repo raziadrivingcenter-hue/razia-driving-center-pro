@@ -95,26 +95,18 @@ export default function MarqueeReviews({ reviews }) {
   const columns = distributeReviews(reviews, columnCount);
 
   return (
-    <div className="relative h-[500px] md:h-[600px]">
-      {/* Top fade + subtle blur — blends into the section bg (gray-50) */}
-      <div
-        className="
-          pointer-events-none absolute inset-x-0 top-0 z-10 h-28
-          bg-gradient-to-b from-gray-50 to-transparent
-          backdrop-blur-[3px]
-        "
-        aria-hidden="true"
-      />
-      {/* Bottom fade + subtle blur */}
-      <div
-        className="
-          pointer-events-none absolute inset-x-0 bottom-0 z-10 h-28
-          bg-gradient-to-t from-gray-50 to-transparent
-          backdrop-blur-[3px]
-        "
-        aria-hidden="true"
-      />
-
+    <div
+      className="relative h-[500px] md:h-[600px]"
+      style={{
+        // Smooth progressive fade at top & bottom — cards themselves
+        // dissolve into the gray-50 section background with no hard edge.
+        // ~10% fade zone per edge (half the original h-28 strip height).
+        maskImage:
+          "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+        WebkitMaskImage:
+          "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+      }}
+    >
       {/* Scrolling columns */}
       <div key={`marquee-${columnCount}`} className="flex h-full gap-4">
         {columns.map((colReviews, i) => (
