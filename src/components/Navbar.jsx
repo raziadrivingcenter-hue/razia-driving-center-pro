@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { useRouter } from "../router";
+import { cn } from "../lib/utils";
 import rdcLogo from "../assets/RDC-Logo.svg";
 
 const SERVICE_ROUTES = ["/driving-school-gulberg-lahore/", "/driving-school-gulberg-lahore"];
@@ -15,6 +16,18 @@ function Navbar({ onBookNow }) {
   const [activeSection, setActiveSection] = useState("home");
   const guidesRef = useRef(null);
   const guidesTimeout = useRef(null);
+
+  /* ── resizable-on-scroll ── */
+  const navRef = useRef(null);
+  const { scrollY } = useScroll({
+    target: navRef,
+    offset: ["start start", "end start"],
+  });
+  const [visible, setVisible] = useState(false);
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (latest > 100) setVisible(true);
+    else setVisible(false);
+  });
 
   const guideLinks = [
     { name: "Driving School in Gulberg", href: "/driving-school-gulberg-lahore/" },
@@ -54,8 +67,6 @@ function Navbar({ onBookNow }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // When on the service page, nav links should navigate to homepage sections.
-  // On the homepage, the standard anchor href works as-is.
   const handleNavClick = (e, sectionId) => {
     if (isServicePage) {
       e.preventDefault();
@@ -66,23 +77,18 @@ function Navbar({ onBookNow }) {
   // Active-section tracking via IntersectionObserver
   useEffect(() => {
     const sections = ["home", "courses", "reviews", "about", "contact"];
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
         });
       },
       { threshold: 0.5 }
     );
-
     sections.forEach((id) => {
       const section = document.getElementById(id);
       if (section) observer.observe(section);
     });
-
     return () => observer.disconnect();
   }, []);
 
@@ -98,29 +104,41 @@ function Navbar({ onBookNow }) {
     <>
       <style>{`
         .nav-btn-book {
-          background: #111;
-          color: #fff;
-          border-radius: 9999px;
-          padding: 8px 20px;
-          font-size: 13px;
-          font-weight: 600;
-          transition: background 0.2s ease;
-          white-space: nowrap;
+          background: #111; color: #fff; border-radius: 9999px;
+          padding: 8px 20px; font-size: 13px; font-weight: 600;
+          transition: background 0.2s ease; white-space: nowrap;
         }
         .nav-btn-book:hover { background: #333; }
-        @media (max-width: 768px) {
-          .nav-btn-book { padding: 6px 14px; font-size: 12px; }
-        }
+        @media (max-width: 768px) { .nav-btn-book { padding: 6px 14px; font-size: 12px; } }
       `}</style>
 
-      {/* Floating pill navbar */}
+      {/* ── sticky scroll container ── */}
       <motion.nav
+        ref={navRef}
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="fixed left-1/2 top-4 z-50 w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 md:top-4"
+        className="fixed inset-x-0 top-4 z-50 w-full"
       >
-        <div className="flex h-16 items-center justify-between rounded-full border border-gray-200 bg-white px-4 shadow-lg shadow-black/[0.06] md:px-6">
+        {/* ════════ DESKTOP (≥lg) ════════ */}
+        <motion.div
+          animate={{
+            backdropFilter: visible ? "blur(10px)" : "none",
+            boxShadow: visible
+              ? "0 0 24px rgba(34,42,53,0.06), 0 1px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(34,42,53,0.04), 0 0 4px rgba(34,42,53,0.08), 0 16px 68px rgba(47,48,55,0.05), 0 1px 0 rgba(255,255,255,0.1) inset"
+              : "none",
+            width: visible ? "60%" : "100%",
+            y: visible ? 20 : 0,
+          }}
+          transition={{ type: "spring", stiffness: 200, damping: 50 }}
+          style={{ minWidth: "820px" }}
+          className={cn(
+            "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full px-4 py-2 lg:flex",
+            visible
+              ? "border border-gray-200 bg-white/80"
+              : "border border-transparent bg-transparent"
+          )}
+        >
           {/* Left — RDC logo */}
           <a
             href={isServicePage ? "/" : "#home"}
@@ -131,17 +149,19 @@ function Navbar({ onBookNow }) {
             <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
           </a>
 
-          {/* Center — desktop text links */}
-          <div className="hidden items-center gap-7 md:flex">
+          {/* Center — text links */}
+          <div className="hidden items-center gap-7 lg:flex">
             {navLinks.map((link) => (
               <a
                 key={link.name}
                 href={isServicePage ? "/" + link.href : link.href}
                 onClick={(e) => handleNavClick(e, link.href.slice(1))}
-                className={`
-                  relative text-sm font-medium transition-colors duration-200
-                  ${activeSection === link.href.slice(1) ? "text-gray-900" : "text-gray-500 hover:text-gray-900"}
-                `}
+                className={cn(
+                  "relative text-sm font-medium transition-colors duration-200",
+                  activeSection === link.href.slice(1)
+                    ? "text-gray-900"
+                    : "text-gray-600 hover:text-gray-900"
+                )}
               >
                 {link.name}
               </a>
@@ -156,14 +176,17 @@ function Navbar({ onBookNow }) {
             >
               <button
                 onClick={() => setGuidesOpen((prev) => !prev)}
-                className="flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-gray-900"
+                className="flex items-center gap-1 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
                 aria-expanded={guidesOpen}
                 aria-haspopup="true"
               >
                 Learn &amp; Guides
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-200 ${guidesOpen ? "rotate-180" : ""}`}
+                  className={cn(
+                    "transition-transform duration-200",
+                    guidesOpen && "rotate-180"
+                  )}
                 />
               </button>
 
@@ -194,26 +217,71 @@ function Navbar({ onBookNow }) {
             </div>
           </div>
 
-          {/* Right — Book Now + mobile menu button */}
+          {/* Right — Book Now + mobile toggle */}
           <div className="flex items-center gap-2">
             <button onClick={onBookNow} className="nav-btn-book">
               Book Now
             </button>
-
-            {/* Mobile menu toggle */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={menuOpen}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-50 md:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-50 lg:hidden"
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
-        </div>
+        </motion.div>
+
+        {/* ════════ MOBILE (<lg) ════════ */}
+        <motion.div
+          animate={{
+            backdropFilter: visible ? "blur(10px)" : "none",
+            boxShadow: visible
+              ? "0 0 24px rgba(34,42,53,0.06), 0 1px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(34,42,53,0.04), 0 0 4px rgba(34,42,53,0.08), 0 16px 68px rgba(47,48,55,0.05), 0 1px 0 rgba(255,255,255,0.1) inset"
+              : "none",
+            width: visible ? "92%" : "100%",
+            paddingRight: visible ? "12px" : "0px",
+            paddingLeft: visible ? "12px" : "0px",
+            borderRadius: visible ? "24px" : "9999px",
+            y: visible ? 10 : 0,
+          }}
+          transition={{ type: "spring", stiffness: 200, damping: 50 }}
+          className={cn(
+            "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-row items-center justify-between rounded-full px-4 py-2 lg:hidden",
+            visible
+              ? "border border-gray-200 bg-white/80"
+              : "border border-gray-200 bg-white"
+          )}
+        >
+          {/* Left — RDC logo */}
+          <a
+            href={isServicePage ? "/" : "#home"}
+            onClick={(e) => handleNavClick(e, "home")}
+            className="shrink-0 transition-transform hover:scale-105"
+            aria-label="Razia Driving Center — Home"
+          >
+            <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
+          </a>
+
+          {/* Right — Book Now + toggle */}
+          <div className="flex items-center gap-2">
+            <button onClick={onBookNow} className="nav-btn-book">
+              Book Now
+            </button>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={menuOpen}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-50 lg:hidden"
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+        </motion.div>
       </motion.nav>
 
-      {/* Mobile menu overlay */}
+      {/* ════════ MOBILE SIDE PANEL ════════ */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -221,7 +289,7 @@ function Navbar({ onBookNow }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/40 md:hidden"
+            className="fixed inset-0 z-50 bg-black/40 lg:hidden"
             onClick={() => setMenuOpen(false)}
           >
             <motion.div
@@ -270,7 +338,10 @@ function Navbar({ onBookNow }) {
                     Learn &amp; Guides
                     <ChevronDown
                       size={16}
-                      className={`transition-transform duration-200 ${mobileGuidesOpen ? "rotate-180" : ""}`}
+                      className={cn(
+                        "transition-transform duration-200",
+                        mobileGuidesOpen && "rotate-180"
+                      )}
                     />
                   </button>
 
@@ -304,7 +375,6 @@ function Navbar({ onBookNow }) {
                 </div>
               </div>
 
-              {/* Spacer */}
               <div className="flex-1" />
 
               {/* Mobile Book Now */}
