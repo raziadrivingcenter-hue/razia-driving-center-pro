@@ -179,7 +179,7 @@ export default function SlotAvailability() {
       {/* Background image — 50% transparent, cover fills 1920×1080 desktop, crops on mobile */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25"
         style={{ backgroundImage: `url(${slotBg})` }}
       />
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
