@@ -42,7 +42,7 @@ function Hero({ onBookNow }) {
             {title.split("").map((char, i) => (
               <span
                 key={i}
-                className="inline-block transition-all duration-200 ease-out md:hover:font-black md:hover:text-[#FF6201]"
+                className={`inline-block transition-all duration-200 ease-out md:hover:font-black md:hover:text-[#FF6201]${/\d/.test(char) ? " font-dm-sans" : ""}`}
               >
                 {char === " " ? " " : char}
               </span>
@@ -133,19 +133,19 @@ function Hero({ onBookNow }) {
           >
             <span className="flex items-center gap-1.5 text-xs text-gray-400">
               <Users size={14} strokeWidth={1.8} />
-              <span className="font-semibold text-gray-600">5,221+</span> students
+              <span className="font-semibold text-gray-600"><span className="font-dm-sans">5,221+</span></span> students
             </span>
             <span className="flex items-center gap-1.5 text-xs text-gray-400">
               <Star size={14} strokeWidth={1.8} />
-              <span className="font-semibold text-gray-600">5.0</span> rating
+              <span className="font-semibold text-gray-600"><span className="font-dm-sans">5.0</span></span> rating
             </span>
             <span className="flex items-center gap-1.5 text-xs text-gray-400">
               <MessageSquareText size={14} strokeWidth={1.8} />
-              <span className="font-semibold text-gray-600">136</span> reviews
+              <span className="font-semibold text-gray-600"><span className="font-dm-sans">136</span></span> reviews
             </span>
             <span className="flex items-center gap-1.5 text-xs text-gray-400">
               <Calendar size={14} strokeWidth={1.8} />
-              <span className="font-semibold text-gray-600">Est. 2016</span>
+              <span className="font-semibold text-gray-600">Est. <span className="font-dm-sans">2016</span></span>
             </span>
           </motion.div>
 
