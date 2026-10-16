@@ -15,6 +15,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useRouter } from "../../router";
+import slotBg from "../../assets/slot-page-bg.png";
 
 import { fetchAvailability } from "../../lib/slotAvailability";
 import BookingForm from "./BookingForm";
@@ -174,8 +175,14 @@ export default function SlotAvailability() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16 pt-24">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+    <div className="min-h-screen bg-gray-50 pb-16 pt-24 relative overflow-hidden">
+      {/* Background image — 50% transparent, cover fills 1920×1080 desktop, crops on mobile */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
+        style={{ backgroundImage: `url(${slotBg})` }}
+      />
+      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
         {/* Back to home */}
         <button
           onClick={() => navigate("/")}
