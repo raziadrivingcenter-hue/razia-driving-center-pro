@@ -57,10 +57,19 @@ function GoogleReviews() {
     };
   }, []);
 
+  // Reviews that must never be shown (spam / off-topic), matched by name.
+  const BLOCKED_NAMES = ["dream girl"];
+
+  const isBlocked = (r) =>
+    BLOCKED_NAMES.includes((r.name || r.author_name || "").toLowerCase());
+
   // Use API reviews if loaded, otherwise fallback to hardcoded data.
   // Always prepend Yandex reviews so they appear regardless of API status.
-  const baseReviews = reviews || fallbackReviews;
-  const displayReviews = [...yandexReviews, ...baseReviews];
+  const baseReviews = (reviews || fallbackReviews).filter((r) => !isBlocked(r));
+  const displayReviews = [
+    ...yandexReviews.filter((r) => !isBlocked(r)),
+    ...baseReviews,
+  ];
 
   return (
     <section
