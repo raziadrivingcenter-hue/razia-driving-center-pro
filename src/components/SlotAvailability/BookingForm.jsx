@@ -203,9 +203,9 @@ export default function BookingForm({ slot, date, onBack }) {
               Back to slots
             </button>
             <div className="rounded-lg bg-gray-50 px-3 py-1.5 text-right">
-              <span className="text-xs font-medium text-gray-500">{date}</span>
+              <span className="font-dm-sans text-xs font-medium text-gray-500">{date}</span>
               <span className="mx-1.5 text-gray-300">·</span>
-              <span className="text-xs font-bold text-[#FF6201]">
+              <span className="font-dm-sans text-xs font-bold text-[#FF6201]">
                 {formatTime12(slot.time)}
               </span>
             </div>
@@ -330,7 +330,7 @@ export default function BookingForm({ slot, date, onBack }) {
                               setDistance(sanitized);
                             }}
                             placeholder="e.g. 5"
-                            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:ring-2 ${
+                            className={`font-dm-sans w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:ring-2 ${
                               errors.distance
                                 ? "border-red-300 focus:border-red-400 focus:ring-red-100"
                                 : "border-gray-200 focus:border-[#FF6201] focus:ring-[#FF6201]/20"
@@ -374,21 +374,21 @@ export default function BookingForm({ slot, date, onBack }) {
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-500">Course Fee</span>
-                  <span className="font-semibold text-gray-800">
+                  <span className="font-dm-sans font-semibold text-gray-800">
                     Rs. {pricing.courseFee.toLocaleString()}
                   </span>
                 </div>
                 {pricing.pickDropCharges > 0 && (
                   <div className="mt-1 flex items-center justify-between text-xs">
                     <span className="text-gray-500">Pick & Drop</span>
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-dm-sans font-semibold text-gray-800">
                       Rs. {pricing.pickDropCharges.toLocaleString()}
                     </span>
                   </div>
                 )}
                 <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-2">
                   <span className="text-sm font-bold text-gray-900">Total Payable</span>
-                  <span className="text-sm font-black text-[#FF6201]">
+                  <span className="font-dm-sans text-sm font-black text-[#FF6201]">
                     Rs. {pricing.totalPayable.toLocaleString()}
                   </span>
                 </div>
@@ -440,15 +440,15 @@ export default function BookingForm({ slot, date, onBack }) {
           <div className="mt-4 rounded-lg bg-gray-50 p-3 text-left text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">Booking ID</span>
-              <span className="font-bold text-[#FF6201]">#{result.bookingId}</span>
+              <span className="font-dm-sans font-bold text-[#FF6201]">#{result.bookingId}</span>
             </div>
             <div className="mt-1 flex justify-between">
               <span className="text-gray-500">Date</span>
-              <span className="font-medium text-gray-900">{date}</span>
+              <span className="font-dm-sans font-medium text-gray-900">{date}</span>
             </div>
             <div className="mt-1 flex justify-between">
               <span className="text-gray-500">Time</span>
-              <span className="font-medium text-gray-900">{formatTime12(slot.time)}</span>
+              <span className="font-dm-sans font-medium text-gray-900">{formatTime12(slot.time)}</span>
             </div>
             {course && (
               <div className="mt-1 flex justify-between">

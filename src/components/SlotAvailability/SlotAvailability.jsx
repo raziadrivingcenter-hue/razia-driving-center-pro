@@ -11,6 +11,7 @@ import {
   Sunrise,
   Sun,
   Sunset,
+  CalendarOff,
 } from "lucide-react";
 
 import { fetchAvailability } from "../../lib/slotAvailability";
@@ -72,6 +73,13 @@ export default function SlotAvailability() {
   );
 
   const handleDateChange = (e) => setSelectedDate(e.target.value);
+
+  // Clear the date + fetched data (used by "Pick a Different Date" on Sunday).
+  const handleResetDate = () => {
+    setSelectedDate("");
+    setData(null);
+    setError("");
+  };
 
   useEffect(() => {
     if (!selectedDate) return;
@@ -149,6 +157,12 @@ export default function SlotAvailability() {
   const availableCount = data?.availableCount ?? 0;
   const blockedCount = data?.blockedCount ?? 0;
 
+  // Sunday = weekly off. Still bookable on request (WhatsApp / special slot).
+  const isSunday = useMemo(() => {
+    if (!selectedDate) return false;
+    return new Date(selectedDate + "T00:00:00").getDay() === 0;
+  }, [selectedDate]);
+
   const handleSlotClick = (slot) => {
     const entry = slotStatus[slot];
     if (entry?.status === "available") {
@@ -179,7 +193,7 @@ export default function SlotAvailability() {
             max={maxDate}
             value={selectedDate}
             onChange={handleDateChange}
-            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-sm font-medium text-gray-900 shadow-sm outline-none transition focus:border-[#FF6201] focus:ring-4 focus:ring-[#FF6201]/10"
+            className="font-dm-sans w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-sm font-medium text-gray-900 shadow-sm outline-none transition focus:border-[#FF6201] focus:ring-4 focus:ring-[#FF6201]/10"
           />
         </div>
 
@@ -211,6 +225,42 @@ export default function SlotAvailability() {
                 .
               </span>
             </div>
+          ) : isSunday ? (
+            /* ── Sunday (weekly off) ── */
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mx-auto max-w-md rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm"
+            >
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-100">
+                <CalendarOff size={28} className="text-[#FF6201]" />
+              </div>
+              <h3 className="mt-4 text-lg font-black text-gray-900">Sunday — Weekly Off</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-500">
+                We are closed on Sundays, so no regular slots are shown. However,
+                we understand your schedule may require a Sunday lesson &mdash;
+                <span className="font-semibold text-gray-700">we can still arrange one for you on request!</span>
+              </p>
+              <div className="mt-5 space-y-2">
+                <a
+                  href={`https://wa.me/923094461407?text=${encodeURIComponent(
+                    `Hello Razia Driving Center,\n\nI would like to book a lesson on Sunday (${selectedDate}). Please arrange a slot for me.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full rounded-lg bg-[#25D366] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#1da851]"
+                >
+                  Request Sunday Slot on WhatsApp
+                </a>
+                <button
+                  type="button"
+                  onClick={handleResetDate}
+                  className="w-full rounded-lg border border-gray-200 px-5 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+                >
+                  Pick a Different Date
+                </button>
+              </div>
+            </motion.div>
           ) : (
             <AnimatePresence mode="wait">
               {!bookingSlot ? (
@@ -226,19 +276,19 @@ export default function SlotAvailability() {
                     <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 shadow-sm">
                       <CheckCircle2 size={14} className="text-green-500" />
                       <span className="text-xs font-medium text-gray-700">
-                        {availableCount} available
+                        <span className="font-dm-sans font-semibold">{availableCount}</span> available
                       </span>
                     </div>
                     <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 shadow-sm">
                       <Users size={14} className="text-red-400" />
                       <span className="text-xs font-medium text-gray-700">
-                        {blockedCount} booked
+                        <span className="font-dm-sans font-semibold">{blockedCount}</span> booked
                       </span>
                     </div>
                     <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 shadow-sm">
                       <CarFront size={14} className="text-gray-400" />
                       <span className="text-xs font-medium text-gray-700">
-                        {vehicles.length} vehicle{vehicles.length !== 1 ? "s" : ""}
+                        <span className="font-dm-sans font-semibold">{vehicles.length}</span> vehicle{vehicles.length !== 1 ? "s" : ""}
                       </span>
                     </div>
                   </div>
@@ -257,7 +307,7 @@ export default function SlotAvailability() {
                             <span className="text-sm font-bold text-gray-800">
                               {period.label}
                             </span>
-                            <span className="ml-auto text-[10px] font-medium text-gray-400">
+                            <span className="ml-auto font-dm-sans text-[10px] font-medium text-gray-400">
                               {period.range[0] / 60}:00–{period.range[1] / 60}:00
                             </span>
                           </div>
@@ -277,7 +327,7 @@ export default function SlotAvailability() {
                                     onClick={() => handleSlotClick(slot)}
                                     className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-left transition hover:border-green-300 hover:bg-green-100"
                                   >
-                                    <span className="text-sm font-semibold text-green-700">
+                                    <span className="font-dm-sans text-sm font-semibold text-green-700">
                                       {label}
                                     </span>
                                     <span className="rounded-full bg-green-200/60 px-2 py-0.5 text-[10px] font-bold text-green-700">
@@ -294,10 +344,10 @@ export default function SlotAvailability() {
                                     className="rounded-lg border border-red-100 bg-red-50 px-3 py-2"
                                   >
                                     <div className="flex items-center justify-between">
-                                      <span className="text-sm font-medium text-red-700">
+                                      <span className="font-dm-sans text-sm font-medium text-red-700">
                                         {label}
                                       </span>
-                                      <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">
+                                      <span className="font-dm-sans rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">
                                         {daysLeftLabel(selectedDate)}
                                       </span>
                                     </div>
@@ -312,7 +362,7 @@ export default function SlotAvailability() {
                               return (
                                 <div
                                   key={slot}
-                                  className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-300"
+                                  className="rounded-lg bg-gray-50 px-3 py-2 font-dm-sans text-sm text-gray-300"
                                 >
                                   {label}
                                   <span className="ml-1 text-xs">—</span>
