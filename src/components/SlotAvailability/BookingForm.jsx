@@ -91,6 +91,11 @@ export default function BookingForm({ slot, date, onBack }) {
         })
       : null;
 
+  // Display title (e.g. "PLUS Plan") for the stored course name.
+  const courseTitle = course
+    ? courses.find((c) => c.name === course)?.title || course
+    : "";
+
   const handleCheckDistance = () => {
     if (!navigator.geolocation) {
       setLocationError("Your browser does not support location detection.");
@@ -159,6 +164,7 @@ export default function BookingForm({ slot, date, onBack }) {
         preferred_date: date,
         preferred_time: slot.time,
         course,
+        course_title: courseTitle,
         distance_km: wantsPickDrop ? distanceNum : 0,
         home_service: wantsPickDrop,
         address: wantsPickDrop ? address.trim() : "",
@@ -446,7 +452,7 @@ export default function BookingForm({ slot, date, onBack }) {
             {course && (
               <div className="mt-1 flex justify-between">
                 <span className="text-gray-500">Course</span>
-                <span className="font-medium text-gray-900">{course}</span>
+                <span className="font-medium text-gray-900">{courseTitle}</span>
               </div>
             )}
           </div>
