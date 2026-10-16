@@ -253,7 +253,7 @@ function FooterLinks() {
             />
 
             <span className="text-gray-400">
-              +92 309 4461407
+              <span className="font-dm-sans">+92 309 4461407</span>
             </span>
 
           </div>
@@ -279,7 +279,7 @@ function FooterLinks() {
             />
 
             <span className="text-gray-400">
-              28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan
+              28/A, S Block, Gulberg 2, Lahore, <span className="font-dm-sans">54660</span>, Pakistan
             </span>
 
           </div>
@@ -292,7 +292,7 @@ function FooterLinks() {
             />
 
             <span className="text-gray-400">
-              Training 8 AM – 8 PM | Consultation 7 AM – 12 AM
+              Training <span className="font-dm-sans">8</span> AM – <span className="font-dm-sans">8</span> PM | Consultation <span className="font-dm-sans">7</span> AM – <span className="font-dm-sans">12</span> AM
             </span>
 
           </div>

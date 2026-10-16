@@ -10,11 +10,19 @@ import {
 const badges = [
   {
     icon: <Award size={16} />,
-    title: "Est. 2016",
+    title: (
+      <>
+        Est. <span className="font-dm-sans">2016</span>
+      </>
+    ),
   },
   {
     icon: <Users size={16} />,
-    title: "5,221 Students Trained",
+    title: (
+      <>
+        <span className="font-dm-sans">5,221</span> Students Trained
+      </>
+    ),
   },
   {
     icon: <Car size={16} />,

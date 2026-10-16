@@ -45,7 +45,7 @@ function Testimonials() {
             >
 
               <div className="text-2xl">
-                ⭐⭐⭐⭐⭐
+                <span className="font-dm-sans">⭐⭐⭐⭐⭐</span>
               </div>
 
               <p className="mt-6 leading-8 text-gray-600">

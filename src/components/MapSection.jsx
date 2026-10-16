@@ -56,7 +56,7 @@ function MapSection() {
                   <p className="mt-0.5 text-xs leading-snug text-gray-600">
                     28/A, S Block, Gulberg 2,
                     <br />
-                    Lahore, 54660, Pakistan
+                    Lahore, <span className="font-dm-sans">54660</span>, Pakistan
                   </p>
 
                 </div>
@@ -80,7 +80,7 @@ function MapSection() {
                   </h3>
 
                   <p className="text-xs text-gray-600">
-                    +92 309 4461407
+                    <span className="font-dm-sans">+92 309 4461407</span>
                   </p>
 
                 </div>
@@ -128,7 +128,7 @@ function MapSection() {
                   </h3>
 
                   <p className="text-xs text-gray-600">
-                    Monday – Sunday · 7:00 AM – 12:00 AM
+                    Monday – Sunday · <span className="font-dm-sans">7</span>:00 AM – <span className="font-dm-sans">12</span>:00 AM
                   </p>
 
                 </div>
@@ -152,7 +152,7 @@ function MapSection() {
                   </h3>
 
                   <p className="text-xs text-gray-600">
-                    Monday – Sunday · 8:00 AM – 8:00 PM
+                    Monday – Sunday · <span className="font-dm-sans">8</span>:00 AM – <span className="font-dm-sans">8</span>:00 PM
                   </p>
 
                 </div>

@@ -108,11 +108,11 @@ function Instructor() {
             >
 
               <h3 className="text-lg font-black text-[#FF6201]">
-                Est. 2016
+                Est. <span className="font-dm-sans">2016</span>
               </h3>
 
               <p className="text-xs font-semibold text-gray-800">
-                Trusted Since 2016
+                Trusted Since <span className="font-dm-sans">2016</span>
               </p>
 
             </div>
@@ -136,15 +136,15 @@ function Instructor() {
             >
 
               <div className="text-yellow-500 text-sm leading-none">
-                ★★★★★
+                <span className="font-dm-sans">★★★★★</span>
               </div>
 
               <h3 className="text-lg font-black">
-                5.0
+                <span className="font-dm-sans">5.0</span>
               </h3>
 
               <p className="text-xs text-gray-700">
-                136 Google Reviews
+                <span className="font-dm-sans">136</span> Google Reviews
               </p>
 
             </div>
@@ -186,7 +186,7 @@ function Instructor() {
                 text-gray-600
               "
             >
-              Since December 2016, Madam Razia has helped thousands of
+              Since December <span className="font-dm-sans">2016</span>, Madam Razia has helped thousands of
               beginners become confident, responsible and independent drivers
               across Lahore. Every lesson focuses on confidence, safety and
               real traffic experience.

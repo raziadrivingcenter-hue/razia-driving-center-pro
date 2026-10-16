@@ -57,7 +57,7 @@ function FooterBottom() {
           </div>
           <div>
             <h4 className="font-bold text-white">Google Reviews</h4>
-            <p className="text-sm text-gray-400">★★★★★ {stats.rating} from {stats.count} Reviews</p>
+            <p className="text-sm text-gray-400"><span className="font-dm-sans">★★★★★ {stats.rating}</span> from <span className="font-dm-sans">{stats.count}</span> Reviews</p>
           </div>
         </div>
         <div className="flex flex-wrap justify-center gap-4">
@@ -70,7 +70,7 @@ function FooterBottom() {
       </div>
       <div className="mt-8 border-t border-white/10 pt-6">
         <div className="flex flex-col items-center justify-between gap-4 text-center lg:flex-row">
-          <p className="text-gray-500">© 2026 Razia Driving Center. All Rights Reserved.</p>
+          <p className="text-gray-500">© <span className="font-dm-sans">2026</span> Razia Driving Center. All Rights Reserved.</p>
           <p className="font-medium text-gray-400">Learn Today. Drive Forever.</p>
         </div>
       </div>

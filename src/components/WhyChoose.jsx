@@ -30,21 +30,40 @@ const features = [
   },
   {
     icon: Users,
-    title: "5,221 Students",
+    title: (
+      <>
+        <span className="font-dm-sans">5,221</span> Students
+      </>
+    ),
     description:
       "Thousands of successful students have learned driving with us since 2016.",
   },
   {
     icon: Award,
-    title: "5.0 on Google",
-    description:
-      "Rated 5.0 stars from 136 verified Google reviews.",
+    title: (
+      <>
+        <span className="font-dm-sans">5.0</span> on Google
+      </>
+    ),
+    description: (
+      <>
+        Rated <span className="font-dm-sans">5.0</span> stars from{" "}
+        <span className="font-dm-sans">136</span> verified Google reviews.
+      </>
+    ),
   },
   {
     icon: Clock,
     title: "Training Hours",
-    description:
-      "Driving lessons 8 AM – 8 PM. Consultation 7 AM – 12 AM, 7 days a week.",
+    description: (
+      <>
+        Driving lessons <span className="font-dm-sans">8</span> AM –{" "}
+        <span className="font-dm-sans">8</span> PM. Consultation{" "}
+        <span className="font-dm-sans">7</span> AM –{" "}
+        <span className="font-dm-sans">12</span> AM,{" "}
+        <span className="font-dm-sans">7</span> days a week.
+      </>
+    ),
   },
   {
     icon: GraduationCap,

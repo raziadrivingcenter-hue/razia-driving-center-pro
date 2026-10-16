@@ -29,13 +29,13 @@ function Stats() {
     >
       <div className="mx-auto grid max-w-6xl grid-cols-4 gap-4 px-6 text-center">
 
-        <StatCard Icon={Users} value="5,221+" title="Students Trained" />
+        <StatCard Icon={Users} value={<span className="font-dm-sans">5,221+</span>} title="Students Trained" />
 
-        <StatCard Icon={Star} value="5.0" title="Google Rating" />
+        <StatCard Icon={Star} value={<span className="font-dm-sans">5.0</span>} title="Google Rating" />
 
-        <StatCard Icon={GraduationCap} value="136" title="Google Reviews" />
+        <StatCard Icon={GraduationCap} value={<span className="font-dm-sans">136</span>} title="Google Reviews" />
 
-        <StatCard Icon={Car} value="Est. 2016" title="Since 2016" />
+        <StatCard Icon={Car} value={<><span>Est. </span><span className="font-dm-sans">2016</span></>} title="Since 2016" />
 
       </div>
     </section>

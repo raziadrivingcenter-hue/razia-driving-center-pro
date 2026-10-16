@@ -77,7 +77,7 @@ function CustomCourseCard({ onBook }) {
                   transition={{ duration: 0.2 }}
                   className="text-3xl font-black leading-none text-gray-900 md:text-4xl"
                 >
-                  {days}
+                  <span className="font-dm-sans">{days}</span>
                 </motion.span>
               </AnimatePresence>
 
@@ -121,7 +121,7 @@ function CustomCourseCard({ onBook }) {
                   transition={{ duration: 0.2 }}
                   className="text-3xl font-black leading-none text-gray-900 md:text-4xl"
                 >
-                  {minutes}
+                  <span className="font-dm-sans">{minutes}</span>
                 </motion.span>
               </AnimatePresence>
 
@@ -214,7 +214,7 @@ function CustomCourseCard({ onBook }) {
                       transition={{ duration: 0.2 }}
                       className="text-xs font-black text-gray-900"
                     >
-                      {totalHours.toFixed(1)}
+                      <span className="font-dm-sans">{totalHours.toFixed(1)}</span>
                     </motion.span>
                   </AnimatePresence>
 
@@ -229,7 +229,7 @@ function CustomCourseCard({ onBook }) {
 
             <div className="mt-3 space-y-1.5">
               <Row label="Training Days" value={String(days)} />
-              <Row label="Daily Duration" value={`${minutes} Minutes`} />
+              <Row label="Daily Duration" value={`${minutes}`} unit="Minutes" />
             </div>
 
             {/* Estimated price */}
@@ -251,14 +251,14 @@ function CustomCourseCard({ onBook }) {
                     transition={{ duration: 0.25, ease: "easeOut" }}
                     className="font-mono text-2xl font-black leading-none text-gray-900"
                   >
-                    {calculatedPrice.toLocaleString()}
+                    <span className="font-dm-sans">{calculatedPrice.toLocaleString()}</span>
                   </motion.span>
                 </AnimatePresence>
               </div>
 
               {savings > 0 && (
                 <span className="mt-0.5 block text-[10px] font-semibold text-[#FF6201]">
-                  SAVE RS. {savings.toLocaleString()}
+                  SAVE RS. <span className="font-dm-sans">{savings.toLocaleString()}</span>
                 </span>
               )}
             </div>
@@ -332,7 +332,7 @@ function CustomCourseCard({ onBook }) {
 
 // Single breakdown row — label left, value right, compact.
 
-function Row({ label, value }) {
+function Row({ label, value, unit }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-xs text-gray-400">{label}</span>
@@ -346,7 +346,8 @@ function Row({ label, value }) {
           transition={{ duration: 0.15 }}
           className="text-xs font-bold text-gray-700"
         >
-          {value}
+          <span className="font-dm-sans">{value}</span>
+          {unit && ` ${unit}`}
         </motion.span>
       </AnimatePresence>
     </div>

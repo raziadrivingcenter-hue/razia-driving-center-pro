@@ -141,12 +141,12 @@ const faqs = [
   {
     question: "How much do driving lessons cost?",
     answer:
-      "Razia Driving Center offers three structured courses: the Basic Plan at Rs. 9,999 (7 days), the Economy / PLUS Plan at Rs. 14,500 (10 days), and the Pro / PRO+ Plan at Rs. 21,750 (15 days). A custom course builder is also available on the website.",
+      <>Razia Driving Center offers three structured courses: the Basic Plan at Rs. <span className="font-dm-sans">9,999</span> (<span className="font-dm-sans">7</span> days), the Economy / PLUS Plan at Rs. <span className="font-dm-sans">14,500</span> (<span className="font-dm-sans">10</span> days), and the Pro / PRO+ Plan at Rs. <span className="font-dm-sans">21,750</span> (<span className="font-dm-sans">15</span> days). A custom course builder is also available on the website.</>,
   },
   {
     question: "How long are the courses?",
     answer:
-      "The Basic Plan runs for 7 days, the Economy (PLUS) Plan for 10 days, and the Pro (PRO+) Plan for 15 days. Each daily session is 30 minutes of practical driving.",
+      <>The Basic Plan runs for <span className="font-dm-sans">7</span> days, the Economy (PLUS) Plan for <span className="font-dm-sans">10</span> days, and the Pro (PRO+) Plan for <span className="font-dm-sans">15</span> days. Each daily session is <span className="font-dm-sans">30</span> minutes of practical driving.</>,
   },
   {
     question: "Can complete beginners join?",
@@ -176,22 +176,22 @@ const faqs = [
   {
     question: "What are the training hours?",
     answer:
-      "Driving training runs from 8:00 AM to 8:00 PM, Monday to Sunday.",
+      <>Driving training runs from <span className="font-dm-sans">8</span>:<span className="font-dm-sans">00</span> AM to <span className="font-dm-sans">8</span>:<span className="font-dm-sans">00</span> PM, Monday to Sunday.</>,
   },
   {
     question: "What are the consultation hours?",
     answer:
-      "Consultation and customer support is available from 7:00 AM to 12:00 AM (midnight), Monday to Sunday.",
+      <>Consultation and customer support is available from <span className="font-dm-sans">7</span>:<span className="font-dm-sans">00</span> AM to <span className="font-dm-sans">12</span>:<span className="font-dm-sans">00</span> AM (midnight), Monday to Sunday.</>,
   },
   {
     question: "How is Razia Driving Center rated on Google?",
     answer:
-      "Razia Driving Center is rated 5.0 out of 5 on Google, based on 136 verified Google reviews.",
+      <>Razia Driving Center is rated <span className="font-dm-sans">5.0</span> out of <span className="font-dm-sans">5</span> on Google, based on <span className="font-dm-sans">136</span> verified Google reviews.</>,
   },
   {
     question: "When was Razia Driving Center established?",
     answer:
-      "Razia Driving Center was established in December 2016. It has taught thousands of students across Lahore since then.",
+      <>Razia Driving Center was established in December <span className="font-dm-sans">2016</span>. It has taught thousands of students across Lahore since then.</>,
   },
 ];
 

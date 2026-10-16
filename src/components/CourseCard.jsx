@@ -17,6 +17,11 @@ function CourseCard({
         parseInt(price.replace(/\D/g, ""))
       : 0;
 
+  // Split "7 Days Training" → number + unit text.
+  const durationParts = duration ? duration.match(/^(\d+)\s*(.*)$/) : null;
+  const durationNumber = durationParts ? durationParts[1] : duration;
+  const durationUnit = durationParts ? durationParts[2] : "";
+
   return (
     <div
       className={`
@@ -52,17 +57,17 @@ function CourseCard({
         {/* Pricing */}
         <div className="mt-3 flex items-baseline gap-2">
           <span className="text-3xl font-black leading-none text-gray-900">
-            {price}
+            <span className="font-dm-sans">{price}</span>
           </span>
           {oldPrice && (
             <span className="text-sm text-gray-400 line-through">
-              {oldPrice}
+              <span className="font-dm-sans">{oldPrice}</span>
             </span>
           )}
         </div>
         {savings > 0 && (
           <span className="mt-1 inline-block text-xs font-semibold text-[#FF6201]">
-            Save Rs. {savings.toLocaleString()}
+            Save Rs. <span className="font-dm-sans">{savings.toLocaleString()}</span>
           </span>
         )}
 
@@ -70,7 +75,7 @@ function CourseCard({
         <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
           <Clock3 size={14} className="shrink-0 text-[#FF6201]" />
           <span className="text-xs font-semibold text-gray-700">
-            {duration}
+            <span className="font-dm-sans">{durationNumber}</span> {durationUnit}
           </span>
         </div>
 

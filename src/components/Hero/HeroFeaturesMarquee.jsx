@@ -31,7 +31,7 @@ const FEATURES = [
   { icon: ClipboardList, label: "Complete Driving Programs" },
   { icon: CarFront, label: "Pick & Drop Available" },
   { icon: UserRound, label: "Female Instructor Available" },
-  { icon: Gift, label: "2 Km Free On Plus Plan" },
+  { icon: Gift, label: <><span className="font-dm-sans">2</span> Km Free On Plus Plan</> },
   { icon: CalendarClock, label: "Flexible Scheduling" },
   { icon: BadgeIndianRupee, label: "Affordable Prices" },
   { icon: Target, label: "Test Preparation" },

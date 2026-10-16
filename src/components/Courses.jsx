@@ -79,15 +79,15 @@ function Courses({ onCustomBooking }) {
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="font-bold text-[#FF6201]">&#x2022;</span>
-                    Up to 20 km radius
+                    Up to <span className="font-dm-sans">20</span> km radius
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="font-bold text-[#FF6201]">&#x2022;</span>
-                    First 2 km free on PLUS Plan
+                    First <span className="font-dm-sans">2</span> km free on PLUS Plan
                   </span>
                 </div>
                 <p className="text-xs text-gray-400">
-                  Charge: distance (km) &times; 50 &times; course days &times; 2.
+                  Charge: distance (km) &times; <span className="font-dm-sans">50</span> &times; course days &times; <span className="font-dm-sans">2</span>.
                   <a href="/driving-courses-lahore/" className="ml-1 font-semibold text-[#FF6201] underline">
                     Calculate your price
                   </a>

@@ -61,7 +61,7 @@ function Contact() {
                   </h4>
 
                   <p className="text-xs text-gray-600">
-                    +92 309 4461407
+                    <span className="font-dm-sans">+92 309 4461407</span>
                   </p>
                 </div>
 
@@ -101,7 +101,7 @@ function Contact() {
                   </h4>
 
                   <p className="text-xs text-gray-600">
-                    28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan
+                    28/A, S Block, Gulberg 2, Lahore, <span className="font-dm-sans">54660</span>, Pakistan
                   </p>
                 </div>
 
@@ -121,7 +121,7 @@ function Contact() {
                   </h4>
 
                   <p className="text-xs text-gray-600">
-                    Monday - Sunday · 7:00 AM – 12:00 AM
+                    Monday - Sunday · <span className="font-dm-sans">7</span>:00 AM – <span className="font-dm-sans">12</span>:00 AM
                   </p>
                 </div>
 
@@ -141,7 +141,7 @@ function Contact() {
                   </h4>
 
                   <p className="text-xs text-gray-600">
-                    Monday - Sunday · 8:00 AM – 8:00 PM
+                    Monday - Sunday · <span className="font-dm-sans">8</span>:00 AM – <span className="font-dm-sans">8</span>:00 PM
                   </p>
                 </div>
 
@@ -161,7 +161,7 @@ function Contact() {
 
             <p className="mt-1.5 text-xs text-gray-500">
               Call, message, or email us — we respond quickly during consultation
-              hours (7 AM – 12 AM, 7 days a week).
+              hours (<span className="font-dm-sans">7</span> AM – <span className="font-dm-sans">12</span> AM, <span className="font-dm-sans">7</span> days a week).
             </p>
 
             <div className="mt-4 space-y-2.5">
@@ -181,7 +181,7 @@ function Contact() {
                     Call Us
                   </h4>
                   <p className="text-xs text-gray-600">
-                    +92 309 4461407
+                    <span className="font-dm-sans">+92 309 4461407</span>
                   </p>
                 </div>
               </a>

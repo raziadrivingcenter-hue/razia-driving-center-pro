@@ -1,6 +1,6 @@
 function InstructorStats() {
   const stats = [
-    { number: "5.0★", label: "Google Rating" },
+    { number: "5.0", star: true, label: "Google Rating" },
     { number: "136", label: "Reviews" },
     { number: "5,221", label: "Students" },
   ];
@@ -25,7 +25,8 @@ function InstructorStats() {
         >
 
           <h3 className="text-lg font-black text-[#FF6201]">
-            {item.number}
+            <span className="font-dm-sans">{item.number}</span>
+            {item.star && "★"}
           </h3>
 
           <p className="mt-0.5 text-[11px] text-gray-500">

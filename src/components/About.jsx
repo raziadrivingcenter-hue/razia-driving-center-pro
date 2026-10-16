@@ -76,7 +76,7 @@ function About() {
               <div>
 
                 <h3 className="text-sm font-bold">
-                  Est. 2016
+                  Est. <span className="font-dm-sans">2016</span>
                 </h3>
 
                 <p className="mt-0.5 text-xs leading-snug text-gray-600">
@@ -103,7 +103,7 @@ function About() {
             />
 
             <h3 className="mt-2 text-xl font-black">
-              5,221
+              <span className="font-dm-sans">5,221</span>
             </h3>
 
             <p className="mt-0.5 text-xs text-gray-600">
@@ -120,11 +120,11 @@ function About() {
             />
 
             <h3 className="mt-2 text-xl font-black">
-              5.0 ★
+              <span className="font-dm-sans">5.0</span> ★
             </h3>
 
             <p className="mt-0.5 text-xs text-gray-600">
-              136 Google Reviews
+              <span className="font-dm-sans">136</span> Google Reviews
             </p>
 
           </div>
@@ -137,7 +137,7 @@ function About() {
             />
 
             <h3 className="mt-2 text-xl font-black">
-              Est. 2016
+              Est. <span className="font-dm-sans">2016</span>
             </h3>
 
             <p className="mt-0.5 text-xs text-gray-600">
@@ -154,7 +154,7 @@ function About() {
             />
 
             <h3 className="mt-2 text-xl font-black">
-              1-on-1
+              <span className="font-dm-sans">1-on-1</span>
             </h3>
 
             <p className="mt-0.5 text-xs text-gray-600">

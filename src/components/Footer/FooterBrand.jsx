@@ -14,7 +14,7 @@ function FooterBrand() {
       </h2>
 
       <p className="mt-3 max-w-sm text-sm leading-[1.5] text-gray-400">
-        Helping Lahore learn driving with confidence since 2016 through
+        Helping Lahore learn driving with confidence since <span className="font-dm-sans">2016</span> through
         professional one-to-one driving lessons with a female instructor.
       </p>
 
