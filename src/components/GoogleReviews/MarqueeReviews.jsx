@@ -36,7 +36,7 @@ function getDirection(index) {
 }
 
 // Varied durations (seconds) so columns don't move in lockstep
-const DURATIONS = [93.3, 106.7, 100, 116.7, 90];
+const DURATIONS = [93.3, 160, 150, 116.7, 90];
 
 // Viewport-driven column count
 function useColumnCount() {
