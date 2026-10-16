@@ -13,6 +13,12 @@ body,
   overflow-x: hidden;
 }
 
+/* Default font for the whole app — Raleway (headings + text).
+   Numerics override locally with `font-dm-sans` utility. */
+body {
+  font-family: var(--font-raleway);
+}
+
 html {
   scroll-behavior: smooth;
 }

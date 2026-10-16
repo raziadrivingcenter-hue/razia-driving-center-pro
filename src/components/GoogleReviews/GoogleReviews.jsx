@@ -76,6 +76,7 @@ function GoogleReviews() {
       id="reviews"
       data-aos="fade-up"
       className="bg-gray-50 pt-10 pb-8 overflow-visible"
+      style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
     >
       <div className="relative mx-auto max-w-6xl overflow-visible px-6">
 
