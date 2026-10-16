@@ -89,6 +89,11 @@ export async function onRequest(context) {
       p_address: wantsPickDrop && body.address ? String(body.address).trim() : null,
     };
 
+    // Bound the upstream RPC so a slow/hung Supabase edge can't hold the
+    // function past the browser's QUIC idle timeout (~30s). Fail fast → 503.
+    const rpcAbort = new AbortController();
+    const rpcTimeout = setTimeout(() => rpcAbort.abort(), 15000);
+
     const response = await fetch(
       `${supabaseUrl}/rest/v1/rpc/submit_slot_booking`,
       {
@@ -100,8 +105,9 @@ export async function onRequest(context) {
           Prefer: "return=representation",
         },
         body: JSON.stringify(rpcPayload),
+        signal: rpcAbort.signal,
       }
-    );
+    ).finally(() => clearTimeout(rpcTimeout));
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -152,6 +158,15 @@ export async function onRequest(context) {
       }
     );
   } catch (error) {
+    // An aborted RPC (15s timeout) is a transient upstream issue, not a
+    // code fault — surface it as 503 so the frontend can retry.
+    if (error.name === "AbortError") {
+      console.error("Slot booking RPC timed out");
+      return new Response(
+        JSON.stringify({ error: "Booking service is slow right now. Please try again." }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
+      );
+    }
     console.error("Slot booking function error:", error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
