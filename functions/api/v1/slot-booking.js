@@ -1,9 +1,8 @@
 /* ------------------------------------------------------------------ */
-/*  Cloudflare Pages Function — Lightweight slot-only booking.
+/*  Cloudflare Pages Function — Slot-page registration booking.
 /*  Route: /api/v1/slot-booking
 /*  Inserts into public.booking_requests (same table as the wizard).
-/*  Unlike /api/v1/bookings, this does NOT require a plan_type —
-/*  the visitor just wants to claim a specific slot (name + phone).
+/*  Collects name + phone + course + pick&drop, then reserves the slot.
 /* ------------------------------------------------------------------ */
 
 export async function onRequest(context) {
@@ -45,6 +44,20 @@ export async function onRequest(context) {
       errors.push("Preferred time is required");
     }
 
+    // Pick & Drop validation (optional — only when enabled)
+    const wantsPickDrop = body.home_service === true;
+    if (wantsPickDrop) {
+      if (!body.address || !String(body.address).trim()) {
+        errors.push("Pickup address is required for Pick & Drop");
+      }
+      const dist = Number(body.distance_km);
+      if (!Number.isFinite(dist) || dist <= 0) {
+        errors.push("Distance is required for Pick & Drop");
+      } else if (dist > 20) {
+        errors.push("Pick & Drop is only available up to 20 KM");
+      }
+    }
+
     if (errors.length > 0) {
       return new Response(
         JSON.stringify({ error: "Validation failed", details: errors }),
@@ -70,6 +83,10 @@ export async function onRequest(context) {
       p_customer_phone: String(body.customer_phone).trim(),
       p_preferred_date: body.preferred_date,
       p_preferred_time: body.preferred_time,
+      p_preferred_course: body.course ? String(body.course).trim() : null,
+      p_distance_km: wantsPickDrop ? Number(body.distance_km) : 0,
+      p_home_service: wantsPickDrop,
+      p_address: wantsPickDrop && body.address ? String(body.address).trim() : null,
     };
 
     const response = await fetch(
@@ -93,7 +110,7 @@ export async function onRequest(context) {
       const status = response.status === 400 ? 400 : 503;
       const errorBody = { error: "Booking submission failed" };
       if (response.status === 400) {
-        errorBody.details = ["Please check your name and phone number."];
+        errorBody.details = ["Please check your details and try again."];
       }
       return new Response(
         JSON.stringify(errorBody),
@@ -113,6 +130,7 @@ export async function onRequest(context) {
 
     const date = body.preferred_date;
     const time = body.preferred_time;
+    const course = body.course || "Slot Booking";
 
     return new Response(
       JSON.stringify({
@@ -121,7 +139,7 @@ export async function onRequest(context) {
         status: "pending",
         message: "Slot reserved! Our team will contact you shortly to confirm.",
         whatsappLink: `https://wa.me/923094461407?text=${encodeURIComponent(
-          `Hello Razia Driving Center\n\nI want to book a slot.\nDate: ${date}\nTime: ${time}\nBooking ID: #${bookingId}`
+          `Hello Razia Driving Center\n\nI want to book a slot.\nDate: ${date}\nTime: ${time}\nCourse: ${course}\nBooking ID: #${bookingId}`
         )}`,
       }),
       {
