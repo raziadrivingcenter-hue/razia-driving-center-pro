@@ -12,7 +12,9 @@ import {
   Sun,
   Sunset,
   CalendarOff,
+  ArrowLeft,
 } from "lucide-react";
+import { useRouter } from "../../router";
 
 import { fetchAvailability } from "../../lib/slotAvailability";
 import BookingForm from "./BookingForm";
@@ -58,6 +60,7 @@ const PERIODS = [
 ];
 
 export default function SlotAvailability() {
+  const { navigate } = useRouter();
   const [selectedDate, setSelectedDate] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -173,6 +176,15 @@ export default function SlotAvailability() {
   return (
     <div className="min-h-screen bg-gray-50 pb-16 pt-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        {/* Back to home */}
+        <button
+          onClick={() => navigate("/")}
+          className="mb-4 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-[#FF6201]"
+        >
+          <ArrowLeft size={16} />
+          Back to Home
+        </button>
+
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-black text-gray-900 sm:text-4xl">Book Your Slot</h1>
