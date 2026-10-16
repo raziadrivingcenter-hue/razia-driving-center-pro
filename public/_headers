@@ -4,23 +4,20 @@
 /assets/*
   Cache-Control: public, max-age=31536000, stale-while-revalidate=604800
 
-# Favicons — 24h cache
+# Static media — long cache, revalidate weekly.
+# (Scoped to one path segment so it can't shadow the root favicon rules.)
+/og-image.png
+  Cache-Control: public, max-age=604800
+/*.svg
+  Cache-Control: public, max-age=604800
+
+# Favicons — short cache so redesigns propagate quickly.
 /favicon.ico
   Cache-Control: public, max-age=86400
 /favicon-48.png
   Cache-Control: public, max-age=86400
 /apple-touch-icon.png
   Cache-Control: public, max-age=86400
-
-# Long-cache for other static media (images, fonts, favicon) — revalidate weekly
-/*.png
-  Cache-Control: public, max-age=604800
-
-/*.svg
-  Cache-Control: public, max-age=604800
-
-/*.ico
-  Cache-Control: public, max-age=604800
 
 # OpenAPI spec — short cache, correct content type
 /api/v1/openapi.json
