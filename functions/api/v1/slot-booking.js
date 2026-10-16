@@ -101,17 +101,14 @@ export async function onRequest(context) {
       );
     }
 
-    // RPC returns the new booking id (bigint). PostgREST serializes a scalar
-    // return as the raw value — could be "123" or JSON-encoded. Parse defensively.
-    const rawBody = await response.text();
+    // RPC returns the new booking id (UUID). PostgREST serializes a scalar
+    // return as the raw value — e.g. "354795d6-7b69-4b45-bcd2-ff7792e37c23".
+    // Use the first segment (8 hex chars) as the human-friendly booking ref.
+    const rawBody = await response.text().then((t) => t.trim().replace(/^"|"$/g, ""));
     let bookingId = "N/A";
     if (rawBody) {
-      try {
-        const parsed = JSON.parse(rawBody);
-        bookingId = String(parsed).replace(/\D/g, "").slice(0, 8);
-      } catch {
-        bookingId = String(rawBody).replace(/\D/g, "").slice(0, 8);
-      }
+      const uuidPrefix = rawBody.split("-")[0];
+      bookingId = uuidPrefix.length === 8 ? uuidPrefix : rawBody.slice(0, 8);
     }
 
     const date = body.preferred_date;

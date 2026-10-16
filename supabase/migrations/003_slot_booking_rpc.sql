@@ -14,20 +14,23 @@
 -- Ensure RLS is on (defense in depth — direct table access stays locked down)
 ALTER TABLE public.booking_requests ENABLE ROW LEVEL SECURITY;
 
--- Function used by the /api/v1/slot-booking endpoint (name + phone + slot)
-CREATE OR REPLACE FUNCTION public.submit_slot_booking(
+-- Function used by the /api/v1/slot-booking endpoint (name + phone + slot).
+-- booking_requests.id is a UUID, so this returns uuid (not bigint).
+-- Drop first so the return type can change if an older version exists.
+DROP FUNCTION IF EXISTS public.submit_slot_booking(text, text, date, text);
+CREATE FUNCTION public.submit_slot_booking(
   p_customer_name    text,
   p_customer_phone   text,
   p_preferred_date   date,
   p_preferred_time   text
 )
-RETURNS bigint
+RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_id bigint;
+  v_id uuid;
 BEGIN
   IF p_customer_name IS NULL OR length(trim(p_customer_name)) = 0 THEN
     RAISE EXCEPTION 'customer_name is required';
