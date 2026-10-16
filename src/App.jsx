@@ -7,6 +7,7 @@ const ServicePage = lazy(() => import("./components/ServicePage"));
 const DrivingGame = lazy(() => import("./components/DrivingGame/DrivingGame"));
 const PrivacyPolicy = lazy(() => import("./components/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/TermsOfService"));
+const SlotAvailability = lazy(() => import("./components/SlotAvailability/SlotAvailability"));
 
 function App() {
   const { route } = useRouter();
@@ -42,6 +43,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <TermsOfService />
+      </Suspense>
+    );
+  }
+
+  if (route === "/slot-availability/" || route === "/slot-availability") {
+    return (
+      <Suspense fallback={null}>
+        <SlotAvailability />
       </Suspense>
     );
   }

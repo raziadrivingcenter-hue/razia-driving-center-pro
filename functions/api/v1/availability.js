@@ -82,18 +82,24 @@ export async function onRequest(context) {
     const available = data.filter((s) => s.status === "available");
     const booked = data.filter((s) => s.status === "booked");
 
-    // Group by vehicle
+    // Group by vehicle — include ALL vehicles (available or booked-only)
+    // so grids can place booked slots in the correct column.
     const vehicles = {};
-    for (const slot of available) {
-      const vid = slot.vehicle_id;
+    const ensureVehicle = (vid, vname) => {
       if (!vehicles[vid]) {
-        vehicles[vid] = { id: vid, name: slot.vehicle_name || `Vehicle ${vid}`, slots: [] };
+        vehicles[vid] = { id: vid, name: vname || `Vehicle ${vid}`, slots: [] };
       }
-      vehicles[vid].slots.push({
+    };
+    for (const slot of available) {
+      ensureVehicle(slot.vehicle_id, slot.vehicle_name);
+      vehicles[slot.vehicle_id].slots.push({
         time: slot.slot_start,
         end: slot.slot_end,
         display: formatTime(slot.slot_start),
       });
+    }
+    for (const slot of booked) {
+      ensureVehicle(slot.vehicle_id, slot.vehicle_name);
     }
 
     return new Response(
@@ -114,6 +120,8 @@ export async function onRequest(context) {
           display: formatTime(s.slot_start),
           reason: "Booked",
           student_name: s.student_name,
+          vehicle_id: s.vehicle_id,
+          vehicle_name: s.vehicle_name,
         })),
         vehicles: Object.values(vehicles),
         total_slots: data.length,

@@ -41,6 +41,8 @@ export async function fetchAvailability(date) {
       display: s.display,
       reason: s.reason,
       studentName: s.student_name,
+      vehicleId: s.vehicle_id,
+      vehicleName: s.vehicle_name,
     })),
     vehicles: data.vehicles || [],
     synced: data.synced,

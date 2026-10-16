@@ -8,7 +8,7 @@ import rdcLogo from "../assets/RDC-Logo.svg";
 const SERVICE_ROUTES = ["/driving-school-gulberg-lahore/", "/driving-school-gulberg-lahore"];
 
 function Navbar({ onBookNow }) {
-  const { route, navigateToSection } = useRouter();
+  const { route, navigate, navigateToSection } = useRouter();
   const isServicePage = SERVICE_ROUTES.includes(route);
   const [menuOpen, setMenuOpen] = useState(false);
   const [guidesOpen, setGuidesOpen] = useState(false);
@@ -215,6 +215,19 @@ function Navbar({ onBookNow }) {
                 )}
               </AnimatePresence>
             </div>
+
+            {/* Book a Slot */}
+            <button
+              onClick={() => navigate("/slot-availability")}
+              className={cn(
+                "hidden rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 lg:inline-block",
+                route === "/slot-availability"
+                  ? "text-gray-900"
+                  : "text-gray-600 hover:text-gray-900"
+              )}
+            >
+              Book a Slot
+            </button>
           </div>
 
           {/* Right — Book Now + mobile toggle */}
@@ -327,6 +340,17 @@ function Navbar({ onBookNow }) {
                     {link.name}
                   </a>
                 ))}
+
+                {/* Book a Slot */}
+                <button
+                  onClick={() => {
+                    navigate("/slot-availability");
+                    setMenuOpen(false);
+                  }}
+                  className="rounded-lg px-3 py-2.5 text-left text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"
+                >
+                  Book a Slot
+                </button>
 
                 {/* Learn & Guides accordion */}
                 <div className="mt-1">
