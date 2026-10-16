@@ -1,6 +1,9 @@
 // =============================================================================
-// Generate favicon PNGs and ICO from the CorelDRAW SVG
-// Uses @resvg/resvg-js for reliable rendering (handles inches, viewBox, CSS)
+// Generate favicon PNGs and ICO.
+//
+// 48px variants (favicon-48.png, favicon.ico) are copied from the authoritative
+// src/assets/favicon-48x48.png source. The remaining sizes (32, 180, 512) are
+// rendered from public/favicon.svg via @resvg/resvg-js.
 // =============================================================================
 
 import { Resvg } from "@resvg/resvg-js";
@@ -10,35 +13,15 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(__dirname, "..", "public");
+const srcAssetsDir = join(__dirname, "..", "src", "assets");
 
-const svgPath = join(publicDir, "favicon.svg");
-const svgString = readFileSync(svgPath, "utf8");
+// --- 48px variants come from the authoritative PNG source ------------------
+const png48Path = join(srcAssetsDir, "favicon-48x48.png");
+const png48Buffer = readFileSync(png48Path);
 
-const targets = [
-  { name: "favicon-48.png", size: 48 },
-  { name: "favicon-32.png", size: 32 },
-  { name: "apple-touch-icon.png", size: 180 },
-  { name: "favicon.png", size: 512 },
-];
-
-console.log("Rendering favicons from CorelDRAW SVG...\n");
-
-for (const target of targets) {
-  const resvg = new Resvg(svgString, {
-    fitTo: { mode: "width", value: target.size },
-    font: { loadSystemFonts: false },
-    shapeRendering: 2, // geometricPrecision
-  });
-
-  const pngData = resvg.render();
-  const pngBuffer = pngData.asPng();
-
-  const outPath = join(publicDir, target.name);
-  writeFileSync(outPath, pngBuffer);
-
-  const kb = (pngBuffer.length / 1024).toFixed(1);
-  console.log(`  ✓ ${target.name} (${target.size}×${target.size}) — ${kb} KB`);
-}
+// favicon-48.png — straight copy of the source
+writeFileSync(join(publicDir, "favicon-48.png"), png48Buffer);
+console.log(`  ✓ favicon-48.png (48×48) — source copy`);
 
 // Build a real ICO file containing the 48×48 PNG
 // ICO format: header (6) + directory entry (16) + PNG data
@@ -61,15 +44,37 @@ function createIco(pngBuffer) {
   return Buffer.concat([header, dir, pngBuffer]);
 }
 
-// Generate ICO from the 48×48 render
-const resvg48 = new Resvg(svgString, {
-  fitTo: { mode: "width", value: 48 },
-  font: { loadSystemFonts: false },
-  shapeRendering: 2,
-});
-const icoBuffer = createIco(resvg48.render().asPng());
-const icoPath = join(publicDir, "favicon.ico");
-writeFileSync(icoPath, icoBuffer);
+const icoBuffer = createIco(png48Buffer);
+writeFileSync(join(publicDir, "favicon.ico"), icoBuffer);
 console.log(`  ✓ favicon.ico (48×48 inside) — ${(icoBuffer.length / 1024).toFixed(1)} KB`);
+
+// --- Remaining sizes rendered from the SVG --------------------------------
+const svgPath = join(publicDir, "favicon.svg");
+const svgString = readFileSync(svgPath, "utf8");
+
+const targets = [
+  { name: "favicon-32.png", size: 32 },
+  { name: "apple-touch-icon.png", size: 180 },
+  { name: "favicon.png", size: 512 },
+];
+
+console.log("\nRendering remaining sizes from favicon.svg...\n");
+
+for (const target of targets) {
+  const resvg = new Resvg(svgString, {
+    fitTo: { mode: "width", value: target.size },
+    font: { loadSystemFonts: false },
+    shapeRendering: 2, // geometricPrecision
+  });
+
+  const pngData = resvg.render();
+  const pngBuffer = pngData.asPng();
+
+  const outPath = join(publicDir, target.name);
+  writeFileSync(outPath, pngBuffer);
+
+  const kb = (pngBuffer.length / 1024).toFixed(1);
+  console.log(`  ✓ ${target.name} (${target.size}×${target.size}) — ${kb} KB`);
+}
 
 console.log("\nDone! All favicons generated.");

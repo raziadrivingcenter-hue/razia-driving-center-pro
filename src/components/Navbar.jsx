@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "../router";
+import rdcLogo from "../assets/RDC-Logo.svg";
 
 const SERVICE_ROUTES = ["/driving-school-gulberg-lahore/", "/driving-school-gulberg-lahore"];
 
@@ -120,14 +121,14 @@ function Navbar({ onBookNow }) {
         className="fixed left-1/2 top-4 z-50 w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 md:top-4"
       >
         <div className="flex h-16 items-center justify-between rounded-full border border-gray-200 bg-white px-4 shadow-lg shadow-black/[0.06] md:px-6">
-          {/* Left — RDC circle brand */}
+          {/* Left — RDC logo */}
           <a
             href={isServicePage ? "/" : "#home"}
             onClick={(e) => handleNavClick(e, "home")}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white transition-transform hover:scale-105"
+            className="shrink-0 transition-transform hover:scale-105"
             aria-label="Razia Driving Center — Home"
           >
-            RDC
+            <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
           </a>
 
           {/* Center — desktop text links */}
@@ -233,9 +234,7 @@ function Navbar({ onBookNow }) {
             >
               {/* Mobile header */}
               <div className="mb-6 flex items-center justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white">
-                  RDC
-                </div>
+                <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
                 <button
                   onClick={() => setMenuOpen(false)}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700"
