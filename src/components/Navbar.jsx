@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Menu, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "../router";
-
-import logo from "../assets/logo-white.png";
 
 const SERVICE_ROUTES = ["/driving-school-gulberg-lahore/", "/driving-school-gulberg-lahore"];
 
@@ -12,6 +10,7 @@ function Navbar({ onBookNow }) {
   const isServicePage = SERVICE_ROUTES.includes(route);
   const [menuOpen, setMenuOpen] = useState(false);
   const [guidesOpen, setGuidesOpen] = useState(false);
+  const [mobileGuidesOpen, setMobileGuidesOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const guidesRef = useRef(null);
   const guidesTimeout = useRef(null);
@@ -63,14 +62,9 @@ function Navbar({ onBookNow }) {
     }
   };
 
+  // Active-section tracking via IntersectionObserver
   useEffect(() => {
-    const sections = [
-      "home",
-      "courses",
-      "reviews",
-      "about",
-      "contact",
-    ];
+    const sections = ["home", "courses", "reviews", "about", "contact"];
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -80,14 +74,11 @@ function Navbar({ onBookNow }) {
           }
         });
       },
-      {
-        threshold: 0.5,
-      }
+      { threshold: 0.5 }
     );
 
     sections.forEach((id) => {
       const section = document.getElementById(id);
-
       if (section) observer.observe(section);
     });
 
@@ -104,38 +95,42 @@ function Navbar({ onBookNow }) {
 
   return (
     <>
-      {/* Navbar — orange gradient, white text */}
+      <style>{`
+        .nav-btn-book {
+          background: #111;
+          color: #fff;
+          border-radius: 9999px;
+          padding: 8px 20px;
+          font-size: 13px;
+          font-weight: 600;
+          transition: background 0.2s ease;
+          white-space: nowrap;
+        }
+        .nav-btn-book:hover { background: #333; }
+        @media (max-width: 768px) {
+          .nav-btn-book { padding: 6px 14px; font-size: 12px; }
+        }
+      `}</style>
+
+      {/* Floating pill navbar */}
       <motion.nav
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#FF3131] to-[#FF6201]"
+        className="fixed left-1/2 top-4 z-50 w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 md:top-4"
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-
-          {/* Brand */}
+        <div className="flex h-16 items-center justify-between rounded-full border border-gray-200 bg-white px-4 shadow-lg shadow-black/[0.06] md:px-6">
+          {/* Left — RDC circle brand */}
           <a
             href={isServicePage ? "/" : "#home"}
             onClick={(e) => handleNavClick(e, "home")}
-            className="flex items-center gap-2 leading-tight"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white transition-transform hover:scale-105"
+            aria-label="Razia Driving Center — Home"
           >
-            <img
-              src={logo}
-              alt="Razia Driving Center"
-              className="h-8 w-8 rounded-full object-contain"
-            />
-
-            <span className="flex flex-col">
-              <span className="text-base font-extrabold text-white">
-                Razia Driving Center
-              </span>
-              <span className="text-[11px] font-medium text-white/80">
-                Learn Today. Drive Forever.
-              </span>
-            </span>
+            RDC
           </a>
 
-          {/* Desktop Navigation */}
+          {/* Center — desktop text links */}
           <div className="hidden items-center gap-7 md:flex">
             {navLinks.map((link) => (
               <a
@@ -143,20 +138,15 @@ function Navbar({ onBookNow }) {
                 href={isServicePage ? "/" + link.href : link.href}
                 onClick={(e) => handleNavClick(e, link.href.slice(1))}
                 className={`
-                  relative
-                  text-sm
-                  font-medium
-                  transition-colors
-                  duration-200
-                  hover:text-white
-                  ${activeSection === link.href.slice(1) ? "text-white" : "text-white/80"}
+                  relative text-sm font-medium transition-colors duration-200
+                  ${activeSection === link.href.slice(1) ? "text-gray-900" : "text-gray-500 hover:text-gray-900"}
                 `}
               >
                 {link.name}
               </a>
             ))}
 
-            {/* Learn & Guides Dropdown */}
+            {/* Learn & Guides dropdown */}
             <div
               ref={guidesRef}
               className="relative"
@@ -165,7 +155,7 @@ function Navbar({ onBookNow }) {
             >
               <button
                 onClick={() => setGuidesOpen((prev) => !prev)}
-                className="flex items-center gap-1 text-sm font-medium text-white/80 transition-colors duration-200 hover:text-white"
+                className="flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-gray-900"
                 aria-expanded={guidesOpen}
                 aria-haspopup="true"
               >
@@ -183,7 +173,7 @@ function Navbar({ onBookNow }) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute left-1/2 top-full mt-3 w-[480px] -translate-x-1/2 rounded-xl bg-white p-5 shadow-2xl"
+                    className="absolute left-1/2 top-full mt-3 w-[480px] -translate-x-1/2 rounded-xl border border-gray-100 bg-white p-5 shadow-2xl"
                   >
                     <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                       {guideLinks.map((link) => (
@@ -191,7 +181,7 @@ function Navbar({ onBookNow }) {
                           key={link.name}
                           href={link.href}
                           onClick={() => setGuidesOpen(false)}
-                          className="rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-orange-50 hover:text-[#FF6201]"
+                          className="rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
                         >
                           {link.name}
                         </a>
@@ -203,167 +193,142 @@ function Navbar({ onBookNow }) {
             </div>
           </div>
 
-          {/* Right Side */}
-          <div className="flex items-center gap-3">
-
-            {/* Book Now */}
-            <button
-              onClick={onBookNow}
-              className="
-                btn-interactive
-                hidden
-                md:inline-flex
-                items-center
-                justify-center
-                rounded-full
-                bg-white
-                px-4
-                py-2
-                text-xs
-                font-bold
-                text-[#FF3131]
-                transition-transform
-                duration-200
-                hover:-translate-y-0.5
-              "
-            >
+          {/* Right — Book Now + mobile menu button */}
+          <div className="flex items-center gap-2">
+            <button onClick={onBookNow} className="nav-btn-book">
               Book Now
             </button>
 
-            {/* WhatsApp Pill */}
-            <a
-              href="https://wa.me/923094461407"
-              target="_blank"
-              rel="noreferrer"
-              className="
-                btn-interactive
-                hidden
-                md:inline-flex
-                items-center
-                justify-center
-                rounded-full
-                bg-[#25D366]
-                px-4
-                py-2
-                text-xs
-                font-bold
-                text-white
-                transition-transform
-                duration-200
-                hover:-translate-y-0.5
-              "
-            >
-              WhatsApp
-            </a>
-
-            {/* Mobile Hamburger */}
+            {/* Mobile menu toggle */}
             <button
-              onClick={() => setMenuOpen(true)}
+              onClick={() => setMenuOpen(!menuOpen)}
               aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={menuOpen}
-              className="rounded-lg p-2 text-white transition hover:bg-white/15 md:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-50 md:hidden"
             >
-              <Menu size={26} />
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-
           </div>
-
         </div>
-
       </motion.nav>
 
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 md:hidden">
-
-          <div className="absolute right-0 h-full w-72 bg-white p-8 shadow-2xl">
-
-            {/* Close Button */}
-            <button
-              onClick={() => setMenuOpen(false)}
-              className="mb-8 text-2xl font-bold transition hover:text-[#FF6201]"
+      {/* Mobile menu overlay */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-black/40 md:hidden"
+            onClick={() => setMenuOpen(false)}
+          >
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              className="absolute right-0 flex h-full w-80 max-w-[85vw] flex-col bg-white p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
             >
-              ✕
-            </button>
-
-            {/* Menu Links */}
-            <div className="flex flex-col gap-3 text-lg font-semibold">
-
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={isServicePage ? "/" + link.href : link.href}
-                  onClick={(e) => { handleNavClick(e, link.href.slice(1)); setMenuOpen(false); }}
-                  className="rounded-lg px-3 py-2 text-gray-800 transition-all duration-200 hover:translate-x-1 hover:bg-orange-50 hover:text-[#FF6201]"
-                >
-                  {link.name}
-                </a>
-              ))}
-
-              {/* Mobile Learn & Guides */}
-              <div className="mt-3 border-t border-gray-100 pt-3">
+              {/* Mobile header */}
+              <div className="mb-6 flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white">
+                  RDC
+                </div>
                 <button
-                  onClick={() => setGuidesOpen((prev) => !prev)}
-                  className="flex w-full items-center justify-between px-3 py-2 text-left text-sm font-bold text-gray-900"
-                  aria-expanded={guidesOpen}
+                  onClick={() => setMenuOpen(false)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700"
+                  aria-label="Close menu"
                 >
-                  Learn &amp; Guides
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform duration-200 ${guidesOpen ? "rotate-180" : ""}`}
-                  />
+                  <X size={20} />
                 </button>
-
-                <AnimatePresence>
-                  {guidesOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="flex flex-col gap-1 pb-2">
-                        {guideLinks.map((link) => (
-                          <a
-                            key={link.name}
-                            href={link.href}
-                            onClick={() => { setMenuOpen(false); setGuidesOpen(false); }}
-                            className="rounded-lg px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-orange-50 hover:text-[#FF6201]"
-                          >
-                            {link.name}
-                          </a>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
+
+              {/* Nav links */}
+              <div className="flex flex-col gap-1">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={isServicePage ? "/" + link.href : link.href}
+                    onClick={(e) => {
+                      handleNavClick(e, link.href.slice(1));
+                      setMenuOpen(false);
+                    }}
+                    className="rounded-lg px-3 py-2.5 text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"
+                  >
+                    {link.name}
+                  </a>
+                ))}
+
+                {/* Learn & Guides accordion */}
+                <div className="mt-1">
+                  <button
+                    onClick={() => setMobileGuidesOpen((prev) => !prev)}
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-base font-medium text-gray-800"
+                    aria-expanded={mobileGuidesOpen}
+                  >
+                    Learn &amp; Guides
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-200 ${mobileGuidesOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {mobileGuidesOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex flex-col gap-0.5 pb-2 pl-2">
+                          {guideLinks.map((link) => (
+                            <a
+                              key={link.name}
+                              href={link.href}
+                              onClick={() => {
+                                setMenuOpen(false);
+                                setMobileGuidesOpen(false);
+                              }}
+                              className="rounded-lg px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+                            >
+                              {link.name}
+                            </a>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Spacer */}
+              <div className="flex-1" />
+
+              {/* Mobile Book Now */}
+              <button
+                onClick={() => { onBookNow(); setMenuOpen(false); }}
+                className="nav-btn-book w-full py-3 text-base"
+              >
+                Book Now
+              </button>
 
               {/* Mobile WhatsApp */}
               <a
                 href="https://wa.me/923094461407"
                 target="_blank"
                 rel="noreferrer"
-                className="btn-interactive mt-2 inline-flex items-center justify-center rounded-full bg-[#25D366] px-5 py-2.5 text-sm font-bold text-white"
+                className="mt-3 flex items-center justify-center rounded-full border border-gray-200 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-50"
               >
                 Chat on WhatsApp
               </a>
-
-              {/* Mobile Book Button */}
-              <button
-                onClick={() => { onBookNow(); setMenuOpen(false); }}
-                className="btn-interactive inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201] px-5 py-2.5 text-sm font-bold text-white"
-              >
-                Book a Course
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
