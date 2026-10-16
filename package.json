@@ -9,6 +9,7 @@
     "build": "vite build",
     "postbuild": "node scripts/build-service-page.js",
     "lint": "eslint .",
+    "test:reviews": "node scripts/test-reviews-api.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

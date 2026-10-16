@@ -26,7 +26,10 @@ function GoogleReviews() {
     const loadReviews = async () => {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        // 8s: long enough to receive live reviews even when the API has to
+        // refresh its OAuth token + fetch a page or two; the API itself has
+        // a ~12s server-side budget and serves stale cache beyond that.
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         const response = await fetch("/api/reviews", {
           signal: controller.signal,
