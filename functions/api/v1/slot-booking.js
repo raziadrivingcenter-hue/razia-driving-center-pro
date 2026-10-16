@@ -83,7 +83,7 @@ export async function onRequest(context) {
       p_customer_phone: String(body.customer_phone).trim(),
       p_preferred_date: body.preferred_date,
       p_preferred_time: body.preferred_time,
-      // Store the internal course name in the DB; display title separately.
+      // Frontend sends the display title (PLUS Plan) — store it directly.
       p_preferred_course: body.course ? String(body.course).trim() : null,
       p_distance_km: wantsPickDrop ? Number(body.distance_km) : 0,
       p_home_service: wantsPickDrop,
@@ -137,9 +137,7 @@ export async function onRequest(context) {
 
     const date = body.preferred_date;
     const time = body.preferred_time;
-    // Prefer the human-friendly display title (e.g. "PLUS Plan"); fall back to
-    // the internal name, then a generic label.
-    const course = body.course_title || body.course || "Slot Booking";
+    const course = body.course || "Slot Booking";
 
     return new Response(
       JSON.stringify({

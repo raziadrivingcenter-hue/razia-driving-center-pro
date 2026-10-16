@@ -26,18 +26,19 @@ function formatTime12(timeStr) {
 }
 
 // Compact course selector — horizontal chips reusing course data.
+// Stores the display title (PLUS Plan) which is what goes to the DB.
 function CourseSelect({ value, onChange, error }) {
   return (
     <div>
       <p className="mb-1.5 text-xs font-semibold text-gray-600">Select Course</p>
       <div className="grid grid-cols-3 gap-2">
         {courses.map((c) => {
-          const selected = value === c.name;
+          const selected = value === c.title;
           return (
             <button
               type="button"
               key={c.name}
-              onClick={() => onChange(c.name)}
+              onClick={() => onChange(c.title)}
               className={`
                 rounded-lg border px-2 py-2 text-center transition
                 ${
@@ -83,18 +84,19 @@ export default function BookingForm({ slot, date, onBack }) {
   const wantsPickDrop = pickup === "Yes";
   const distanceNum = Number(distance) || 0;
 
+  // `course` holds the display title (e.g. "PLUS Plan"). The pricing engine
+  // keys off the internal name, so resolve it for the calculation only.
+  const courseInternal = course
+    ? courses.find((c) => c.title === course)?.name || course
+    : "";
+
   // Live pricing preview (mirrors the booking wizard).
   const pricing =
-    wantsPickDrop && distanceNum > 0 && course
-      ? calculateTotalPayable(course, distanceNum, true, {
-          planType: getPlanType(course),
+    wantsPickDrop && distanceNum > 0 && courseInternal
+      ? calculateTotalPayable(courseInternal, distanceNum, true, {
+          planType: getPlanType(courseInternal),
         })
       : null;
-
-  // Display title (e.g. "PLUS Plan") for the stored course name.
-  const courseTitle = course
-    ? courses.find((c) => c.name === course)?.title || course
-    : "";
 
   const handleCheckDistance = () => {
     if (!navigator.geolocation) {
@@ -164,7 +166,6 @@ export default function BookingForm({ slot, date, onBack }) {
         preferred_date: date,
         preferred_time: slot.time,
         course,
-        course_title: courseTitle,
         distance_km: wantsPickDrop ? distanceNum : 0,
         home_service: wantsPickDrop,
         address: wantsPickDrop ? address.trim() : "",
@@ -452,7 +453,7 @@ export default function BookingForm({ slot, date, onBack }) {
             {course && (
               <div className="mt-1 flex justify-between">
                 <span className="text-gray-500">Course</span>
-                <span className="font-medium text-gray-900">{courseTitle}</span>
+                <span className="font-medium text-gray-900">{course}</span>
               </div>
             )}
           </div>

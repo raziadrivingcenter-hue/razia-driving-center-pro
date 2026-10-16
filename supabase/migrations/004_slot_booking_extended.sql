@@ -38,6 +38,7 @@ BEGIN
 
   -- Build a human-readable message for staff (same style as the wizard endpoint)
   v_message := 'Slot booking via website: ' || p_preferred_date || ' at ' || p_preferred_time;
+  -- p_preferred_course stores the display title (PLUS Plan / Basic Plan / PRO+ Plan)
   IF p_preferred_course IS NOT NULL AND length(trim(p_preferred_course)) > 0 THEN
     v_message := v_message || ' | Course: ' || trim(p_preferred_course);
   END IF;
