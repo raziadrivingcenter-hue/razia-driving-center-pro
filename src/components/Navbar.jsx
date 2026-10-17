@@ -3,7 +3,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { useRouter } from "../router";
 import { cn } from "../lib/utils";
-import rdcLogo from "../assets/RDC-Logo.svg";
+import rdcLogo from "../assets/LOGORDC.svg";
 
 const SERVICE_ROUTES = ["/driving-school-gulberg-lahore/", "/driving-school-gulberg-lahore"];
 
