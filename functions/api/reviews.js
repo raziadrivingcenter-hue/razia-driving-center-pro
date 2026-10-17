@@ -43,6 +43,25 @@ const FETCH_TOTAL_TIMEOUT_MS =
 // fetch timeout above, so a slow page can't hang the request forever.
 const MAX_PAGES = 5;
 
+// Hard ceiling for the ENTIRE fetch path (token + all pages). This is the
+// last-resort guarantee that the handler responds even if individual
+// AbortControllers fail to abort (a Cloudflare edge case where a hung
+// connection survives abort). Without this, a single hung fetch leaves
+// pendingReviewsPromise set forever and blocks all future requests.
+const HARD_DEADLINE_MS =
+  globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__ ?? 15000;
+
+/* ── diagnostics (sanitized — never logs secrets, tokens, or review text) ── */
+
+const diagnostics = {
+  log(event, data = {}) {
+    console.log(JSON.stringify({ event, ts: Date.now(), ...data }));
+  },
+  warn(event, data = {}) {
+    console.warn(JSON.stringify({ event, ts: Date.now(), ...data }));
+  },
+};
+
 /* ── caches ── */
 
 let reviewsCache = null;     // fresh hourly cache
@@ -93,6 +112,38 @@ function fetchWithTimeout(url, options, timeoutMs) {
   );
 }
 
+// Race a promise against a hard deadline.  If the timer wins, reject with a
+// tagged Error so the catch path can categorize it.  The original promise is
+// NOT cancelled (JS can't do that), but we stop awaiting it and clear the
+// shared pending flag so later requests don't block on the same stuck promise.
+function withDeadline(promise, label) {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new Error(`deadline_exceeded:${label}`));
+    }, HARD_DEADLINE_MS);
+    // Don't keep the event loop alive on Node just for this timer.
+    if (typeof timer.unref === "function") timer.unref();
+
+    promise.then(
+      (val) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(val);
+      },
+      (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
 /* ── OAuth token ── */
 
 // Exchange refresh token for an access token.  Bounded timeout, and the
@@ -102,14 +153,17 @@ async function getAccessToken(env) {
 
   // Reuse a still-fresh token.
   if (cachedToken && now < cachedTokenExpiry) {
+    diagnostics.log("token_cache_hit", { expiresInMs: cachedTokenExpiry - now });
     return cachedToken;
   }
 
   // Deduplicate: if a refresh is already in flight, wait for it.
   if (pendingTokenPromise) {
+    diagnostics.log("token_dedup", { shared: true });
     return pendingTokenPromise;
   }
 
+  diagnostics.log("token_refresh_start");
   pendingTokenPromise = (async () => {
     const params = new URLSearchParams({
       client_id: env.GBP_CLIENT_ID,
@@ -149,7 +203,11 @@ async function getAccessToken(env) {
       const data = await res.json();
       cachedToken = data.access_token;
       cachedTokenExpiry = now + TOKEN_REUSE_MS;
+      diagnostics.log("token_refresh_success", { reuseForMs: TOKEN_REUSE_MS });
       return cachedToken;
+    } catch (err) {
+      diagnostics.warn("token_refresh_failed", { message: err.message });
+      throw err;
     } finally {
       pendingTokenPromise = null;
     }
@@ -166,6 +224,7 @@ async function fetchReviewPage(env, accessToken, url, pageToken) {
   let query = `pageSize=20&orderBy=updateTime desc`;
   if (pageToken) query += `&pageToken=${encodeURIComponent(pageToken)}`;
 
+  diagnostics.log("page_fetch_start", { pageToken: pageToken ? "yes" : "no" });
   const res = await fetchWithTimeout(
     `${fullUrl}${query}`,
     {
@@ -179,11 +238,13 @@ async function fetchReviewPage(env, accessToken, url, pageToken) {
 
   if (!res.ok) {
     const status = res.status;
-    console.error("GBP page fetch failed", status);
+    diagnostics.warn("page_fetch_failed", { status });
     throw new Error(`gbp_page_failed_${status}`);
   }
 
-  return res.json();
+  const json = await res.json();
+  diagnostics.log("page_fetch_success", { count: json.reviews?.length ?? 0 });
+  return json;
 }
 
 // Fetch reviews from Google Business Profile API with bounded pagination.
@@ -285,6 +346,47 @@ function getLastGoodFallback() {
   return null;
 }
 
+// Deduplicate concurrent review fetches: if a fetch is already in flight,
+// share its result instead of hammering Google a second time.  The shared
+// promise is cleared in a `finally` so concurrent waiters always release,
+// and the outer `withDeadline` bounds the whole thing.
+async function fetchReviewsWithDedup(env) {
+  if (pendingReviewsPromise) {
+    diagnostics.log("reviews_fetch_dedup", { shared: true });
+    try {
+      return await pendingReviewsPromise;
+    } finally {
+      // Only the owner clears the flag; waiters just release their own await.
+    }
+  }
+
+  const work = (async () => {
+    const token = await getAccessToken(env);
+    const data = await fetchReviewsFromGoogle(env, token);
+    const rawReviews = data.reviews || [];
+    const normalized = rawReviews.map(normalizeReview);
+    return buildResponse(normalized, data);
+  })();
+
+  pendingReviewsPromise = work;
+  try {
+    return await work;
+  } finally {
+    pendingReviewsPromise = null;
+  }
+}
+
+// Categorize a failure for diagnostics without exposing secrets or tokens.
+function categorizeError(error) {
+  if (error.name === "AbortError") return "timeout";
+  if (error.message === "token_refresh_failed") return "token_refresh_failed";
+  if (error.message.startsWith("deadline_exceeded")) return "hard_deadline";
+  if (error.message.startsWith("gbp_page_failed") || error.message.startsWith("GBP API returned")) {
+    return "gbp_api_error";
+  }
+  return "unknown";
+}
+
 /* ── request handler ── */
 
 export async function onRequest(context) {
@@ -308,6 +410,8 @@ export async function onRequest(context) {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  diagnostics.log("reviews_request", { hasCreds: !!(env.GBP_CLIENT_ID && env.GBP_CLIENT_SECRET && env.GBP_REFRESH_TOKEN && env.GBP_ACCOUNT_ID && env.GBP_LOCATION_ID) });
 
   // Check if credentials are configured
   const hasCreds =
@@ -353,32 +457,17 @@ export async function onRequest(context) {
 
   // Try to fetch fresh reviews from Google.
   try {
-    let result;
-
-    // Deduplicate concurrent fetches: if a fetch is already in flight,
-    // share its result instead of hammering Google a second time.
-    if (pendingReviewsPromise) {
-      result = await pendingReviewsPromise;
-    } else {
-      pendingReviewsPromise = (async () => {
-        const token = await getAccessToken(env);
-        const data = await fetchReviewsFromGoogle(env, token);
-        const rawReviews = data.reviews || [];
-        const normalized = rawReviews.map(normalizeReview);
-        return buildResponse(normalized, data);
-      })();
-
-      try {
-        result = await pendingReviewsPromise;
-      } finally {
-        pendingReviewsPromise = null;
-      }
-    }
+    // Run the deduped fetch, but ALWAYS bound it by the hard deadline so a
+    // single hung fetch (AbortController edge case) can never block this or
+    // future requests.  On deadline we fall through to the catch fallback.
+    const result = await withDeadline(fetchReviewsWithDedup(env), "reviews_fetch");
 
     // Success → refresh both the hourly cache and the fallback cache.
     reviewsCache = result;
     cacheTimestamp = now;
     rememberAsLastGood(result);
+
+    diagnostics.log("reviews_response", { cached: false, count: result.reviews?.length ?? 0 });
 
     return new Response(JSON.stringify({ ...result, cached: false }), {
       status: 200,
@@ -389,10 +478,19 @@ export async function onRequest(context) {
       },
     });
   } catch (error) {
-    console.error("Reviews function error:", error.message);
+    // Guarantee the shared pending flag is cleared on EVERY exit path —
+    // success, individual timeout, or hard deadline — so a stuck promise can
+    // never permanently block future requests.
+    pendingReviewsPromise = null;
+
+    diagnostics.warn("reviews_fetch_failed", {
+      category: categorizeError(error),
+      message: error.message,
+    });
 
     // Fallback 1: hourly cache may have just expired but still be present.
     if (reviewsCache) {
+      diagnostics.log("reviews_fallback_hourly_cache", { stale: true });
       return new Response(
         JSON.stringify({ ...reviewsCache, cached: true, stale: true }),
         {
@@ -409,7 +507,7 @@ export async function onRequest(context) {
     // Fallback 2: serve the last successful response (up to 7 days old).
     const lastGood = getLastGoodFallback();
     if (lastGood) {
-      console.warn("Reviews fetch failed, serving last-good fallback", {
+      diagnostics.warn("reviews_fallback_last_good", {
         lastGoodAgeMs: now - lastGoodTimestamp,
       });
       return new Response(
@@ -426,33 +524,23 @@ export async function onRequest(context) {
     }
 
     // Nothing to fall back to (cold start + Google down).  Categorize the
-    // failure for diagnostics without exposing any secrets or tokens.
-    let errorCategory = "unknown";
+    // failure for the response without exposing any secrets or tokens.
+    const errorCategory = categorizeError(error);
     let upstreamStatus = null;
-
-    if (error.name === "AbortError") {
-      // AbortError comes from fetchWithTimeout on a slow response.
-      errorCategory = "timeout";
-    } else if (error.message === "token_refresh_failed") {
-      errorCategory = "token_refresh_failed";
-    } else if (
-      error.message.startsWith("gbp_page_failed") ||
-      error.message.startsWith("GBP API returned")
-    ) {
-      errorCategory = "gbp_api_error";
+    if (error.message.startsWith("gbp_page_failed") || error.message.startsWith("GBP API returned")) {
       const m = error.message.match(/(\d{3})/);
       if (m) upstreamStatus = parseInt(m[1], 10);
     }
 
-    const diagnostics = { errorCategory };
-    if (upstreamStatus !== null) diagnostics.upstreamStatus = upstreamStatus;
+    const respDiagnostics = { errorCategory };
+    if (upstreamStatus !== null) respDiagnostics.upstreamStatus = upstreamStatus;
 
     return new Response(
       JSON.stringify({
         error: "Reviews temporarily unavailable",
         reviews: [],
         configured: true,
-        diagnostics,
+        diagnostics: respDiagnostics,
       }),
       {
         status: 503,

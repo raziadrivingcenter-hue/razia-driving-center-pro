@@ -318,6 +318,87 @@ await (async () => {
     });
   }
 
+  // 10. Permanently pending token refresh → hard deadline, NOT a hang.
+  // The token fetch never resolves; the handler must still respond within
+  // the hard deadline (not block forever, which is the production bug).
+  {
+    globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__ = 500;
+    globalThis.fetch = (url) => {
+      if (url.includes("oauth2.googleapis.com/token")) {
+        // NEVER resolves — simulates a hung token endpoint.
+        return new Promise(() => {});
+      }
+      return Promise.reject(new Error("unexpected fetch: " + url));
+    };
+    const handler = await freshHandler();
+    const start = Date.now();
+    const { status, body } = await callHandler(handler, makeEnv());
+    const elapsed = Date.now() - start;
+    delete globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__;
+    test("hung token refresh is bounded by hard deadline, returns 503", () => {
+      assert.equal(status, 503, `expected 503, got ${status}`);
+      assert.equal(body.diagnostics.errorCategory, "hard_deadline");
+      assert.ok(elapsed < 2000, `hung token took ${elapsed}ms — must be bounded well under 2s`);
+    });
+  }
+
+  // 11. Permanently pending Google page fetch → hard deadline, NOT a hang.
+  {
+    globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__ = 500;
+    globalThis.fetch = (url) => {
+      if (url.includes("oauth2.googleapis.com/token")) {
+        return Promise.resolve(jsonResponse({ access_token: "fake-token", expires_in: 3600 }));
+      }
+      if (url.includes("mybusiness.googleapis.com")) {
+        // NEVER resolves — simulates a hung GBP endpoint.
+        return new Promise(() => {});
+      }
+      return Promise.reject(new Error("unexpected fetch: " + url));
+    };
+    const handler = await freshHandler();
+    const start = Date.now();
+    const { status, body } = await callHandler(handler, makeEnv());
+    const elapsed = Date.now() - start;
+    delete globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__;
+    test("hung Google page fetch is bounded by hard deadline, returns 503", () => {
+      assert.equal(status, 503, `expected 503, got ${status}`);
+      assert.equal(body.diagnostics.errorCategory, "hard_deadline");
+      assert.ok(elapsed < 2000, `hung page fetch took ${elapsed}ms — must be bounded well under 2s`);
+    });
+  }
+
+  // 12. Concurrent request sharing a stuck in-flight promise must NOT hang.
+  // Request A starts a fetch that never resolves; request B arrives while A
+// is "in flight" and shares pendingReviewsPromise.  B must still get a
+  // bounded response, not block behind A forever.
+  {
+    globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__ = 500;
+    globalThis.fetch = (url) => {
+      if (url.includes("oauth2.googleapis.com/token")) {
+        return Promise.resolve(jsonResponse({ access_token: "fake-token", expires_in: 3600 }));
+      }
+      if (url.includes("mybusiness.googleapis.com")) {
+        // First call hangs forever; never resolves.
+        return new Promise(() => {});
+      }
+      return Promise.reject(new Error("unexpected fetch: " + url));
+    };
+    const handler = await freshHandler();
+    const start = Date.now();
+    // Fire two concurrent requests; the second shares the first's stuck promise.
+    const [resA, resB] = await Promise.all([
+      callHandler(handler, makeEnv()),
+      callHandler(handler, makeEnv()),
+    ]);
+    const elapsed = Date.now() - start;
+    delete globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__;
+    test("concurrent requests sharing a stuck promise both get bounded responses", () => {
+      assert.ok(resA.status === 503 || resA.status === 200, `req A unexpected status ${resA.status}`);
+      assert.ok(resB.status === 503 || resB.status === 200, `req B unexpected status ${resB.status}`);
+      assert.ok(elapsed < 3000, `concurrent hung requests took ${elapsed}ms — must be bounded`);
+    });
+  }
+
   console.log(`\n=== ${pass} passed, ${fail} failed ===\n`);
   if (fail > 0) {
     console.log("FAILURES:");
