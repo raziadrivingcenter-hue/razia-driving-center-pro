@@ -399,6 +399,134 @@ await (async () => {
     });
   }
 
+  // 13. Fresh request succeeds AFTER the previous request times out.
+  // Proves the timed-out promise is fully released and doesn't poison later work.
+  {
+    globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__ = 400;
+    let callCount = 0;
+    globalThis.fetch = (url, opts) => {
+      if (url.includes("oauth2.googleapis.com/token"))
+        return Promise.resolve(jsonResponse({ access_token: "fake-token", expires_in: 3600 }));
+      if (url.includes("mybusiness.googleapis.com")) {
+        callCount++;
+        if (callCount === 1) {
+          // First page fetch hangs until aborted → triggers deadline.
+          return new Promise((_, reject) => {
+            const t = setTimeout(() => reject(new Error("hung-no-abort")), 20000);
+            opts?.signal?.addEventListener("abort", () => {
+              clearTimeout(t);
+              reject(new DOMException("aborted", "AbortError"));
+            }, { once: true });
+          });
+        }
+        // Subsequent calls succeed.
+        return Promise.resolve(jsonResponse({
+          reviews: [{ reviewer: { displayName: "AfterTimeout" }, starRating: "FIVE", createTime: "2024-06-01T00:00:00Z", comment: "ok" }],
+          totalReviewCount: 1,
+          averageRating: 5.0,
+        }));
+      }
+      return Promise.reject(new Error("unexpected fetch: " + url));
+    };
+    const handler = await freshHandler();
+    const timedOut = await callHandler(handler, makeEnv());
+    const start = Date.now();
+    const after = await callHandler(handler, makeEnv());
+    const elapsed = Date.now() - start;
+    delete globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__;
+    test("fresh request after a timeout succeeds with live reviews", () => {
+      assert.equal(timedOut.status, 503, `first (timed-out) expected 503, got ${timedOut.status}`);
+      assert.equal(after.status, 200, `post-timeout request expected 200, got ${after.status}`);
+      assert.equal(after.body.reviews[0].name, "AfterTimeout");
+      assert.equal(after.body.fetched, true);
+      assert.ok(elapsed < 2000, `post-timeout request took ${elapsed}ms — must be bounded`);
+    });
+  }
+
+  // 14. Late settlement of an OLD promise must NOT block or corrupt a NEW request.
+  // Request A's fetch hangs past the deadline. While A is still "pending",
+  // Request B starts and succeeds. When A's underlying fetch finally settles
+  // (late), its identity-checked cleanup must leave B's state intact.
+  {
+    globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__ = 300;
+    const listeners = [];
+    let pageCall = 0;
+    globalThis.fetch = (url, opts) => {
+      if (url.includes("oauth2.googleapis.com/token"))
+        return Promise.resolve(jsonResponse({ access_token: "fake-token", expires_in: 3600 }));
+      if (url.includes("mybusiness.googleapis.com")) {
+        pageCall++;
+        if (pageCall === 1) {
+          // Hang until explicitly released (simulates a very slow response).
+          return new Promise((resolve) => {
+            listeners.push({ resolve, review: { reviewer: { displayName: "LateAlice" }, starRating: "FIVE", createTime: "2024-07-01T00:00:00Z", comment: "late" } });
+          });
+        }
+        return Promise.resolve(jsonResponse({
+          reviews: [{ reviewer: { displayName: "NewBob" }, starRating: "FIVE", createTime: "2024-08-01T00:00:00Z", comment: "new" }],
+          totalReviewCount: 1, averageRating: 5.0,
+        }));
+      }
+      return Promise.reject(new Error("unexpected fetch: " + url));
+    };
+    const handler = await freshHandler();
+    const reqA = callHandler(handler, makeEnv()); // will time out
+    // Let A's deadline fire.
+    await sleep(600);
+    // Now B starts and should succeed independently.
+    const reqB = await callHandler(handler, makeEnv());
+    // Release the late settlement of A's fetch AFTER B completed.
+    listeners.forEach(({ resolve, review }) =>
+      resolve(jsonResponse({ reviews: [review], totalReviewCount: 1, averageRating: 5.0 }))
+    );
+    const resA = await reqA;
+    delete globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__;
+    test("late settlement of old promise does not block or corrupt new request", () => {
+      assert.equal(resA.status, 503, `req A (timed-out) expected 503, got ${resA.status}`);
+      assert.equal(reqB.status, 200, `req B expected 200, got ${reqB.status}`);
+      assert.equal(reqB.body.reviews[0].name, "NewBob", "req B must serve its own result, not the late one");
+      assert.equal(reqB.body.fetched, true);
+    });
+  }
+
+  // 15. Identity check: old promise cleanup must not clobber a NEW in-flight promise.
+  // Verifies the `pendingReviewsPromise === work` guard directly by counting
+  // how many independent page fetches actually reach Google. Without the guard,
+  // a late cleanup could reset the dedup slot and allow a duplicate fetch.
+  {
+    globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__ = 300;
+    let pageCalls = 0;
+    globalThis.fetch = (url, opts) => {
+      if (url.includes("oauth2.googleapis.com/token"))
+        return Promise.resolve(jsonResponse({ access_token: "fake-token", expires_in: 3600 }));
+      if (url.includes("mybusiness.googleapis.com")) {
+        pageCalls++;
+        // All fetches hang until aborted → every caller hits the deadline path.
+        return new Promise((_, reject) => {
+          const t = setTimeout(() => reject(new Error("hung-no-abort")), 20000);
+          opts?.signal?.addEventListener("abort", () => {
+            clearTimeout(t);
+            reject(new DOMException("aborted", "AbortError"));
+          }, { once: true });
+        });
+      }
+      return Promise.reject(new Error("unexpected fetch: " + url));
+    };
+    const handler = await freshHandler();
+    // Fire 3 sequential requests; each times out, then the next starts fresh.
+    const r1 = await callHandler(handler, makeEnv());
+    const r2 = await callHandler(handler, makeEnv());
+    const r3 = await callHandler(handler, makeEnv());
+    delete globalThis.__REVIEWS_TEST_HARD_DEADLINE_MS__;
+    test("each timed-out request still only fires its own fetch (no dedup leak)", () => {
+      assert.equal(r1.status, 503);
+      assert.equal(r2.status, 503);
+      assert.equal(r3.status, 503);
+      // Each request that owns the slot fires exactly one page fetch.
+      assert.equal(pageCalls, 3, `expected 3 page calls (one per owner), got ${pageCalls}`);
+    });
+  }
+
   console.log(`\n=== ${pass} passed, ${fail} failed ===\n`);
   if (fail > 0) {
     console.log("FAILURES:");

@@ -164,7 +164,7 @@ async function getAccessToken(env) {
   }
 
   diagnostics.log("token_refresh_start");
-  pendingTokenPromise = (async () => {
+  const thisRefresh = (async () => {
     const params = new URLSearchParams({
       client_id: env.GBP_CLIENT_ID,
       client_secret: env.GBP_CLIENT_SECRET,
@@ -209,11 +209,17 @@ async function getAccessToken(env) {
       diagnostics.warn("token_refresh_failed", { message: err.message });
       throw err;
     } finally {
-      pendingTokenPromise = null;
+      // Identity check: only clear if this refresh is still the current one,
+      // so a late settlement from an old timed-out refresh can't clobber a
+      // newer in-flight refresh's reference.
+      if (pendingTokenPromise === thisRefresh) {
+        pendingTokenPromise = null;
+      }
     }
   })();
 
-  return pendingTokenPromise;
+  pendingTokenPromise = thisRefresh;
+  return thisRefresh;
 }
 
 /* ── reviews fetch ── */
@@ -372,7 +378,14 @@ async function fetchReviewsWithDedup(env) {
   try {
     return await work;
   } finally {
-    pendingReviewsPromise = null;
+    // Identity check: only clear if this work is still the current one.
+    // Without this, a late settlement from an OLD timed-out promise would
+    // clobber a NEWER in-flight promise's reference, breaking dedup and
+    // allowing concurrent duplicate fetches (the catch block already
+    // nulled the slot to unblock new requests).
+    if (pendingReviewsPromise === work) {
+      pendingReviewsPromise = null;
+    }
   }
 }
 
