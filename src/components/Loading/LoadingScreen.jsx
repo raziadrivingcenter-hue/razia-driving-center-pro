@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import logo from "../../assets/logo-white.png";
+import logo from "../../assets/LOGORDC.svg";
 
 function LoadingScreen() {
   return (
@@ -23,51 +23,49 @@ function LoadingScreen() {
         items-center
         justify-center
         overflow-hidden
-        bg-gradient-to-br
-        from-[#FF3131]
-        to-[#FF6201]
+        bg-white
         pointer-events-none
         will-change-transform
       "
     >
       {/* Subtle Background Pattern — Road Lines */}
 
-      <div className="absolute inset-0 overflow-hidden opacity-[0.07]">
+      <div className="absolute inset-0 overflow-hidden opacity-[0.04]">
         <div className="absolute inset-0" style={{
           backgroundImage: `
-            linear-gradient(90deg, white 1px, transparent 1px),
-            linear-gradient(white 1px, transparent 1px)
+            linear-gradient(90deg, #FF6201 1px, transparent 1px),
+            linear-gradient(#FF6201 1px, transparent 1px)
           `,
           backgroundSize: "60px 60px",
         }} />
       </div>
 
-      {/* Soft Glow Orbs */}
+      {/* Soft Brand Glow Orbs */}
 
       <motion.div
         animate={{
           scale: [1, 1.4, 1],
-          opacity: [0.2, 0.4, 0.2],
+          opacity: [0.08, 0.16, 0.08],
         }}
         transition={{
           repeat: Infinity,
           duration: 4,
           ease: "easeInOut",
         }}
-        className="absolute top-1/4 left-1/4 h-80 w-80 rounded-full bg-white/20 blur-[100px]"
+        className="absolute top-1/4 left-1/4 h-80 w-80 rounded-full bg-[#FF6201] blur-[100px]"
       />
 
       <motion.div
         animate={{
           scale: [1.2, 1, 1.2],
-          opacity: [0.15, 0.25, 0.15],
+          opacity: [0.06, 0.12, 0.06],
         }}
         transition={{
           repeat: Infinity,
           duration: 5,
           ease: "easeInOut",
         }}
-        className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-yellow-200/20 blur-[120px]"
+        className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-[#FF3131] blur-[120px]"
       />
 
       {/* Center Content */}
@@ -87,14 +85,14 @@ function LoadingScreen() {
           <motion.div
             animate={{
               scale: [1, 1.15, 1],
-              opacity: [0.5, 0, 0.5],
+              opacity: [0.3, 0, 0.3],
             }}
             transition={{
               repeat: Infinity,
               duration: 2,
               ease: "easeInOut",
             }}
-            className="absolute inset-0 -m-4 rounded-full border-2 border-white/30"
+            className="absolute inset-0 -m-4 rounded-full border-2 border-[#FF6201]/20"
           />
 
           <motion.img
@@ -105,7 +103,7 @@ function LoadingScreen() {
               relative
               w-44
               select-none
-              drop-shadow-[0_10px_30px_rgba(0,0,0,0.15)]
+              drop-shadow-[0_8px_24px_rgba(255,98,1,0.12)]
             "
           />
         </motion.div>
@@ -122,7 +120,7 @@ function LoadingScreen() {
             font-medium
             uppercase
             tracking-[0.3em]
-            text-white/70
+            text-gray-400
           "
         >
           Learn Today. Drive Forever.
@@ -136,7 +134,7 @@ function LoadingScreen() {
           transition={{ delay: 0.5, duration: 0.4 }}
           className="mt-12 w-48"
         >
-          <div className="h-1 overflow-hidden rounded-full bg-white/15">
+          <div className="h-1 overflow-hidden rounded-full bg-gray-100">
             <motion.div
               animate={{
                 x: ["-100%", "100%"],
@@ -146,7 +144,7 @@ function LoadingScreen() {
                 duration: 1.2,
                 ease: "easeInOut",
               }}
-              className="h-full w-1/2 rounded-full bg-white/80"
+              className="h-full w-1/2 rounded-full bg-gradient-to-r from-[#FF3131] to-[#FF6201]"
             />
           </div>
         </motion.div>
@@ -161,7 +159,7 @@ function LoadingScreen() {
         transition={{ delay: 0.6, duration: 0.5 }}
         className="absolute bottom-10 text-center"
       >
-        <p className="text-[11px] font-medium tracking-widest text-white/40">
+        <p className="text-[11px] font-medium tracking-widest text-gray-300">
           RAZIA DRIVING CENTER &bull; LAHORE
         </p>
       </motion.div>

@@ -8,6 +8,7 @@ const DrivingGame = lazy(() => import("./components/DrivingGame/DrivingGame"));
 const PrivacyPolicy = lazy(() => import("./components/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/TermsOfService"));
 const SlotAvailability = lazy(() => import("./components/SlotAvailability/SlotAvailability"));
+const PaymentProcedure = lazy(() => import("./components/PaymentProcedure"));
 
 function App() {
   const { route } = useRouter();
@@ -51,6 +52,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <SlotAvailability />
+      </Suspense>
+    );
+  }
+
+  if (route === "/payment-procedure/" || route === "/payment-procedure") {
+    return (
+      <Suspense fallback={null}>
+        <PaymentProcedure />
       </Suspense>
     );
   }

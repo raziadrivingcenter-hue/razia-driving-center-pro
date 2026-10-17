@@ -100,6 +100,15 @@ function FooterLinks() {
             </a>
           </li>
 
+          <li>
+            <a
+              href="/payment-procedure/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Payment Procedure
+            </a>
+          </li>
+
         </ul>
 
       </div>

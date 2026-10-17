@@ -139,14 +139,15 @@ function Navbar({ onBookNow }) {
               : "border border-transparent bg-transparent"
           )}
         >
-          {/* Left — RDC logo */}
+          {/* Left — RDC logo + branding */}
           <a
             href={isServicePage ? "/" : "#home"}
             onClick={(e) => handleNavClick(e, "home")}
-            className="shrink-0 transition-transform hover:scale-105"
+            className="flex shrink-0 items-center gap-2.5 transition-transform hover:scale-105"
             aria-label="Razia Driving Center — Home"
           >
             <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
+            <span className="text-[15px] font-bold tracking-tight text-gray-900">Razia Driving Center</span>
           </a>
 
           {/* Center — text links */}
@@ -267,14 +268,15 @@ function Navbar({ onBookNow }) {
               : "border border-gray-200 bg-white"
           )}
         >
-          {/* Left — RDC logo */}
+          {/* Left — RDC logo + branding */}
           <a
             href={isServicePage ? "/" : "#home"}
             onClick={(e) => handleNavClick(e, "home")}
-            className="shrink-0 transition-transform hover:scale-105"
+            className="flex shrink-0 items-center gap-2 transition-transform hover:scale-105"
             aria-label="Razia Driving Center — Home"
           >
             <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
+            <span className="text-[14px] font-bold tracking-tight text-gray-900">Razia Driving Center</span>
           </a>
 
           {/* Right — Book Now + toggle */}
