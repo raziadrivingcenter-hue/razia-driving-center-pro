@@ -191,7 +191,7 @@ function formatTimeShort(timeStr) {
   const m = parts[1];
   const ampm = h >= 12 ? "PM" : "AM";
   const displayH = h % 12 || 12;
-  return `${displayH}:${m} ${ampm}`;
+  return displayH + ":" + m + " " + ampm;
 }
 
 /* ------------------------------------------------------------------ */
@@ -294,7 +294,7 @@ export async function onRequest(context) {
       const results = await Promise.allSettled(
         days.map(async (date) => {
           const res = await fetch(
-            `${supabaseUrl}/rest/v1/slot_availability?slot_date=eq.${date}&select=slot_start,slot_end,status,vehicle_name,student_name&order=slot_start.asc`,
+            supabaseUrl + "/rest/v1/slot_availability?slot_date=eq." + date + "&select=slot_start,slot_end,status,vehicle_name,student_name&order=slot_start.asc",
             {
               headers: {
                 apikey: supabaseAnonKey,
@@ -363,7 +363,7 @@ export async function onRequest(context) {
               p_customer_name: bookingData.name,
               p_customer_phone: bookingData.phone,
               p_preferred_date: matchedSlot.date,
-              p_preferred_time: `${matchedSlot.dayName} ${matchedSlot.display}`,
+              p_preferred_time: matchedSlot.dayName + " " + matchedSlot.display,
               p_preferred_course: bookingData.course,
               p_distance_km: wantsPickDrop ? Number(bookingData.distance) || 0 : 0,
               p_home_service: wantsPickDrop,
@@ -375,13 +375,13 @@ export async function onRequest(context) {
               const rpcTimeout = setTimeout(() => rpcAbort.abort(), 15000);
 
               const response = await fetch(
-                `${supabaseUrl}/rest/v1/rpc/submit_slot_booking`,
+                supabaseUrl + "/rest/v1/rpc/submit_slot_booking",
                 {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
                     apikey: supabaseAnonKey,
-                    Authorization: `Bearer ${supabaseAnonKey}`,
+                    Authorization: "Bearer " + supabaseAnonKey,
                     Prefer: "return=representation",
                   },
                   body: JSON.stringify(rpcPayload),
@@ -399,7 +399,7 @@ export async function onRequest(context) {
 
                 return new Response(
                   JSON.stringify({
-                    reply: `🎉 Booking confirm! Aapki booking successful hai.\n\n📅 ${matchedSlot.dayName} ${matchedSlot.display}\n🚗 ${bookingData.course}\n🆔 Booking ID: #${bookingData.name}\n\nHum jaldi call karenge confirm karne ke liye. Shukriya! 🙏`,
+                    reply: "🎉 Booking confirm! Aapki booking successful hai.\n\n📅 " + matchedSlot.dayName + " " + matchedSlot.display + "\n🚗 " + bookingData.course + "\n🆔 Booking ID: #" + bookingId + "\n\nHum jaldi call karenge confirm karne ke liye. Shukriya! 🙏",
                     booking: { success: true, bookingId },
                   }),
                   { status: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
@@ -446,14 +446,14 @@ export async function onRequest(context) {
             const dateLabel = new Date(date + "T00:00:00").toLocaleDateString("en-PK", { month: "short", day: "numeric" });
             slotLines.push(dayName + " (" + dateLabel + "): " + times.join(", "));
             for (const s of slots) {
-              slotButtons.push(`${s.dayName} ${s.display}`);
+              slotButtons.push(s.dayName + " " + s.display);
             }
           }
 
           injectionMessages.push({
             role: "system",
             content:
-              `[SLOT_DATA] Available ${periodLabel || ""} slots for the upcoming days:\n\n` +
+              "[SLOT_DATA] Available " + (periodLabel || "") + " slots for the upcoming days:\n\n" +
               slotLines.join("\n") +
               selectedPeriod
                 ? "\n\nThe customer chose " + periodLabel + ". Show these slots as clickable buttons so they can pick one. Format: [BUTTONS:" + slotButtons.slice(0, 8).join("|") + "]"
@@ -495,7 +495,7 @@ export async function onRequest(context) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: "Bearer " + apiKey,
       },
       body: JSON.stringify(payload),
     });
