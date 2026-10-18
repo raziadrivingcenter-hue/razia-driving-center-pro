@@ -335,7 +335,8 @@ export async function onRequest(context) {
 
       if (match && bookingData.name && bookingData.phone && bookingData.course) {
         // Extract date and time from selection
-        const timeStr = `${match[2]}:${match[3]} ${match[4].toUpperCase()}`;
+        const meridiem = match[4].toUpperCase();
+        const timeStr = match[2] + ":" + match[3] + " " + meridiem;
 
         // Find the matching slot from recent days
         const allSlots = await fetchAvailability();
@@ -442,7 +443,8 @@ export async function onRequest(context) {
           for (const [date, slots] of Object.entries(byDay)) {
             const dayName = slots[0].dayName;
             const times = slots.map((s) => s.display);
-            slotLines.push(`${dayName} (${new Date(date + "T00:00:00").toLocaleDateString("en-PK", { month: "short", day: "numeric" })}): ${times.join(", ")}`);
+            const dateLabel = new Date(date + "T00:00:00").toLocaleDateString("en-PK", { month: "short", day: "numeric" });
+            slotLines.push(dayName + " (" + dateLabel + "): " + times.join(", "));
             for (const s of slots) {
               slotButtons.push(`${s.dayName} ${s.display}`);
             }
@@ -453,11 +455,9 @@ export async function onRequest(context) {
             content:
               `[SLOT_DATA] Available ${periodLabel || ""} slots for the upcoming days:\n\n` +
               slotLines.join("\n") +
-              `\n\n${
-                selectedPeriod
-                  ? `The customer chose ${periodLabel}. Show these slots as clickable buttons so they can pick one. Format: [BUTTONS:${slotButtons.slice(0, 8).join("|")}]`
-                  : `Group these by Morning / Afternoon / Evening and show as buttons.`
-              }`,
+              selectedPeriod
+                ? "\n\nThe customer chose " + periodLabel + ". Show these slots as clickable buttons so they can pick one. Format: [BUTTONS:" + slotButtons.slice(0, 8).join("|") + "]"
+                : "\n\nGroup these by Morning / Afternoon / Evening and show as buttons.",
           });
         } else {
           // No slots for selected period
@@ -465,7 +465,7 @@ export async function onRequest(context) {
           injectionMessages.push({
             role: "system",
             content:
-              `[SLOT_DATA] No slots available for ${periodLabel || "the selected period"}.\n\nApologize and offer to show slots for other time periods: ${otherPeriods.join(", ")}. Suggest the customer try another time.`,
+              "[SLOT_DATA] No slots available for " + (periodLabel || "the selected period") + ".\n\nApologize and offer to show slots for other time periods: " + otherPeriods.join(", ") + ". Suggest the customer try another time.",
           });
         }
       } else {
