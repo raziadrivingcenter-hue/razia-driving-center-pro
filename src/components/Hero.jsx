@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, Star, MessageSquareText, Calendar } from "lucide-react";
+import { Users, Star, MessageSquareText, Calendar, Sparkles } from "lucide-react";
 import HeroFeaturesMarquee from "./Hero/HeroFeaturesMarquee";
 
 const fadeUp = {
@@ -92,34 +92,34 @@ function Hero({ onBookNow }) {
                 hover:shadow-lg
               "
             >
-              Book a Course
+              View Slots
             </button>
             <a
-              href="https://wa.me/923094461407"
-              target="_blank"
-              rel="noreferrer"
+              href="/chat/"
               className="
                 btn-interactive
                 inline-flex
                 h-12
                 items-center
                 justify-center
+                gap-2
                 rounded-md
                 border-2
-                border-[#25D366]
+                border-[#FF6201]
                 bg-transparent
                 px-7
                 text-sm
                 font-semibold
-                text-[#25D366]
+                text-[#FF6201]
                 transition-all
                 duration-200
                 hover:-translate-y-0.5
-                hover:bg-[#25D366]
+                hover:bg-[#FF6201]
                 hover:text-white
               "
             >
-              Chat on WhatsApp
+              <Sparkles size={16} />
+              Chat With AI
             </a>
           </motion.div>
 

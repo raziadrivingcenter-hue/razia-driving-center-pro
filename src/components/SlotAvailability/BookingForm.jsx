@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -68,9 +68,15 @@ function CourseSelect({ value, onChange, error }) {
 }
 
 export default function BookingForm({ slot, date, onBack }) {
+  // Pre-select course when arriving from a course card (?course=...).
+  const initialCourse = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("course") || "";
+  }, []);
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [course, setCourse] = useState("");
+  const [course, setCourse] = useState(initialCourse);
   const [pickup, setPickup] = useState("No");
   const [address, setAddress] = useState("");
   const [distance, setDistance] = useState("");
@@ -98,40 +104,72 @@ export default function BookingForm({ slot, date, onBack }) {
         })
       : null;
 
-  const handleCheckDistance = () => {
+  // Open Google Maps directions. If origin is null, Maps uses its own
+  // location detection (works even when the browser geolocation API is blocked).
+  const openMaps = (origin) => {
+    setLocationStatus("opening");
+    const directionsUrl =
+      `https://www.google.com/maps/dir/?api=1` +
+      (origin ? `&origin=${origin}` : "") +
+      `&destination=31.5201889,74.3575145`;
+    window.open(directionsUrl, "_blank", "noopener,noreferrer");
+    setTimeout(() => setLocationStatus("idle"), 1500);
+  };
+
+  const handleCheckDistance = async () => {
     if (!navigator.geolocation) {
-      setLocationError("Your browser does not support location detection.");
+      setLocationError(
+        "Your browser does not support location detection — opening Google Maps so you can check the route manually."
+      );
+      openMaps(null);
       return;
     }
     setLocationError("");
     setLocationStatus("locating");
 
+    // Check permission state first — if previously denied, the browser will
+    // NOT show a popup; it fires the error callback immediately.
+    let permissionState = "prompt";
+    if (navigator.permissions) {
+      try {
+        const result = await navigator.permissions.query({ name: "geolocation" });
+        permissionState = result.state;
+      } catch {
+        // permissions API unsupported — fall through
+      }
+    }
+
+    if (permissionState === "denied") {
+      setLocationStatus("idle");
+      setLocationError(
+        "Location permission is blocked in your browser settings. Please enable it, or use Google Maps below to check your route."
+      );
+      openMaps(null);
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        setLocationStatus("opening");
-        const directionsUrl =
-          `https://www.google.com/maps/dir/?api=1` +
-          `&origin=${latitude},${longitude}` +
-          `&destination=31.5201889,74.3575145`;
-        window.open(directionsUrl, "_blank", "noopener,noreferrer");
-        setTimeout(() => setLocationStatus("idle"), 1500);
+        openMaps(`${latitude},${longitude}`);
       },
       (error) => {
         setLocationStatus("idle");
         switch (error.code) {
           case error.PERMISSION_DENIED:
             setLocationError(
-              "Location access is required to check your distance. Please allow and try again."
+              "Location access was denied. Please allow it in your browser settings and try again."
             );
             break;
           case error.TIMEOUT:
-            setLocationError("Location detection timed out. Please try again.");
+            setLocationError("Location detection timed out. Opening Google Maps instead.");
             break;
           default:
-            setLocationError("Could not detect your location. Please try again.");
+            setLocationError("Your location could not be detected. Opening Google Maps instead.");
             break;
         }
+        // Always fall back to Google Maps so the user can still check the route
+        openMaps(null);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );

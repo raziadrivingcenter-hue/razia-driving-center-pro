@@ -630,6 +630,25 @@ function AIChatWidget() {
                       📝 Book a Course
                     </button>
                     <button
+                      onClick={() => sendMessage("Show me available slots")}
+                      className="
+                        rounded-full
+                        border
+                        border-[#FF6201]/30
+                        bg-orange-50
+                        px-4
+                        py-2
+                        text-sm
+                        font-medium
+                        text-[#FF6201]
+                        transition-all
+                        hover:bg-[#FF6201]
+                        hover:text-white
+                      "
+                    >
+                      🕐 Available Slots
+                    </button>
+                    <button
                       onClick={() => sendMessage("Tell me about courses")}
                       className="
                         rounded-full

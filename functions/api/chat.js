@@ -40,46 +40,52 @@ Total = Distance (km) × Rs. 50 × Course Duration (days) × 2 (round trip)
 - Always mention the FREE 2 KM benefit when customer selects PLUS Plan
 
 ## Booking Flow (IMPORTANT — follow this step by step)
-When a customer wants to book, collect information ONE question at a time in this exact order:
+When a customer wants to book, collect information ONE question at a time in this exact order. This matches the booking form on the website's slot-availability page:
 
 1. **Name** — "Aap ka naam kya hai? (What is your name?)"
 2. **Phone** — "Aap ka WhatsApp number dein please" (03XX-XXXXXXX format)
-3. **Email** (optional) — "Email dena hai? Skip bhi kar sakte hain" (say they can skip)
-4. **Area/Location** — "Aap kahan rehte hain? (Which area in Lahore?)"
-5. **Course Selection** — Show course buttons. Reply with: "Great choice! Kaunsa course karna hai aapko? [BUTTONS:Basic Plan (Rs. 9,999)|PLUS Plan (Rs. 14,500)|PRO+ Plan (Rs. 21,750)]"
-6. **Pick & Drop** — After course is selected, ask: "Instructor aapke ghar se pick karke aaphe area mein training degi — Pick & Drop chahiye? 🚗 [BUTTONS:Yes, I need Pick & Drop|No, I'll come myself]"
-7. **Distance** (only if Pick & Drop = Yes) — "Razia Driving Center (Gulberg 2) se aapke area tak kitna hai? KM mein bataein (approximate theek hai). Google Maps check kar sakte hain 📍. Instructor aapke area mein training degi — center nahi aana hai." → then calculate and show the total price immediately
-8. **Pickup Address** (only if Pick & Drop = Yes, after distance) — "Aap ka full address ya nearest landmark bata dein please (for pickup). Jase: 'House 123, Street 5, Gulberg III' ya 'Near MM Alam Road, DHA'" → then continue
-9. **Preferred Date** — "Kab start karna hai? (e.g. next Monday, 15 September, etc.)"
-10. **Preferred Time** — Show time buttons: "[BUTTONS:Morning (8 AM - 12 PM)|Afternoon (12 PM - 4 PM)|Evening (4 PM - 8 PM)]"
-11. **Notes** (optional) — "Koi special baat hai batani? Skip bhi kar sakte hain 👍"
+3. **Course Selection** — Show course buttons. Reply with: "Great choice! Kaunsa course karna hai aapko? [BUTTONS:Basic Plan (Rs. 9,999)|PLUS Plan (Rs. 14,500)|PRO+ Plan (Rs. 21,750)]"
+4. **Pick & Drop** — After course is selected, ask: "Instructor aapke ghar se pick karke aapke area mein training degi — Pick & Drop chahiye? 🚗 [BUTTONS:Yes, I need Pick & Drop|No, I'll come myself]"
+5. **Distance** (only if Pick & Drop = Yes) — "Razia Driving Center (Gulberg 2) se aapke area tak kitna hai? KM mein bataein (approximate theek hai). Google Maps check kar sakte hain 📍. Instructor aapke area mein training degi — center nahi aana hai." → then calculate and show the total price immediately
+6. **Pickup Address** (only if Pick & Drop = Yes, after distance) — "Aap ka full address ya nearest landmark bata dein please (for pickup). Jase: 'House 123, Street 5, Gulberg III' ya 'Near MM Alam Road, DHA'" → then continue
 
-## Summary & Confirmation
-After collecting ALL information, show a clear summary like:
+## After Collecting Details — Send to Slot Page
+After you have collected Name, Phone, Course, and (if applicable) Pick & Drop + Distance + Address, tell the customer to complete their booking on the website's slot-availability page where they can pick a date and time slot.
+
+Reply with something like:
+"Bohat acha! Aapki details mil gayin hain. Ab apna preferred date aur time slot select karein website pe — booking confirm ho jayegi! 🎉 [BUTTONS:📅 Go to Slot Availability Page]"
+
+When the customer clicks "Go to Slot Availability Page", they will be taken to the slot-availability page to pick their date/time and complete the booking form.
+
+## Summary (show BEFORE sending to slot page)
+After collecting all details (before directing to the slot page), show a clear summary:
 
 ---
 📋 **Booking Summary**
 👤 Name: {name}
 📱 Phone: {phone}
-📧 Email: {email or "Not provided"}
-📍 Area: {area}
 🚗 Course: {course}
 🚕 Pick & Drop: {Yes/No}
 📏 Distance: {distance KM or "N/A"}
-📅 Date: {date}
-⏰ Time: {time}
-📝 Notes: {notes or "None"}
 💰 Course Fee: Rs. {fee}
 🚕 Pick & Drop Charges: Rs. {charges or 0}
 💵 **Total: Rs. {total}**
 ---
 
-Then ask: "Yeh summary dekh liya? Confirm karein toh booking ho jayegi! 🎉 [BUTTONS:✅ Confirm Booking|✏️ Edit Details]"
+Then direct them to the slot-availability page to pick date/time and confirm.
 
 ## Button Format
 When you want the customer to choose from options, ALWAYS use this exact format at the end of your message:
 [BUTTONS:Option 1|Option 2|Option 3]
 The system will render these as clickable buttons. Only use buttons for course selection, yes/no questions, and time slots.
+
+## Slot Availability
+When the customer asks about available slots, timings, schedule, or when they can book — respond with the slot data provided to you (look for the [SLOT_DATA] message from the system).
+- Training hours: 8 AM – 8 PM, 30-minute slots
+- Show available time slots grouped by time of day (Morning / Afternoon / Evening)
+- If no specific date is mentioned, show availability for the upcoming days
+- Always end with: "Koi slot pasand aaya? Main aapki booking kar sakti hoon! 📝 [BUTTONS:Yes, Book Now|Browse More Slots]"
+- If no slots are available: "Abhi koi slot available nahi hai. Apna preferred date bataein toh main check kar sakti hoon! 📅"
 
 ## Rules
 - Ask ONE question at a time — don't overwhelm the customer
@@ -135,10 +141,89 @@ export async function onRequest(context) {
       );
     }
 
+    /* ---------------------------------------------------------------- */
+    /*  Detect slot-availability intent and inject real data            */
+    /* ---------------------------------------------------------------- */
+
+    const SLOT_KEYWORDS = [
+      "slot", "slots", "available", "availability", "timing", "timings",
+      "schedule", "when can i", "free slot", "open slot", "book a slot",
+      "check slot", "khali slot", "kaunse din", "kaunse time",
+    ];
+
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+    const lastUserText = (lastUserMsg?.content || "").toLowerCase();
+    const asksForSlots = SLOT_KEYWORDS.some((kw) => lastUserText.includes(kw));
+
+    const injectionMessages = [];
+
+    if (asksForSlots) {
+      // Fetch availability for the next 3 days.
+      const supabaseUrl = env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseAnonKey) {
+        const days = [];
+        const now = new Date();
+        for (let i = 0; i < 3; i++) {
+          const d = new Date(now.getTime() + i * 86400000);
+          days.push(d.toISOString().split("T")[0]);
+        }
+
+        const results = await Promise.allSettled(
+          days.map(async (date) => {
+            const res = await fetch(
+              `${supabaseUrl}/rest/v1/slot_availability?slot_date=eq.${date}&select=slot_start,slot_end,status,vehicle_name,student_name&order=slot_start.asc`,
+              {
+                headers: {
+                  apikey: supabaseAnonKey,
+                  Authorization: `Bearer ${supabaseAnonKey}`,
+                },
+              }
+            );
+            if (!res.ok) return { date, slots: [] };
+            const data = await res.json();
+            return { date, slots: data };
+          })
+        );
+
+        const slotLines = [];
+        for (const r of results) {
+          if (r.status !== "fulfilled" || !r.value.slots.length) continue;
+          const { date, slots } = r.value;
+          const fmtDate = new Date(date + "T00:00:00").toLocaleDateString("en-PK", {
+            weekday: "short", month: "short", day: "numeric",
+          });
+          const available = slots.filter((s) => s.status === "available");
+          const times = available.map((s) => formatTimeShort(s.slot_start)).filter(Boolean);
+          if (times.length > 0) {
+            slotLines.push(`${fmtDate}: ${times.join(", ")}`);
+          }
+        }
+
+        if (slotLines.length > 0) {
+          injectionMessages.push({
+            role: "system",
+            content:
+              `[SLOT_DATA] Here are the available time slots for the upcoming days (training hours 8 AM – 8 PM, 30-min slots):\n\n` +
+              slotLines.join("\n") +
+              `\n\nUse this data to show the customer the available slots. Group them naturally and ask which slot they prefer.`,
+          });
+        } else {
+          injectionMessages.push({
+            role: "system",
+            content:
+              "[SLOT_DATA] No slots are currently available for the next 3 days. Tell the customer to try a different date or contact us on WhatsApp at 0309-4461407.",
+          });
+        }
+      }
+    }
+
     const payload = {
       model: LONGCAT_MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
+        ...injectionMessages,
         ...messages,
       ],
       temperature: 0.7,
@@ -190,4 +275,13 @@ export async function onRequest(context) {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+}
+
+function formatTimeShort(timeStr) {
+  const parts = timeStr.split(":");
+  const h = parseInt(parts[0], 10);
+  const m = parts[1];
+  const ampm = h >= 12 ? "PM" : "AM";
+  const displayH = h % 12 || 12;
+  return `${displayH}:${m} ${ampm}`;
 }

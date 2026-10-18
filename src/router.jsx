@@ -17,9 +17,10 @@ export function RouterProvider({ children }) {
   }, []);
 
   const navigate = useCallback((path) => {
-    if (path === window.location.pathname) return;
+    const pathname = path.split("?")[0];
+    if (pathname === window.location.pathname) return;
     window.history.pushState({}, "", path);
-    setRoute(path);
+    setRoute(pathname);
     window.scrollTo({ top: 0 });
     setScrollTarget(null);
   }, []);

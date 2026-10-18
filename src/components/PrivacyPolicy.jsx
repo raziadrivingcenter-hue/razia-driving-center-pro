@@ -31,7 +31,7 @@ function PrivacyPolicy() {
   return (
     <>
       <ScrollProgress />
-      <Navbar onBookNow={() => navigate("/#contact")} />
+      <Navbar onBookNow={() => navigate("/slot-availability/")} />
 
       {/* Hero */}
       <section className="bg-gray-50 py-16 md:py-20">

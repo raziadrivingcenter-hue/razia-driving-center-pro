@@ -7,7 +7,7 @@ import "aos/dist/aos.css";
 import "../App.css";
 
 import LoadingScreen from "./Loading/LoadingScreen";
-import BookingWizard from "./Booking/BookingWizard";
+import { useRouter } from "../router";
 
 import ScrollProgress from "./ScrollProgress";
 import Navbar from "./Navbar";
@@ -29,15 +29,23 @@ const AIChatWidget = lazy(() => import("./AIChatWidget"));
 
 function Homepage() {
   const [loading, setLoading] = useState(true);
-  const [bookingOpen, setBookingOpen] = useState(false);
-  const [bookingData, setBookingData] = useState(null);
+  const { navigate } = useRouter();
 
-  const openBooking = (data = null) => {
-    setBookingData(data);
-    setBookingOpen(true);
+  // Navigate to the slot-availability page, optionally carrying course data.
+  const goToSlotBooking = (data = null) => {
+    if (data?.course) {
+      const p = new URLSearchParams();
+      p.set("course", data.course);
+      if (data.days) p.set("days", data.days);
+      if (data.minutes) p.set("minutes", data.minutes);
+      if (data.price) p.set("price", data.price);
+      navigate(`/slot-availability/?${p.toString()}`);
+    } else {
+      navigate("/slot-availability/");
+    }
   };
 
-  // Read ?book= query param and open the booking wizard with that course.
+  // Read ?book= query param and redirect to the slot page with that course.
   const handleBookParam = () => {
     const params = new URLSearchParams(window.location.search);
     const book = params.get("book");
@@ -50,12 +58,12 @@ function Homepage() {
     };
 
     if (courseMap[book]) {
-      openBooking({ course: courseMap[book] });
+      goToSlotBooking({ course: courseMap[book] });
     } else if (book === "custom") {
       const days = params.get("days") || "";
       const minutes = params.get("minutes") || "";
       const price = params.get("price") || "";
-      openBooking({ course: "Custom Course", days, minutes, price });
+      goToSlotBooking({ course: "Custom Course", days, minutes, price });
     }
 
     // Clean the URL without reloading.
@@ -116,11 +124,11 @@ function Homepage() {
       <div className="min-h-screen bg-white">
         <ScrollProgress />
 
-        <Navbar onBookNow={() => openBooking()} />
+        <Navbar onBookNow={() => navigate("/slot-availability/")} />
 
-        <Hero onBookNow={() => openBooking()} />
+        <Hero onBookNow={() => navigate("/slot-availability/")} />
 
-        <Courses onCustomBooking={openBooking} />
+        <Courses onCustomBooking={goToSlotBooking} />
 
         <WhyChoose />
 
@@ -154,15 +162,6 @@ function Homepage() {
           <AIChatWidget />
         </Suspense>
       </div>
-
-      <BookingWizard
-        isOpen={bookingOpen}
-        bookingData={bookingData}
-        onClose={() => {
-          setBookingOpen(false);
-          setBookingData(null);
-        }}
-      />
     </>
   );
 }

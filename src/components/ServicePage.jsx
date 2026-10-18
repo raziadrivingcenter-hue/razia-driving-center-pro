@@ -51,7 +51,7 @@ function ServicePage() {
       />
 
       <ScrollProgress />
-      <Navbar onBookNow={() => navigateToSection("contact")} />
+      <Navbar onBookNow={() => navigate("/slot-availability/")} />
 
       {/* ===== HERO ===== */}
       <section className="relative overflow-hidden bg-gradient-to-br from-white via-orange-50/40 to-white pt-32 pb-20">

@@ -298,7 +298,7 @@ function PaymentProcedure() {
   return (
     <>
       <ScrollProgress />
-      <Navbar onBookNow={() => navigate("/#contact")} />
+      <Navbar onBookNow={() => navigate("/slot-availability/")} />
 
       {/* Hero */}
       <section className={isUrdu ? "bg-gray-50 py-16 md:py-20" : "bg-gray-50 py-16 md:py-20"} dir={isUrdu ? "rtl" : "ltr"}>

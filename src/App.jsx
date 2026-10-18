@@ -9,6 +9,7 @@ const PrivacyPolicy = lazy(() => import("./components/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/TermsOfService"));
 const SlotAvailability = lazy(() => import("./components/SlotAvailability/SlotAvailability"));
 const PaymentProcedure = lazy(() => import("./components/PaymentProcedure"));
+const AIChatPage = lazy(() => import("./components/AIChatPage"));
 
 function App() {
   const { route } = useRouter();
@@ -44,6 +45,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <TermsOfService />
+      </Suspense>
+    );
+  }
+
+  if (route === "/chat/" || route === "/chat") {
+    return (
+      <Suspense fallback={null}>
+        <AIChatPage />
       </Suspense>
     );
   }
