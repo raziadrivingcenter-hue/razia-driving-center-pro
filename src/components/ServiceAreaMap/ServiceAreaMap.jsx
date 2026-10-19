@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------ */
 /*  ServiceAreaMap — interactive Leaflet map showing Razia Driving
-/*  Center location, free 2km pick-up zone (PLUS Plan), and 10km max
+/*  Center location, free 2km pick-up zone (PLUS Plan), and 20km max
 /*  service radius. Uses OpenStreetMap tiles (free, no API key needed).
 /* ------------------------------------------------------------------ */
 import { useEffect } from "react";
@@ -63,7 +63,7 @@ export default function ServiceAreaMap() {
             Where We Pick &amp; Drop
           </h2>
           <p className="mt-4 text-base leading-relaxed text-gray-500">
-            Free pick-up &amp; drop within 2 KM on the <span className="font-semibold text-gray-700">PLUS Plan</span>. Available up to 10 KM
+            Free pick-up &amp; drop within 2 KM on the <span className="font-semibold text-gray-700">PLUS Plan</span>. Available up to 20 KM
             across Lahore.
           </p>
         </div>
@@ -76,7 +76,7 @@ export default function ServiceAreaMap() {
           </span>
           <span className="flex items-center gap-2 text-xs text-gray-500">
             <span className="h-3 w-3 rounded-full bg-orange-400" />
-            2–10 KM (Charged)
+            2–20 KM (Charged)
           </span>
           <span className="flex items-center gap-2 text-xs text-gray-500">
             <span className="h-3 w-3 rounded-full bg-red-500" />
@@ -98,7 +98,7 @@ export default function ServiceAreaMap() {
             />
             <FitBounds />
 
-            {/* 10 KM max service radius */}
+            {/* 20 KM max service radius */}
             <Circle
               center={CENTER}
               radius={10000}
