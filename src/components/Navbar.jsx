@@ -5,7 +5,6 @@ import { useRouter } from "../router";
 import { cn } from "../lib/utils";
 import rdcLogo from "../assets/LOGORDC.svg";
 
-const SERVICE_ROUTES = ["/driving-school-gulberg-lahore/", "/driving-school-gulberg-lahore"];
 
 /* Smart floating navbar constants */
 const SCROLL_THRESHOLD = 100;      // px before floating mode activates
@@ -17,7 +16,7 @@ const TOP_HOVER_ZONE = 28;          // px from top that triggers hover-reveal
 
 function Navbar({ onBookNow }) {
   const { route, navigate, navigateToSection } = useRouter();
-  const isServicePage = SERVICE_ROUTES.includes(route);
+  const isHomepage = route === "/" || route === "";
   const [menuOpen, setMenuOpen] = useState(false);
   const [guidesOpen, setGuidesOpen] = useState(false);
   const [mobileGuidesOpen, setMobileGuidesOpen] = useState(false);
@@ -171,7 +170,7 @@ function Navbar({ onBookNow }) {
   }, []);
 
   const handleNavClick = (e, sectionId) => {
-    if (isServicePage) {
+    if (!isHomepage) {
       e.preventDefault();
       navigateToSection(sectionId);
     }
@@ -274,7 +273,7 @@ function Navbar({ onBookNow }) {
           >
             {/* Left — RDC logo + branding */}
             <a
-              href={isServicePage ? "/" : "#home"}
+              href={isHomepage ? "#home" : "/"}
               onClick={(e) => handleNavClick(e, "home")}
               className="flex shrink-0 items-center gap-2.5 transition-transform hover:scale-105"
               aria-label="Razia Driving Center — Home"
@@ -305,7 +304,7 @@ function Navbar({ onBookNow }) {
                 return (
                   <a
                     key={link.name}
-                    href={isServicePage ? "/" + link.href : link.href}
+                    href={isHomepage ? link.href : "/" + link.href}
                     onClick={(e) => handleNavClick(e, link.href.slice(1))}
                     className={cn(
                       "relative text-sm font-medium transition-colors duration-200",
@@ -421,7 +420,7 @@ function Navbar({ onBookNow }) {
           >
             {/* Left — RDC logo + branding */}
             <a
-              href={isServicePage ? "/" : "#home"}
+              href={isHomepage ? "#home" : "/"}
               onClick={(e) => handleNavClick(e, "home")}
               className="flex shrink-0 items-center gap-2 transition-transform hover:scale-105"
               aria-label="Razia Driving Center — Home"
@@ -499,7 +498,7 @@ function Navbar({ onBookNow }) {
                   return (
                     <a
                       key={link.name}
-                      href={isServicePage ? "/" + link.href : link.href}
+                      href={isHomepage ? link.href : "/" + link.href}
                       onClick={(e) => {
                         handleNavClick(e, link.href.slice(1));
                         setMenuOpen(false);

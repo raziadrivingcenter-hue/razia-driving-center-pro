@@ -15,6 +15,7 @@ import {
   Loader2,
   PenSquare,
   BadgeCheck,
+  ArrowLeft,
 } from "lucide-react";
 
 import { supabase } from "../../lib/supabase";
@@ -315,7 +316,16 @@ export default function Community() {
       <main className="min-h-screen bg-white">
         {/* ── Hero ─────────────────────────────────────────────── */}
         <section className="bg-gray-50 py-16 md:py-20">
-          <div className="mx-auto max-w-4xl px-6 text-center">
+          <div className="mx-auto max-w-4xl px-6">
+            {/* Back button */}
+            <button
+              onClick={() => navigate("/")}
+              className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-[#FF6201]"
+            >
+              <ArrowLeft size={16} />
+              Back to Home
+            </button>
+            <div className="text-center">
             <span className="inline-block rounded-full bg-orange-100 px-3 py-1.5 text-xs font-semibold text-[#FF6201]">
               Community
             </span>
@@ -366,6 +376,7 @@ export default function Community() {
                   Sign in with Google
                 </button>
               )}
+            </div>
             </div>
           </div>
         </section>
