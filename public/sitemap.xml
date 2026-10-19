@@ -209,6 +209,18 @@ xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
 
+    <loc>https://raziadrivingcenter.com/community/</loc>
+
+    <lastmod>2026-10-19</lastmod>
+
+    <changefreq>weekly</changefreq>
+
+    <priority>0.7</priority>
+
+  </url>
+
+  <url>
+
     <loc>https://raziadrivingcenter.com/privacy-policy/</loc>
 
     <lastmod>2026-10-16</lastmod>

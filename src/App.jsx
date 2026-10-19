@@ -10,6 +10,7 @@ const TermsOfService = lazy(() => import("./components/TermsOfService"));
 const SlotAvailability = lazy(() => import("./components/SlotAvailability/SlotAvailability"));
 const PaymentProcedure = lazy(() => import("./components/PaymentProcedure"));
 const AIChatPage = lazy(() => import("./components/AIChatPage"));
+const Community = lazy(() => import("./components/Community/Community"));
 
 function App() {
   const { route } = useRouter();
@@ -69,6 +70,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <PaymentProcedure />
+      </Suspense>
+    );
+  }
+
+  if (route === "/community/" || route === "/community") {
+    return (
+      <Suspense fallback={null}>
+        <Community />
       </Suspense>
     );
   }

@@ -198,6 +198,7 @@ function Navbar({ onBookNow }) {
     { name: "Home", href: "#home" },
     { name: "Courses", href: "#courses" },
     { name: "Reviews", href: "#reviews" },
+    { name: "Community", href: "/community", path: true },
     { name: "About", href: "#about" },
     { name: "Contact", href: "#contact" },
   ];
@@ -284,21 +285,39 @@ function Navbar({ onBookNow }) {
 
             {/* Center — text links */}
             <div className="hidden items-center gap-7 lg:flex">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={isServicePage ? "/" + link.href : link.href}
-                  onClick={(e) => handleNavClick(e, link.href.slice(1))}
-                  className={cn(
-                    "relative text-sm font-medium transition-colors duration-200",
-                    activeSection === link.href.slice(1)
-                      ? "text-gray-900"
-                      : "text-gray-600 hover:text-gray-900"
-                  )}
-                >
-                  {link.name}
-                </a>
-              ))}
+              {navLinks.map((link) => {
+                if (link.path) {
+                  return (
+                    <button
+                      key={link.name}
+                      onClick={() => navigate(link.href)}
+                      className={cn(
+                        "relative text-sm font-medium transition-colors duration-200",
+                        route === link.href || route === link.href + "/"
+                          ? "text-gray-900"
+                          : "text-gray-600 hover:text-gray-900"
+                      )}
+                    >
+                      {link.name}
+                    </button>
+                  );
+                }
+                return (
+                  <a
+                    key={link.name}
+                    href={isServicePage ? "/" + link.href : link.href}
+                    onClick={(e) => handleNavClick(e, link.href.slice(1))}
+                    className={cn(
+                      "relative text-sm font-medium transition-colors duration-200",
+                      activeSection === link.href.slice(1)
+                        ? "text-gray-900"
+                        : "text-gray-600 hover:text-gray-900"
+                    )}
+                  >
+                    {link.name}
+                  </a>
+                );
+              })}
 
               {/* Learn & Guides dropdown */}
               <div
@@ -462,19 +481,35 @@ function Navbar({ onBookNow }) {
 
               {/* Nav links */}
               <div className="flex flex-col gap-1">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.name}
-                    href={isServicePage ? "/" + link.href : link.href}
-                    onClick={(e) => {
-                      handleNavClick(e, link.href.slice(1));
-                      setMenuOpen(false);
-                    }}
-                    className="rounded-lg px-3 py-2.5 text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"
-                  >
-                    {link.name}
-                  </a>
-                ))}
+                {navLinks.map((link) => {
+                  if (link.path) {
+                    return (
+                      <button
+                        key={link.name}
+                        onClick={() => {
+                          navigate(link.href);
+                          setMenuOpen(false);
+                        }}
+                        className="w-full rounded-lg px-3 py-2.5 text-left text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"
+                      >
+                        {link.name}
+                      </button>
+                    );
+                  }
+                  return (
+                    <a
+                      key={link.name}
+                      href={isServicePage ? "/" + link.href : link.href}
+                      onClick={(e) => {
+                        handleNavClick(e, link.href.slice(1));
+                        setMenuOpen(false);
+                      }}
+                      className="rounded-lg px-3 py-2.5 text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"
+                    >
+                      {link.name}
+                    </a>
+                  );
+                })}
 
                 {/* Book a Slot */}
                 <button
