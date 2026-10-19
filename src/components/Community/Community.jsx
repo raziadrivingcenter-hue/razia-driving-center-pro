@@ -154,6 +154,8 @@ export default function Community() {
 
   const [showCreate, setShowCreate] = useState(false);
 
+  const [pageError, setPageError] = useState("");
+
   const loadPosts = useCallback(
     () => fetchPosts(user, setPosts, setLoadingPosts),
     [user]
@@ -226,16 +228,27 @@ export default function Community() {
     return false;
   }, [user, signIn]);
 
+  /* ── Format a Supabase error for display ──────────────────────── */
+  function fmtErr(err) {
+    return (err.message || "Something went wrong.") +
+      (err.code ? " (" + err.code + ")" : "");
+  }
+
   /* ── Like toggle ───────────────────────────────────────────────── */
   const toggleLike = useCallback(
     async (post) => {
       if (!requireAuth()) return;
+      setPageError("");
       if (post.likedByMe) {
-        await supabase
+        const { error } = await supabase
           .from("likes")
           .delete()
           .eq("post_id", post.id)
           .eq("user_id", user.id);
+        if (error) {
+          setPageError(fmtErr(error));
+          return;
+        }
         setPosts((prev) =>
           prev.map((p) =>
             p.id === post.id
@@ -244,7 +257,13 @@ export default function Community() {
           )
         );
       } else {
-        await supabase.from("likes").insert({ post_id: post.id, user_id: user.id });
+        const { error } = await supabase
+          .from("likes")
+          .insert({ post_id: post.id, user_id: user.id });
+        if (error) {
+          setPageError(fmtErr(error));
+          return;
+        }
         setPosts((prev) =>
           prev.map((p) =>
             p.id === post.id
@@ -266,7 +285,15 @@ export default function Community() {
   /* ── Delete post ───────────────────────────────────────────────── */
   const deletePost = useCallback(async (post) => {
     if (!confirm("Delete this post?")) return;
-    await supabase.from("posts").delete().eq("id", post.id);
+    setPageError("");
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", post.id);
+    if (error) {
+      setPageError(fmtErr(error));
+      return;
+    }
     setPosts((prev) => prev.filter((p) => p.id !== post.id));
   }, []);
 
@@ -352,6 +379,13 @@ export default function Community() {
               New Post
             </button>
           </div>
+
+          {/* Top-level error (like / delete failures) */}
+          {pageError && (
+            <div className="mb-5 rounded-lg bg-red-50 px-4 py-2.5 text-xs text-red-600">
+              {pageError}
+            </div>
+          )}
 
           {/* Posts list */}
           {loadingPosts ? (
@@ -442,6 +476,18 @@ function CreatePostModal({ user, onClose, onCreated }) {
     setError("");
 
     try {
+      /* ── Upsert profile row first ─────────────────────────────── */
+      const { error: profileErr } = await supabase.from("profiles").upsert({
+        id: user.id,
+        name:
+          user.user_metadata?.full_name ||
+          user.email?.split("@")[0] ||
+          "Learner",
+        avatar_url: user.user_metadata?.avatar_url || null,
+      });
+      if (profileErr) throw profileErr;
+
+      /* ── Upload photo (if any) ───────────────────────────────── */
       let imageUrl = null;
       if (file) {
         const ext = file.name.split(".").pop();
@@ -449,20 +495,22 @@ function CreatePostModal({ user, onClose, onCreated }) {
         const { error: upErr } = await supabase.storage
           .from("community-images")
           .upload(path, file, { upsert: false });
-        if (upErr) throw new Error("Photo upload failed.");
+        if (upErr) throw upErr;
         const { data: urlData } = supabase.storage
           .from("community-images")
           .getPublicUrl(path);
         imageUrl = urlData.publicUrl;
       }
 
+      /* ── Insert post ─────────────────────────────────────────── */
       const { data: post, error: postErr } = await supabase
         .from("posts")
         .insert({ user_id: user.id, text: text.trim(), image_url: imageUrl })
         .select("id")
         .single();
-      if (postErr) throw new Error("Could not create post.");
+      if (postErr) throw postErr;
 
+      /* ── Insert poll (if any) ────────────────────────────────── */
       if (showPoll && pollQuestion.trim()) {
         const valid = pollOptions.map((o) => o.trim()).filter(Boolean);
         if (valid.length >= 2) {
@@ -471,21 +519,25 @@ function CreatePostModal({ user, onClose, onCreated }) {
             .insert({ post_id: post.id, question: pollQuestion.trim() })
             .select("id")
             .single();
-          if (!pollErr && poll) {
-            await supabase.from("poll_options").insert(
-              valid.map((t, i) => ({
-                poll_id: poll.id,
-                option_index: i,
-                option_text: t,
-              }))
-            );
-          }
+          if (pollErr) throw pollErr;
+          const { error: optErr } = await supabase.from("poll_options").insert(
+            valid.map((t, i) => ({
+              poll_id: poll.id,
+              option_index: i,
+              option_text: t,
+            }))
+          );
+          if (optErr) throw optErr;
         }
       }
 
       onCreated();
     } catch (err) {
-      setError(err.message || "Something went wrong.");
+      /* Show the real Supabase error (message + code) */
+      setError(
+        (err.message || "Something went wrong.") +
+          (err.code ? " (" + err.code + ")" : "")
+      );
       setSubmitting(false);
     }
   };

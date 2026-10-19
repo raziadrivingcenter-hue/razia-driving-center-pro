@@ -54,6 +54,9 @@ export default function PostCard({
   const [reportReason, setReportReason] = useState("");
   const [reportSent, setReportSent] = useState(false);
 
+  /* Real Supabase error message for this card */
+  const [cardError, setCardError] = useState("");
+
   /* ── Load comments ─────────────────────────────────────────────── */
   const loadComments = useCallback(async () => {
     if (commentsLoaded) return;
@@ -74,11 +77,18 @@ export default function PostCard({
     setShowComments(!showComments);
   };
 
+  /* ── Format a Supabase error for display ──────────────────────── */
+  function fmtErr(err) {
+    return (err.message || "Something went wrong.") +
+      (err.code ? " (" + err.code + ")" : "");
+  }
+
   /* ── Submit comment ────────────────────────────────────────────── */
   const submitComment = async () => {
     if (!commentText.trim()) return;
     if (!requireAuth()) return;
     setSubmittingComment(true);
+    setCardError("");
     const { data, error } = await supabase
       .from("comments")
       .insert({ post_id: post.id, user_id: user.id, text: commentText.trim() })
@@ -87,7 +97,9 @@ export default function PostCard({
          profiles ( name, avatar_url )`
       )
       .single();
-    if (!error && data) {
+    if (error) {
+      setCardError(fmtErr(error));
+    } else if (data) {
       setComments((prev) => [...prev, data]);
       setCommentText("");
     }
@@ -96,7 +108,15 @@ export default function PostCard({
 
   /* ── Delete comment ────────────────────────────────────────────── */
   const deleteComment = async (comment) => {
-    await supabase.from("comments").delete().eq("id", comment.id);
+    setCardError("");
+    const { error } = await supabase
+      .from("comments")
+      .delete()
+      .eq("id", comment.id);
+    if (error) {
+      setCardError(fmtErr(error));
+      return;
+    }
     setComments((prev) => prev.filter((c) => c.id !== comment.id));
     onUpdate();
   };
@@ -105,9 +125,14 @@ export default function PostCard({
   const vote = async (optionId) => {
     if (!requireAuth()) return;
     if (post.poll.myVote) return;
-    await supabase
+    setCardError("");
+    const { error } = await supabase
       .from("poll_votes")
       .insert({ poll_id: post.poll.id, option_id: optionId, user_id: user.id });
+    if (error) {
+      setCardError(fmtErr(error));
+      return;
+    }
     const updated = { ...post.poll };
     updated.optionCounts[optionId] = (updated.optionCounts[optionId] || 0) + 1;
     updated.totalVotes = (updated.totalVotes || 0) + 1;
@@ -119,9 +144,14 @@ export default function PostCard({
   const submitReport = async () => {
     if (!reportReason.trim()) return;
     if (!requireAuth()) return;
-    await supabase
+    setCardError("");
+    const { error } = await supabase
       .from("reports")
       .insert({ post_id: post.id, reporter_id: user.id, reason: reportReason.trim() });
+    if (error) {
+      setCardError(fmtErr(error));
+      return;
+    }
     setReportSent(true);
     setShowReport(false);
   };
@@ -202,6 +232,13 @@ export default function PostCard({
           />
         )}
       </div>
+
+      {/* ── Card-level error ────────────────────────────────────── */}
+      {cardError && (
+        <div className="mx-5 mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+          {cardError}
+        </div>
+      )}
 
       {/* ── Poll ────────────────────────────────────────────────── */}
       {post.poll && (
