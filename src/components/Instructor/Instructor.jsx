@@ -1,259 +1,149 @@
 import instructorImage from "../../assets/instructor/instructor.png";
+import { motion } from "framer-motion";
+import {
+  Award,
+  Users,
+  Car,
+  ShieldCheck,
+  HeartHandshake,
+  MapPinned,
+  Star,
+} from "lucide-react";
 
-import InstructorBadges from "./InstructorBadges";
-import InstructorStats from "./InstructorStats";
+const badges = [
+  { icon: Award, label: "Since 2016" },
+  { icon: Users, label: "5,221 Students" },
+  { icon: Car, label: "Real Traffic Training" },
+  { icon: ShieldCheck, label: "Female Instructor" },
+  { icon: HeartHandshake, label: "One-to-One Teaching" },
+  { icon: MapPinned, label: "Lahore Specialist" },
+];
+
+const stats = [
+  { value: "5.0", label: "Google Rating", star: true },
+  { value: "136", label: "Reviews" },
+  { value: "5,221", label: "Students Trained" },
+];
 
 function Instructor() {
   return (
-    <section
-      id="instructor"
-      data-aos="fade-up"
-      className="bg-white py-8 md:py-10"
-    >
+    <section id="instructor" className="bg-white py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-6">
 
-        {/* Heading */}
-
-        <div className="text-center">
-
-          <span
-            className="
-              rounded-full
-              bg-orange-100
-              px-3
-              py-1.5
-              text-xs
-              font-semibold
-              text-[#FF6201]
-            "
-          >
-            Meet Your Instructor
+        {/* Section Header */}
+        <div className="max-w-2xl">
+          <span className="inline-block rounded-full bg-orange-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#FF6201]">
+            Your Instructor
           </span>
-
-          <h2
-            className="
-              mt-3
-              text-2xl
-              font-black
-              leading-[1.2]
-              text-gray-900
-              md:text-3xl
-            "
-          >
-            Learn From Experience.
+          <h2 className="mt-5 text-3xl font-extrabold tracking-tight text-gray-950 md:text-4xl">
+            Learn From Experience
           </h2>
-
-          <p
-            className="
-              mx-auto
-              mt-2
-              max-w-2xl
-              text-sm
-              leading-[1.45]
-              text-gray-600
-            "
-          >
-            Learn driving with confidence under the guidance of an experienced
-            female instructor trusted by thousands of students across Lahore.
+          <p className="mt-4 text-base leading-relaxed text-gray-500">
+            Trusted by thousands of students across Lahore for safe,
+            confident and stress-free driving lessons.
           </p>
-
         </div>
 
-        {/* Content */}
-
-        <div
-          className="
-            mt-6
-            grid
-            items-center
-            gap-6
-            lg:grid-cols-2
-          "
+        {/* Main Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="mt-12 overflow-hidden rounded-3xl bg-gray-50 shadow-sm ring-1 ring-gray-100"
         >
+          <div className="grid lg:grid-cols-[1fr_1.3fr]">
 
-          {/* LEFT */}
+            {/* ── Image Column ── */}
+            <div className="relative bg-gradient-to-br from-gray-100 to-gray-50 p-6 lg:p-8">
+              <img
+                src={instructorImage}
+                alt="Madam Razia — Professional Female Driving Instructor"
+                loading="lazy"
+                decoding="async"
+                className="relative z-10 mx-auto w-full max-w-sm rounded-2xl object-cover shadow-lg lg:max-w-none"
+              />
 
-          <div className="relative">
-
-            <img
-              src={instructorImage}
-              alt="Madam Razia"
-              width="800"
-              height="800"
-              loading="lazy"
-              decoding="async"
-              className="
-                w-full
-                rounded-2xl
-                shadow-lg
-              "
-            />
-
-            {/* Experience Badge */}
-
-            <div
-              className="
-                absolute
-                -top-3
-                -left-3
-                rounded-xl
-                border
-                border-white/30
-                bg-white/20
-                backdrop-blur-md
-                px-4
-                py-2.5
-                shadow-lg
-              "
-            >
-
-              <h3 className="text-lg font-black text-[#FF6201]">
-                Est. <span className="font-dm-sans">2016</span>
-              </h3>
-
-              <p className="text-xs font-semibold text-gray-800">
-                Trusted Since <span className="font-dm-sans">2016</span>
-              </p>
-
+              {/* Floating rating pill */}
+              <div className="absolute bottom-10 left-6 z-20 flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-lg ring-1 ring-gray-100">
+                <span className="flex text-yellow-400">
+                  <Star size={14} fill="currentColor" />
+                </span>
+                <span className="text-sm font-bold text-gray-900">
+                  <span className="font-dm-sans">5.0</span>
+                </span>
+                <span className="text-xs text-gray-400">
+                  <span className="font-dm-sans">136</span> reviews
+                </span>
+              </div>
             </div>
 
-            {/* Google Rating */}
+            {/* ── Content Column ── */}
+            <div className="flex flex-col justify-center p-6 lg:p-10">
 
-            <div
-              className="
-                absolute
-                -bottom-3
-                -right-3
-                rounded-xl
-                border
-                border-white/30
-                bg-white/20
-                backdrop-blur-md
-                px-4
-                py-2.5
-                shadow-lg
-              "
-            >
+              {/* Name + role */}
+              <h3 className="text-2xl font-extrabold tracking-tight text-gray-950 md:text-3xl">
+                Madam Razia
+              </h3>
+              <p className="mt-1 text-sm font-semibold text-[#FF6201]">
+                Professional Female Driving Instructor
+              </p>
 
-              <div className="text-yellow-500 text-sm leading-none">
-                <span className="font-dm-sans">★★★★★</span>
+              {/* Bio */}
+              <p className="mt-4 text-sm leading-[1.75] text-gray-500">
+                Since December <span className="font-dm-sans font-semibold text-gray-700">2016</span>, Madam Razia
+                has helped thousands of beginners become confident, responsible
+                and independent drivers across Lahore. Every lesson focuses on
+                confidence, safety and real traffic experience.
+              </p>
+
+              {/* Personal message */}
+              <blockquote className="mt-6 border-l-[3px] border-[#FF6201] pl-4">
+                <p className="text-sm italic leading-[1.7] text-gray-600">
+                  "Every student deserves confidence behind the steering wheel.
+                  My goal is to make learning enjoyable, safe and stress-free."
+                </p>
+                <cite className="mt-2 block text-xs font-bold not-italic tracking-wide text-[#FF6201]">
+                  — Madam Razia
+                </cite>
+              </blockquote>
+
+              {/* Badges — clean pill layout */}
+              <div className="mt-7 flex flex-wrap gap-2">
+                {badges.map(({ icon: Icon, label }) => (
+                  <span
+                    key={label}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[11px] font-semibold text-gray-600 shadow-sm ring-1 ring-gray-100"
+                  >
+                    <Icon size={12} className="text-[#FF6201]" />
+                    <span className="font-dm-sans">{label}</span>
+                  </span>
+                ))}
               </div>
 
-              <h3 className="text-lg font-black">
-                <span className="font-dm-sans">5.0</span>
-              </h3>
-
-              <p className="text-xs text-gray-700">
-                <span className="font-dm-sans">136</span> Google Reviews
-              </p>
-
-            </div>
-
-          </div>
-
-          {/* RIGHT */}
-
-          <div>
-
-            <h3
-              className="
-                text-2xl
-                font-black
-                leading-tight
-                text-gray-900
-                md:text-3xl
-              "
-            >
-              Madam Razia
-            </h3>
-
-            <p
-              className="
-                mt-1
-                text-sm
-                font-semibold
-                text-[#FF6201]
-              "
-            >
-              Professional Female Driving Instructor
-            </p>
-
-            <p
-              className="
-                mt-2
-                text-sm
-                leading-[1.45]
-                text-gray-600
-              "
-            >
-              Since December <span className="font-dm-sans">2016</span>, Madam Razia has helped thousands of
-              beginners become confident, responsible and independent drivers
-              across Lahore. Every lesson focuses on confidence, safety and
-              real traffic experience.
-            </p>
-
-            {/* Personal Message */}
-
-            <div
-              className="
-                mt-3
-                rounded-xl
-                border-l-4
-                border-[#FF6201]
-                bg-orange-50
-                p-4
-              "
-            >
-
-              <h4
-                className="
-                  text-sm
-                  font-bold
-                  text-gray-900
-                "
-              >
-                A Personal Message
-              </h4>
-
-              <p
-                className="
-                  mt-1.5
-                  text-sm
-                  italic
-                  leading-[1.45]
-                  text-gray-600
-                "
-              >
-                "Every student deserves confidence behind the steering wheel.
-                My goal is to make learning enjoyable, safe and stress-free for
-                every learner."
-              </p>
-
-              <p
-                className="
-                  mt-2
-                  text-xs
-                  font-bold
-                  text-[#FF6201]
-                "
-              >
-                — Madam Razia
-              </p>
+              {/* Stats row */}
+              <div className="mt-8 grid grid-cols-3 gap-3">
+                {stats.map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex flex-col items-center rounded-xl bg-white px-2 py-4 text-center shadow-sm ring-1 ring-gray-100"
+                  >
+                    <span className="text-xl font-black text-gray-950">
+                      <span className="font-dm-sans">{s.value}</span>
+                      {s.star && (
+                        <span className="ml-0.5 text-yellow-400">★</span>
+                      )}
+                    </span>
+                    <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
             </div>
-
-            {/* Badges */}
-
-            <InstructorBadges />
-
-            {/* Stats */}
-
-            <InstructorStats />
-
           </div>
-
-        </div>
-
+        </motion.div>
       </div>
     </section>
   );

@@ -1,11 +1,19 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "../router";
 import { cn } from "../lib/utils";
 import rdcLogo from "../assets/LOGORDC.svg";
 
 const SERVICE_ROUTES = ["/driving-school-gulberg-lahore/", "/driving-school-gulberg-lahore"];
+
+/* Smart floating navbar constants */
+const SCROLL_THRESHOLD = 100;      // px before floating mode activates
+const SCROLL_IGNORE = 8;           // px jitter threshold
+const AUTO_HIDE_MS = 5000;         // auto-hide after 5s
+const SQUEEZE_SCALE = 0.82;        // horizontal compression when hidden
+const ANIM_DURATION = 0.22;        // show/hide animation duration (s)
+const TOP_HOVER_ZONE = 28;          // px from top that triggers hover-reveal
 
 function Navbar({ onBookNow }) {
   const { route, navigate, navigateToSection } = useRouter();
@@ -17,18 +25,114 @@ function Navbar({ onBookNow }) {
   const guidesRef = useRef(null);
   const guidesTimeout = useRef(null);
 
-  /* ── resizable-on-scroll ── */
-  const navRef = useRef(null);
-  const { scrollY } = useScroll({
-    target: navRef,
-    offset: ["start start", "end start"],
-  });
-  const [visible, setVisible] = useState(false);
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 100) setVisible(true);
-    else setVisible(false);
-  });
+  /* ── Smart floating state ── */
+  const [floatingActive, setFloatingActive] = useState(false); // scrolled past threshold
+  const [navShown, setNavShown] = useState(true);              // floating navbar visible
+  const scrollData = useRef({ lastY: 0, ticking: false });
+  const hideTimer = useRef(null);
 
+  /* prefers-reduced-motion */
+  const [prefersReduced, setPrefersReduced] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e) => setPrefersReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  /* ── Timer helpers ── */
+  const clearHideTimer = useCallback(() => {
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+  }, []);
+
+  const startHideTimer = useCallback(() => {
+    if (prefersReduced) return;
+    clearHideTimer();
+    hideTimer.current = setTimeout(() => {
+      setNavShown(false);
+      hideTimer.current = null;
+    }, AUTO_HIDE_MS);
+  }, [clearHideTimer, prefersReduced]);
+
+  const showNav = useCallback(() => {
+    clearHideTimer();
+    setNavShown(true);
+    startHideTimer();
+  }, [clearHideTimer, startHideTimer]);
+
+  const hideNav = useCallback(() => {
+    clearHideTimer();
+    setNavShown(false);
+  }, [clearHideTimer]);
+
+  /* ── Scroll direction detection ── */
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollData.current.ticking) return;
+      scrollData.current.ticking = true;
+
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const diff = y - scrollData.current.lastY;
+        scrollData.current.lastY = y;
+        scrollData.current.ticking = false;
+
+        /* At the top — always show static navbar */
+        if (y <= SCROLL_THRESHOLD) {
+          setFloatingActive(false);
+          clearHideTimer();
+          setNavShown(true);
+          return;
+        }
+
+        /* Floating mode active */
+        setFloatingActive(true);
+
+        /* Ignore tiny scroll fluctuations */
+        if (Math.abs(diff) < SCROLL_IGNORE) return;
+
+        if (diff > 0) {
+          hideNav();   // scrolling down → hide immediately
+        } else {
+          showNav();   // scrolling up → reveal
+        }
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [showNav, hideNav, clearHideTimer]);
+
+  /* ── Hover-to-reveal at top edge ── */
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (e.clientY < TOP_HOVER_ZONE && floatingActive) {
+        showNav();
+      }
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [floatingActive, showNav]);
+
+  /* ── Pointer enter/leave on navbar itself ── */
+  const handleNavMouseEnter = useCallback(() => {
+    clearHideTimer();
+    if (floatingActive) setNavShown(true);
+  }, [clearHideTimer, floatingActive]);
+
+  const handleNavMouseLeave = useCallback(() => {
+    if (floatingActive) startHideTimer();
+  }, [floatingActive, startHideTimer]);
+
+  /* Cleanup timer on unmount */
+  useEffect(() => () => clearHideTimer(), [clearHideTimer]);
+
+  /* ── Guides dropdown handlers ── */
   const guideLinks = [
     { name: "Driving School in Gulberg", href: "/driving-school-gulberg-lahore/" },
     { name: "Driving School in DHA", href: "/driving-school-dha-lahore/" },
@@ -56,7 +160,6 @@ function Navbar({ onBookNow }) {
     guidesTimeout.current = setTimeout(() => setGuidesOpen(false), 150);
   };
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (guidesRef.current && !guidesRef.current.contains(e.target)) {
@@ -74,7 +177,6 @@ function Navbar({ onBookNow }) {
     }
   };
 
-  // Active-section tracking via IntersectionObserver
   useEffect(() => {
     const sections = ["home", "courses", "reviews", "about", "contact"];
     const observer = new IntersectionObserver(
@@ -100,6 +202,10 @@ function Navbar({ onBookNow }) {
     { name: "Contact", href: "#contact" },
   ];
 
+  /* ── Derived animation values ── */
+  const animDuration = prefersReduced ? 0 : ANIM_DURATION;
+  const isHidden = floatingActive && !navShown;
+
   return (
     <>
       <style>{`
@@ -112,187 +218,214 @@ function Navbar({ onBookNow }) {
         @media (max-width: 768px) { .nav-btn-book { padding: 6px 14px; font-size: 12px; } }
       `}</style>
 
-      {/* ── sticky scroll container ── */}
       <motion.nav
-        ref={navRef}
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
         className="fixed inset-x-0 top-4 z-50 w-full"
+        onMouseEnter={handleNavMouseEnter}
+        onMouseLeave={handleNavMouseLeave}
+        aria-hidden={isHidden}
       >
-        {/* ════════ DESKTOP (≥lg) ════════ */}
+        {/* ── Smart floating wrapper — animates show/hide ── */}
         <motion.div
+          initial={false}
           animate={{
-            backdropFilter: visible ? "blur(10px)" : "none",
-            boxShadow: visible
-              ? "0 0 24px rgba(34,42,53,0.06), 0 1px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(34,42,53,0.04), 0 0 4px rgba(34,42,53,0.08), 0 16px 68px rgba(47,48,55,0.05), 0 1px 0 rgba(255,255,255,0.1) inset"
-              : "none",
-            width: visible ? "60%" : "100%",
-            y: visible ? 20 : 0,
+            scaleX: isHidden ? SQUEEZE_SCALE : 1,
+            y: isHidden ? -120 : 0,
+            opacity: isHidden ? 0 : 1,
           }}
-          transition={{ type: "spring", stiffness: 200, damping: 50 }}
-          style={{ minWidth: "820px" }}
-          className={cn(
-            "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full px-4 py-2 lg:flex",
-            visible
-              ? "border border-gray-200 bg-white/80"
-              : "border border-transparent bg-transparent"
-          )}
+          transition={{
+            scaleX: isHidden
+              ? { duration: prefersReduced ? 0 : 1, ease: [0.25, 0.46, 0.45, 0.94] }
+              : { duration: prefersReduced ? 0 : 1, delay: prefersReduced ? 0 : 0.22, ease: [0.25, 0.46, 0.45, 0.94] },
+            y: isHidden
+              ? { duration: animDuration, delay: prefersReduced ? 0 : 1, ease: [0.25, 0.46, 0.45, 0.94] }
+              : { duration: animDuration, delay: 0, ease: [0.25, 0.46, 0.45, 0.94] },
+            opacity: isHidden
+              ? { duration: animDuration, delay: prefersReduced ? 0 : 1, ease: [0.25, 0.46, 0.45, 0.94] }
+              : { duration: animDuration, delay: 0, ease: [0.25, 0.46, 0.45, 0.94] },
+          }}
+          style={{
+            transformOrigin: "center",
+            pointerEvents: isHidden ? "none" : "auto",
+          }}
+          className="w-full"
         >
-          {/* Left — RDC logo + branding */}
-          <a
-            href={isServicePage ? "/" : "#home"}
-            onClick={(e) => handleNavClick(e, "home")}
-            className="flex shrink-0 items-center gap-2.5 transition-transform hover:scale-105"
-            aria-label="Razia Driving Center — Home"
+          {/* ════════ DESKTOP (≥lg) ════════ */}
+          <motion.div
+            animate={{
+              backdropFilter: floatingActive ? "blur(10px)" : "none",
+              boxShadow: floatingActive
+                ? "0 0 24px rgba(34,42,53,0.06), 0 1px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(34,42,53,0.04), 0 0 4px rgba(34,42,53,0.08), 0 16px 68px rgba(47,48,55,0.05), 0 1px 0 rgba(255,255,255,0.1) inset"
+                : "none",
+              width: floatingActive ? "60%" : "100%",
+              y: floatingActive ? 20 : 0,
+            }}
+            transition={{ type: "spring", stiffness: 200, damping: 50 }}
+            style={{ minWidth: "820px" }}
+            className={cn(
+              "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full px-4 py-2 lg:flex",
+              floatingActive
+                ? "border border-gray-200 bg-white/80"
+                : "border border-transparent bg-transparent"
+            )}
           >
-            <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
-            <span className="text-[15px] font-bold tracking-tight text-gray-900">Razia Driving Center</span>
-          </a>
+            {/* Left — RDC logo + branding */}
+            <a
+              href={isServicePage ? "/" : "#home"}
+              onClick={(e) => handleNavClick(e, "home")}
+              className="flex shrink-0 items-center gap-2.5 transition-transform hover:scale-105"
+              aria-label="Razia Driving Center — Home"
+            >
+              <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
+              <span className="text-[15px] font-bold tracking-tight text-gray-900">Razia Driving Center</span>
+            </a>
 
-          {/* Center — text links */}
-          <div className="hidden items-center gap-7 lg:flex">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={isServicePage ? "/" + link.href : link.href}
-                onClick={(e) => handleNavClick(e, link.href.slice(1))}
+            {/* Center — text links */}
+            <div className="hidden items-center gap-7 lg:flex">
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={isServicePage ? "/" + link.href : link.href}
+                  onClick={(e) => handleNavClick(e, link.href.slice(1))}
+                  className={cn(
+                    "relative text-sm font-medium transition-colors duration-200",
+                    activeSection === link.href.slice(1)
+                      ? "text-gray-900"
+                      : "text-gray-600 hover:text-gray-900"
+                  )}
+                >
+                  {link.name}
+                </a>
+              ))}
+
+              {/* Learn & Guides dropdown */}
+              <div
+                ref={guidesRef}
+                className="relative"
+                onMouseEnter={handleGuidesEnter}
+                onMouseLeave={handleGuidesLeave}
+              >
+                <button
+                  onClick={() => setGuidesOpen((prev) => !prev)}
+                  className="flex items-center gap-1 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
+                  aria-expanded={guidesOpen}
+                  aria-haspopup="true"
+                >
+                  Learn &amp; Guides
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      "transition-transform duration-200",
+                      guidesOpen && "rotate-180"
+                    )}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {guidesOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.18 }}
+                      className="absolute left-1/2 top-full mt-3 w-[480px] -translate-x-1/2 rounded-xl border border-gray-100 bg-white p-5 shadow-2xl"
+                    >
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                        {guideLinks.map((link) => (
+                          <a
+                            key={link.name}
+                            href={link.href}
+                            onClick={() => setGuidesOpen(false)}
+                            className="rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                          >
+                            {link.name}
+                          </a>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Book a Slot */}
+              <button
+                onClick={() => navigate("/slot-availability")}
                 className={cn(
-                  "relative text-sm font-medium transition-colors duration-200",
-                  activeSection === link.href.slice(1)
+                  "hidden rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 lg:inline-block",
+                  route === "/slot-availability"
                     ? "text-gray-900"
                     : "text-gray-600 hover:text-gray-900"
                 )}
               >
-                {link.name}
-              </a>
-            ))}
-
-            {/* Learn & Guides dropdown */}
-            <div
-              ref={guidesRef}
-              className="relative"
-              onMouseEnter={handleGuidesEnter}
-              onMouseLeave={handleGuidesLeave}
-            >
-              <button
-                onClick={() => setGuidesOpen((prev) => !prev)}
-                className="flex items-center gap-1 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
-                aria-expanded={guidesOpen}
-                aria-haspopup="true"
-              >
-                Learn &amp; Guides
-                <ChevronDown
-                  size={14}
-                  className={cn(
-                    "transition-transform duration-200",
-                    guidesOpen && "rotate-180"
-                  )}
-                />
+                Book a Slot
               </button>
-
-              <AnimatePresence>
-                {guidesOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.18 }}
-                    className="absolute left-1/2 top-full mt-3 w-[480px] -translate-x-1/2 rounded-xl border border-gray-100 bg-white p-5 shadow-2xl"
-                  >
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                      {guideLinks.map((link) => (
-                        <a
-                          key={link.name}
-                          href={link.href}
-                          onClick={() => setGuidesOpen(false)}
-                          className="rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
-                        >
-                          {link.name}
-                        </a>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
 
-            {/* Book a Slot */}
-            <button
-              onClick={() => navigate("/slot-availability")}
-              className={cn(
-                "hidden rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 lg:inline-block",
-                route === "/slot-availability"
-                  ? "text-gray-900"
-                  : "text-gray-600 hover:text-gray-900"
-              )}
-            >
-              Book a Slot
-            </button>
-          </div>
+            {/* Right — Book Now + mobile toggle */}
+            <div className="flex items-center gap-2">
+              <button onClick={onBookNow} className="nav-btn-book">
+                Book Now
+              </button>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={menuOpen}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-50 lg:hidden"
+              >
+                {menuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </div>
+          </motion.div>
 
-          {/* Right — Book Now + mobile toggle */}
-          <div className="flex items-center gap-2">
-            <button onClick={onBookNow} className="nav-btn-book">
-              Book Now
-            </button>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-              aria-expanded={menuOpen}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-50 lg:hidden"
-            >
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
-        </motion.div>
-
-        {/* ════════ MOBILE (<lg) ════════ */}
-        <motion.div
-          animate={{
-            backdropFilter: visible ? "blur(10px)" : "none",
-            boxShadow: visible
-              ? "0 0 24px rgba(34,42,53,0.06), 0 1px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(34,42,53,0.04), 0 0 4px rgba(34,42,53,0.08), 0 16px 68px rgba(47,48,55,0.05), 0 1px 0 rgba(255,255,255,0.1) inset"
-              : "none",
-            width: visible ? "92%" : "100%",
-            paddingRight: visible ? "12px" : "0px",
-            paddingLeft: visible ? "12px" : "0px",
-            borderRadius: visible ? "24px" : "9999px",
-            y: visible ? 10 : 0,
-          }}
-          transition={{ type: "spring", stiffness: 200, damping: 50 }}
-          className={cn(
-            "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-row items-center justify-between rounded-full px-4 py-2 lg:hidden",
-            visible
-              ? "border border-gray-200 bg-white/80"
-              : "border border-gray-200 bg-white"
-          )}
-        >
-          {/* Left — RDC logo + branding */}
-          <a
-            href={isServicePage ? "/" : "#home"}
-            onClick={(e) => handleNavClick(e, "home")}
-            className="flex shrink-0 items-center gap-2 transition-transform hover:scale-105"
-            aria-label="Razia Driving Center — Home"
+          {/* ════════ MOBILE (<lg) ════════ */}
+          <motion.div
+            animate={{
+              backdropFilter: floatingActive ? "blur(10px)" : "none",
+              boxShadow: floatingActive
+                ? "0 0 24px rgba(34,42,53,0.06), 0 1px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(34,42,53,0.04), 0 0 4px rgba(34,42,53,0.08), 0 16px 68px rgba(47,48,55,0.05), 0 1px 0 rgba(255,255,255,0.1) inset"
+                : "none",
+              width: floatingActive ? "92%" : "100%",
+              paddingRight: floatingActive ? "12px" : "0px",
+              paddingLeft: floatingActive ? "12px" : "0px",
+              borderRadius: floatingActive ? "24px" : "9999px",
+              y: floatingActive ? 10 : 0,
+            }}
+            transition={{ type: "spring", stiffness: 200, damping: 50 }}
+            className={cn(
+              "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-row items-center justify-between rounded-full px-4 py-2 lg:hidden",
+              floatingActive
+                ? "border border-gray-200 bg-white/80"
+                : "border border-gray-200 bg-white"
+            )}
           >
-            <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
-            <span className="text-[14px] font-bold tracking-tight text-gray-900">Razia Driving Center</span>
-          </a>
-
-          {/* Right — Book Now + toggle */}
-          <div className="flex items-center gap-2">
-            <button onClick={onBookNow} className="nav-btn-book">
-              Book Now
-            </button>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-              aria-expanded={menuOpen}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-50 lg:hidden"
+            {/* Left — RDC logo + branding */}
+            <a
+              href={isServicePage ? "/" : "#home"}
+              onClick={(e) => handleNavClick(e, "home")}
+              className="flex shrink-0 items-center gap-2 transition-transform hover:scale-105"
+              aria-label="Razia Driving Center — Home"
             >
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
+              <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
+              <span className="text-[14px] font-bold tracking-tight text-gray-900">Razia Driving Center</span>
+            </a>
+
+            {/* Right — Book Now + toggle */}
+            <div className="flex items-center gap-2">
+              <button onClick={onBookNow} className="nav-btn-book">
+                Book Now
+              </button>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={menuOpen}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-50 lg:hidden"
+              >
+                {menuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </div>
+          </motion.div>
         </motion.div>
       </motion.nav>
 

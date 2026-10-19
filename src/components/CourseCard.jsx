@@ -1,4 +1,4 @@
-import { Clock3, Check, Sparkles } from "lucide-react";
+import { Clock3, Check, Sparkles, Gift } from "lucide-react";
 
 function CourseCard({
   name,
@@ -33,9 +33,33 @@ function CourseCard({
           : "border border-gray-200 hover:border-gray-300"}
       `}
     >
+      {/* Free Pick & Drop marquee — PLUS Plan only */}
+      {popular && (
+        <div className="relative overflow-hidden bg-gray-100 py-1">
+          <div
+            className="flex w-max whitespace-nowrap animate-marquee"
+            style={{ animationDuration: "30s" }}
+          >
+            {Array.from({ length: 2 }).map((_, setIdx) => (
+              <span key={setIdx} className="flex">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <span
+                    key={setIdx + "-" + i}
+                    className="flex shrink-0 items-center gap-1 px-6 text-[11px] font-semibold text-gray-500"
+                  >
+                    <Gift size={10} className="shrink-0" />
+                    Free Pick &amp; Drop Upto <span className="font-dm-sans">2</span> Km
+                  </span>
+                ))}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Popular badge */}
       {popular && (
-        <div className="absolute right-3 top-3 z-10">
+        <div className="absolute right-3 top-8 z-10">
           <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#FF6201]">
             <Sparkles size={10} />
             Most Popular
@@ -116,3 +140,22 @@ function CourseCard({
 }
 
 export default CourseCard;
+
+/* Marquee animation — injected once via the component's style tag */
+const MARQUEE_STYLE = `
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee linear infinite;
+  }
+`;
+
+// Inject the marquee keyframes into the document head (once)
+if (typeof document !== "undefined" && !document.getElementById("marquee-style")) {
+  const style = document.createElement("style");
+  style.id = "marquee-style";
+  style.textContent = MARQUEE_STYLE;
+  document.head.appendChild(style);
+}

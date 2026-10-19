@@ -9,6 +9,7 @@ import {
   Gauge,
   Sparkles,
   Gem,
+  Wrench,
 } from "lucide-react";
 
 export const courses = [
@@ -47,6 +48,7 @@ export const courses = [
       { icon: ParkingSquare, text: "Parking & Reversing Skills" },
       { icon: ShieldCheck, text: "Dual-Braking Safety System" },
       { icon: Gauge, text: "Clutch Control & Complete Driving Skills" },
+      { icon: Wrench, text: "Basic Vehicle Maintenance" },
     ],
     badge: { icon: Sparkles, text: "Most Selling / Public Favorite" },
     titleIcon: null,
@@ -66,6 +68,7 @@ export const courses = [
       { icon: ParkingSquare, text: "Advanced Parking & Reversing" },
       { icon: ShieldCheck, text: "Dual-Braking Safety System" },
       { icon: Gauge, text: "Clutch Control & Complete Driving Skills" },
+      { icon: Wrench, text: "Basic Vehicle Maintenance" },
     ],
     badge: null,
     titleIcon: Gem,

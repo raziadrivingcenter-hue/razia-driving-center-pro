@@ -8,40 +8,10 @@ function Footer() {
       className="
         relative
         overflow-hidden
-        bg-[#111827]
+        bg-gray-900
         text-white
       "
     >
-      {/* Background Glow */}
-
-      <div
-        className="
-          absolute
-          -left-32
-          top-20
-          h-80
-          w-80
-          rounded-full
-          bg-[#FF6201]
-          opacity-10
-          blur-[120px]
-        "
-      />
-
-      <div
-        className="
-          absolute
-          -right-32
-          bottom-10
-          h-96
-          w-96
-          rounded-full
-          bg-[#FF3131]
-          opacity-10
-          blur-[120px]
-        "
-      />
-
       {/* Main Content */}
 
       <div
