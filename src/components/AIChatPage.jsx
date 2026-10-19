@@ -458,7 +458,7 @@ function AIChatPage() {
         </div>
       </div>
 
-      <WhatsAppButton />
+      <WhatsAppButton hidden />
 
       <style>{`
         @keyframes chatBounce {

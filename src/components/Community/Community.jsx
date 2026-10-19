@@ -438,7 +438,7 @@ export default function Community() {
       </main>
 
       <Footer />
-      <WhatsAppButton />
+      <WhatsAppButton hidden />
 
       {/* ── Create post modal ───────────────────────────────────── */}
       <AnimatePresence>
