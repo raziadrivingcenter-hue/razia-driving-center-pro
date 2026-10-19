@@ -1,7 +1,7 @@
 /* ------------------------------------------------------------------ */
 /*  ServiceAreaMap — interactive Leaflet map showing Razia Driving
-/*  Center location, free 2km pick-up zone, and 20km max service
-/*  radius. Uses OpenStreetMap tiles (free, no API key needed).
+/*  Center location, free 2km pick-up zone (PLUS Plan), and 10km max
+/*  service radius. Uses OpenStreetMap tiles (free, no API key needed).
 /* ------------------------------------------------------------------ */
 import { useEffect } from "react";
 import { MapContainer, TileLayer, Circle, Marker, Popup, useMap } from "react-leaflet";
@@ -43,8 +43,8 @@ function FitBounds() {
   const map = useMap();
   useEffect(() => {
     map.fitBounds([
-      [CENTER[0] - 0.18, CENTER[1] - 0.18],
-      [CENTER[0] + 0.18, CENTER[1] + 0.18],
+      [CENTER[0] - 0.09, CENTER[1] - 0.09],
+      [CENTER[0] + 0.09, CENTER[1] + 0.09],
     ]);
   }, [map]);
   return null;
@@ -63,7 +63,7 @@ export default function ServiceAreaMap() {
             Where We Pick &amp; Drop
           </h2>
           <p className="mt-4 text-base leading-relaxed text-gray-500">
-            Free pick-up &amp; drop within 2 KM of our center. Available up to 20 KM
+            Free pick-up &amp; drop within 2 KM on the <span className="font-semibold text-gray-700">PLUS Plan</span>. Available up to 10 KM
             across Lahore.
           </p>
         </div>
@@ -72,11 +72,11 @@ export default function ServiceAreaMap() {
         <div className="mt-6 flex flex-wrap gap-4">
           <span className="flex items-center gap-2 text-xs text-gray-500">
             <span className="h-3 w-3 rounded-full bg-green-500" />
-            Free 2 KM Zone
+            2 KM Free (PLUS Plan)
           </span>
           <span className="flex items-center gap-2 text-xs text-gray-500">
             <span className="h-3 w-3 rounded-full bg-orange-400" />
-            2–20 KM (Charged)
+            2–10 KM (Charged)
           </span>
           <span className="flex items-center gap-2 text-xs text-gray-500">
             <span className="h-3 w-3 rounded-full bg-red-500" />
@@ -98,10 +98,10 @@ export default function ServiceAreaMap() {
             />
             <FitBounds />
 
-            {/* 20 KM max service radius */}
+            {/* 10 KM max service radius */}
             <Circle
               center={CENTER}
-              radius={20000}
+              radius={10000}
               pathOptions={{
                 color: "#fb923c",
                 fillColor: "#fb923c",
@@ -111,10 +111,10 @@ export default function ServiceAreaMap() {
               }}
             />
 
-            {/* 2 KM free pick-up radius */}
+            {/* 2 KM free pick-up radius (PLUS Plan) */}
             <Circle
               center={CENTER}
-              radius={2000}
+              radius={1000}
               pathOptions={{
                 color: "#22c55e",
                 fillColor: "#22c55e",
