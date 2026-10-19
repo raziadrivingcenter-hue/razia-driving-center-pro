@@ -24,6 +24,7 @@ import WhatsAppButton from "./WhatsAppButton";
 const Gallery = lazy(() => import("./Gallery"));
 const FAQ = lazy(() => import("./FAQ"));
 const MapSection = lazy(() => import("./MapSection"));
+const ServiceAreaMap = lazy(() => import("./ServiceAreaMap/ServiceAreaMap"));
 const Contact = lazy(() => import("./Contact"));
 const AIChatWidget = lazy(() => import("./AIChatWidget"));
 
@@ -135,6 +136,10 @@ function Homepage() {
         <GoogleReviews />
 
         <Instructor />
+
+        <Suspense fallback={null}>
+          <ServiceAreaMap />
+        </Suspense>
 
         <Suspense fallback={null}>
           <Gallery />
