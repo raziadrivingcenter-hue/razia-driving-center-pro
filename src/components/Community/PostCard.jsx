@@ -18,21 +18,39 @@ import {
 import { supabase } from "../../lib/supabase";
 import ConfirmDialog from "./ConfirmDialog";
 
-/* ── Relative time (mirrors Community.jsx) ───────────────────────── */
+/* ── Relative time (Asia/Karachi) ───────────────────────────────── */
 function relativeTime(iso) {
-  const then = new Date(iso).getTime();
-  const now = Date.now();
-  const d = Math.floor((now - then) / 86400000);
-  if (d < 1) {
-    const h = Math.floor((now - then) / 3600000);
-    if (h < 1) return "Just now";
-    if (h < 24) return h + "h ago";
-  }
-  if (d < 30) return d + "d ago";
-  const m = Math.floor(d / 30);
-  if (m < 12) return m + "mo ago";
-  const y = Math.floor(m / 12);
-  return y + "y ago";
+  const KHI = "Asia/Karachi";
+  const then = new Date(iso);
+  const now = new Date();
+  const diff = now - then;
+
+  if (diff < 60_000) return "Just now";
+
+  if (diff < 3_600_000) return Math.floor(diff / 60_000) + "m ago";
+
+  if (diff < 86_400_000) return Math.floor(diff / 3_600_000) + "h ago";
+
+  const timeStr = then.toLocaleTimeString("en-US", {
+    timeZone: KHI,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  const thenDate = then.toLocaleDateString("en-CA", { timeZone: KHI });
+  const yesterdayDate = new Date(now - 86_400_000).toLocaleDateString("en-CA", {
+    timeZone: KHI,
+  });
+
+  if (thenDate === yesterdayDate) return "Yesterday, " + timeStr;
+
+  const dateStr = then.toLocaleDateString("en-GB", {
+    timeZone: KHI,
+    day: "numeric",
+    month: "short",
+  });
+  return dateStr + ", " + timeStr;
 }
 
 export default function PostCard({
