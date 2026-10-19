@@ -507,7 +507,7 @@ function AIChatWidget() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             onClick={() => setIsOpen(true)}
-            aria-label="Open Mani"
+            aria-label="Open AI"
             className="
               fixed
               bottom-6
@@ -534,7 +534,7 @@ function AIChatWidget() {
               className="transition animate-pulse"
             />
             <span className="hidden font-bold md:block">
-              Ask Mani
+              Ask AI
             </span>
           </motion.button>
         )}
@@ -575,7 +575,7 @@ function AIChatWidget() {
                 </div>
                 <div>
                   <h3 className="font-bold leading-tight">
-                    Mani
+                    AI
                   </h3>
                   <p className="text-xs text-white/80">
                     Razia Driving Center
@@ -604,7 +604,7 @@ function AIChatWidget() {
                     Assalam-o-Alaikum! 👋
                   </h4>
                   <p className="mt-2 max-w-[280px] text-sm text-gray-500">
-                    Main Mani hoon — aap ki course info, pricing, aur booking mein help kar
+                    Main AI hoon — aap ki course info, pricing, aur booking mein help kar
                     sakti hoon. Kya scene hai? 🚗
                   </p>
 
