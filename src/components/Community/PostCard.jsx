@@ -16,6 +16,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import ConfirmDialog from "./ConfirmDialog";
 
 /* ── Relative time (mirrors Community.jsx) ───────────────────────── */
 function relativeTime(iso) {
@@ -107,7 +108,16 @@ export default function PostCard({
   };
 
   /* ── Delete comment ────────────────────────────────────────────── */
-  const deleteComment = async (comment) => {
+  const [dialogComment, setDialogComment] = useState(null);
+
+  const requestDeleteComment = (comment) => {
+    setDialogComment(comment);
+  };
+
+  const confirmDeleteComment = async () => {
+    const comment = dialogComment;
+    if (!comment) return;
+    setDialogComment(null);
     setCardError("");
     const { error } = await supabase
       .from("comments")
@@ -159,6 +169,7 @@ export default function PostCard({
   const author = post.profiles || {};
 
   return (
+    <>
     <article className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5">
@@ -360,7 +371,7 @@ export default function PostCard({
                   </div>
                   {cIsOwner && (
                     <button
-                      onClick={() => deleteComment(c)}
+                      onClick={() => requestDeleteComment(c)}
                       className="self-start rounded p-1 text-gray-300 hover:text-red-500"
                     >
                       <X size={13} />
@@ -395,7 +406,17 @@ export default function PostCard({
           </div>
         </div>
       )}
+
     </article>
+
+      {/* ── Delete comment dialog ───────────────────────────────── */}
+      <ConfirmDialog
+        open={!!dialogComment}
+        message="Delete this comment?"
+        onCancel={() => setDialogComment(null)}
+        onConfirm={confirmDeleteComment}
+      />
+    </>
   );
 }
 

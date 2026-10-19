@@ -25,6 +25,7 @@ import Navbar from "../Navbar";
 import Footer from "../Footer";
 import WhatsAppButton from "../WhatsAppButton";
 import PostCard from "./PostCard";
+import ConfirmDialog from "./ConfirmDialog";
 
 const PAGE_SIZE = 20;
 
@@ -156,6 +157,8 @@ export default function Community() {
 
   const [pageError, setPageError] = useState("");
 
+  const [dialogPost, setDialogPost] = useState(null);
+
   const loadPosts = useCallback(
     () => fetchPosts(user, setPosts, setLoadingPosts),
     [user]
@@ -283,8 +286,14 @@ export default function Community() {
   }, [loadPosts]);
 
   /* ── Delete post ───────────────────────────────────────────────── */
-  const deletePost = useCallback(async (post) => {
-    if (!confirm("Delete this post?")) return;
+  const requestDeletePost = useCallback((post) => {
+    setDialogPost(post);
+  }, []);
+
+  const confirmDeletePost = useCallback(async () => {
+    const post = dialogPost;
+    if (!post) return;
+    setDialogPost(null);
     setPageError("");
     const { error } = await supabase
       .from("posts")
@@ -295,7 +304,7 @@ export default function Community() {
       return;
     }
     setPosts((prev) => prev.filter((p) => p.id !== post.id));
-  }, []);
+  }, [dialogPost]);
 
   /* ── Render ────────────────────────────────────────────────────── */
   return (
@@ -407,7 +416,7 @@ export default function Community() {
                   post={post}
                   user={user}
                   onLike={() => toggleLike(post)}
-                  onDelete={() => deletePost(post)}
+                  onDelete={() => requestDeletePost(post)}
                   requireAuth={requireAuth}
                   onUpdate={loadPosts}
                 />
@@ -430,6 +439,14 @@ export default function Community() {
           />
         )}
       </AnimatePresence>
+
+      {/* ── Delete post dialog ─────────────────────────────────── */}
+      <ConfirmDialog
+        open={!!dialogPost}
+        message="Delete this post?"
+        onCancel={() => setDialogPost(null)}
+        onConfirm={confirmDeletePost}
+      />
     </>
   );
 }
