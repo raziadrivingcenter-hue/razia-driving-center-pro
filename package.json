@@ -10,6 +10,7 @@
     "postbuild": "node scripts/build-service-page.js",
     "lint": "eslint .",
     "test:reviews": "node scripts/test-reviews-api.mjs",
+    "fetch:reviews": "node scripts/fetch-google-reviews.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

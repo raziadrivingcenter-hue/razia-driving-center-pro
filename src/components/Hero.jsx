@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Users, Star, MessageSquareText, Calendar, Sparkles } from "lucide-react";
 import HeroFeaturesMarquee from "./Hero/HeroFeaturesMarquee";
+import HeroTestimonial from "./Hero/HeroTestimonial";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -16,7 +17,12 @@ function Hero({ onBookNow }) {
       className="font-raleway relative overflow-hidden bg-white py-20 md:py-28 lg:py-32"
     >
       <div className="relative mx-auto max-w-6xl px-6 md:px-8">
-        <div className="max-w-[720px]">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_340px] lg:gap-16">
+
+          {/* ── Left column: text + CTA ── */}
+          <div>
+          <div className="max-w-[720px]">
+
           {/* Location label */}
           <motion.div
             variants={fadeUp}
@@ -49,17 +55,28 @@ function Hero({ onBookNow }) {
             ))}
           </motion.h1>
 
-          {/* Supporting line */}
-          <motion.p
+          {/* Supporting descriptions — SEO-targeted for Lahore + Gulberg */}
+          <motion.div
             variants={fadeUp}
             initial="hidden"
             animate="show"
             transition={{ duration: 0.5, delay: 0.16, ease: "easeOut" }}
-            className="mt-6 max-w-[540px] text-base leading-relaxed text-gray-500 md:text-lg"
+            className="mt-5 max-w-[540px] space-y-4"
           >
-            One-to-one lessons with Madam Razia. Pick-up, training in your area,
-            then drop home.
-          </motion.p>
+            <p className="text-[12px] font-bold leading-[0.88] text-gray-700 md:text-[14px]">
+              Razia Driving Center is a trusted driving school in Lahore,
+              offering personalized one-to-one driving lessons.
+            </p>
+            <p className="text-[12px] leading-[0.88] text-gray-500 md:text-[14px]">
+              Looking for the best driving school in Gulberg, Lahore? Learn to drive
+              confidently with Madam Razia through personalized one-to-one driving
+              lessons, real-road traffic practice, parking, reverse driving, and
+              U-turns. We offer pick-up and drop-off services across Lahore, helping
+              beginners gain practical skills, overcome driving anxiety, and prepare
+              for independent driving. Whether you&#39;re in Gulberg 1, 2, or 3, get
+              patient guidance and learn at your own pace.
+            </p>
+          </motion.div>
 
           {/* CTA Buttons */}
           <motion.div
@@ -150,6 +167,14 @@ function Hero({ onBookNow }) {
           </motion.div>
 
           <HeroFeaturesMarquee />
+          </div>
+          </div>
+
+          {/* ── Right column: 3D flipping testimonial ── */}
+          <div className="mt-2 flex justify-start lg:mt-16 lg:justify-end">
+            <HeroTestimonial />
+          </div>
+
         </div>
       </div>
     </section>
