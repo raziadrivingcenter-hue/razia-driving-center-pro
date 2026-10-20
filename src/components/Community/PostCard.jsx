@@ -251,7 +251,12 @@ export default function PostCard({
       {/* ── Body ────────────────────────────────────────────────── */}
       <div className="px-5 pb-3 pt-3">
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-          {post.text}
+          <a
+            href={`/community/post/${post.id}`}
+            className="text-inherit no-underline transition-colors hover:text-[#FF6201] hover:underline"
+          >
+            {post.text}
+          </a>
         </p>
         {post.image_url && (
           <img

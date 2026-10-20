@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://raziadrivingcenter.com/sitemap.xml
+Sitemap: https://raziadrivingcenter.com/community-sitemap.xml
