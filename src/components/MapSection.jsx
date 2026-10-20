@@ -152,7 +152,7 @@ function MapSection() {
                   </h3>
 
                   <p className="text-xs text-gray-600">
-                    Monday – Sunday · <span className="font-dm-sans">8</span>:00 AM – <span className="font-dm-sans">8</span>:00 PM
+                    Monday – Sunday · <span className="font-dm-sans">7</span>:00 AM – <span className="font-dm-sans">7</span>:00 PM
                   </p>
 
                 </div>

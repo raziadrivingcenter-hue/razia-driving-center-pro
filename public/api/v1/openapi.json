@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Razia Driving Center — Booking API",
-    "description": "REST API for AI booking agents to check availability, calculate fees, and submit driving course reservations for Razia Driving Center, Lahore.\n\n**Base URL:** `https://raziadrivingcenter.com`\n\n**Slot System:**\n- 30-minute training slots, operating hours 8:00 AM – 8:00 PM\n- Travel buffer: distance_km × 5 minutes each way\n- A booking blocks (slot_time − travel_time) to (slot_time + 30 min) for EVERY day of the course\n- Example: 12:30 slot, 3km distance → blocked 12:15–13:00 for all course days\n- Multi-day: a 10-day PLUS Plan blocks the same time slot for all 10 days\n\n**Pricing Formula:**\n- Distance Fee = chargeable_km × 50 PKR × total_days × 2 (round trip)\n- PLUS Plan: first 2 km FREE\n- Max distance: 20 km",
+    "description": "REST API for AI booking agents to check availability, calculate fees, and submit driving course reservations for Razia Driving Center, Lahore.\n\n**Base URL:** `https://raziadrivingcenter.com`\n\n**Slot System:**\n- 30-minute training slots, operating hours 7:00 AM – 7:00 PM\n- Travel buffer: distance_km × 5 minutes each way\n- A booking blocks (slot_time − travel_time) to (slot_time + 30 min) for EVERY day of the course\n- Example: 12:30 slot, 3km distance → blocked 12:15–13:00 for all course days\n- Multi-day: a 10-day PLUS Plan blocks the same time slot for all 10 days\n\n**Pricing Formula:**\n- Distance Fee = chargeable_km × 50 PKR × total_days × 2 (round trip)\n- PLUS Plan: first 2 km FREE\n- Max distance: 20 km",
     "version": "2.0.0",
     "contact": {
       "name": "Razia Driving Center",
@@ -47,11 +47,11 @@
                 },
                 "example": {
                   "date": "2026-10-15",
-                  "operating_hours": { "start": "08:00", "end": "20:00" },
+                  "operating_hours": { "start": "07:00", "end": "19:00" },
                   "slot_duration_min": 30,
                   "available_slots": [
-                    { "time": "08:00:00", "display": "8:00 AM" },
-                    { "time": "08:30:00", "display": "8:30 AM" }
+                    { "time": "07:00:00", "display": "7:00 AM" },
+                    { "time": "07:30:00", "display": "7:30 AM" }
                   ],
                   "blocked_slots": [
                     { "time": "12:30:00", "display": "12:30 PM", "reason": "Booked" }
@@ -176,8 +176,8 @@
           "operating_hours": {
             "type": "object",
             "properties": {
-              "start": { "type": "string", "example": "08:00" },
-              "end": { "type": "string", "example": "20:00" }
+              "start": { "type": "string", "example": "07:00" },
+              "end": { "type": "string", "example": "19:00" }
             }
           },
           "slot_duration_min": { "type": "integer", "example": 30 },
@@ -186,8 +186,8 @@
             "items": {
               "type": "object",
               "properties": {
-                "time": { "type": "string", "example": "08:00:00" },
-                "display": { "type": "string", "example": "8:00 AM" }
+                "time": { "type": "string", "example": "07:00:00" },
+                "display": { "type": "string", "example": "7:00 AM" }
               }
             }
           },

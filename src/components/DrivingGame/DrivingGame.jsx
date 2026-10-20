@@ -5,6 +5,25 @@
 
 import { useEffect, useState } from "react";
 import GameCanvas from "./GameCanvas";
+import { useMeta } from "../../useMeta";
+
+// Structured data for the practice tool — helps AI engines and search crawlers
+// understand this is an interactive practice resource from Razia Driving Center.
+const gameStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Driving Test Practice — L-Track & Parking",
+  "description":
+    "Free top-down driving practice game for L-track reversing and parking bay skills from Razia Driving Center, Lahore.",
+  "url": "https://raziadrivingcenter.com/driving-test-practice/",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Web",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Razia Driving Center",
+    "url": "https://raziadrivingcenter.com",
+  },
+};
 
 const MODES = [
   {
@@ -23,19 +42,23 @@ function DrivingGame() {
   const [mode, setMode] = useState("ltrack");
   const [tooSmall, setTooSmall] = useState(false);
 
-  // Title + meta
+  // Title + meta + canonical + OG + Twitter (sets crawler-readable tags before/after mount)
+  useMeta({
+    title: "Driving Test Practice | L-Track and Parking | Razia Driving Center",
+    description:
+      "Practice the L-track reverse and parking bay with a free top-down driving game from Razia Driving Center, Lahore. Desktop keyboard practice.",
+    canonical: "https://raziadrivingcenter.com/driving-test-practice/",
+  });
+
+  // Inject JSON-LD structured data for the practice tool
   useEffect(() => {
-    document.title = "Driving Test Practice | L-Track and Parking";
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "description");
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute(
-      "content",
-      "Practice the L-track and parking bay with a simple top-down driving game from Razia Driving Center, Lahore."
-    );
+    const script = document.createElement("script");
+    script.setAttribute("type", "application/ld+json");
+    script.textContent = JSON.stringify(gameStructuredData);
+    document.head.appendChild(script);
+    return () => {
+      script.remove();
+    };
   }, []);
 
   // Detect narrow screens

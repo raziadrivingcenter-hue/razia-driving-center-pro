@@ -36,7 +36,7 @@ const faqStructuredData = {
       name: "How much do driving lessons cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Razia Driving Center offers three structured courses: the Basic Plan at Rs. 9,999 (7 days), the Economy / PLUS Plan at Rs. 14,500 (10 days), and the Pro / PRO+ Plan at Rs. 21,750 (15 days). A custom course builder is also available on the website.",
+        text: "Razia Driving Center offers three structured courses: the Basic Plan at Rs. 9,999 (7 days), the PLUS Plan at Rs. 14,500 (10 days), and the PRO+ Plan at Rs. 21,750 (15 days). A custom course builder is also available on the website.",
       },
     },
     {
@@ -44,7 +44,7 @@ const faqStructuredData = {
       name: "How long are the courses?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The Basic Plan runs for 7 days, the Economy (PLUS) Plan for 10 days, and the Pro (PRO+) Plan for 15 days. Each daily session is 30 minutes of practical driving.",
+        text: "The Basic Plan runs for 7 days, the PLUS Plan for 10 days, and the PRO+ Plan for 15 days. Each daily session is 30 minutes of practical driving.",
       },
     },
     {
@@ -76,7 +76,7 @@ const faqStructuredData = {
       name: "Is pick & drop available?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. Pick & drop is available in selected areas of Lahore. Contact Razia Driving Center to confirm availability for your location.",
+        text: "Yes. Pick & drop is available across Lahore. Contact Razia Driving Center to confirm availability for your location.",
       },
     },
     {
@@ -92,7 +92,7 @@ const faqStructuredData = {
       name: "What are the training hours?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Driving training runs from 8:00 AM to 8:00 PM, Monday to Sunday.",
+        text: "Driving training runs from 7:00 AM to 7:00 PM, Monday to Sunday.",
       },
     },
     {
@@ -141,12 +141,12 @@ const faqs = [
   {
     question: "How much do driving lessons cost?",
     answer:
-      <>Razia Driving Center offers three structured courses: the Basic Plan at Rs. <span className="font-dm-sans">9,999</span> (<span className="font-dm-sans">7</span> days), the Economy / PLUS Plan at Rs. <span className="font-dm-sans">14,500</span> (<span className="font-dm-sans">10</span> days), and the Pro / PRO+ Plan at Rs. <span className="font-dm-sans">21,750</span> (<span className="font-dm-sans">15</span> days). A custom course builder is also available on the website.</>,
+      <>Razia Driving Center offers three structured courses: the Basic Plan at Rs. <span className="font-dm-sans">9,999</span> (<span className="font-dm-sans">7</span> days), the PLUS Plan at Rs. <span className="font-dm-sans">14,500</span> (<span className="font-dm-sans">10</span> days), and the PRO+ Plan at Rs. <span className="font-dm-sans">21,750</span> (<span className="font-dm-sans">15</span> days). A custom course builder is also available on the website.</>,
   },
   {
     question: "How long are the courses?",
     answer:
-      <>The Basic Plan runs for <span className="font-dm-sans">7</span> days, the Economy (PLUS) Plan for <span className="font-dm-sans">10</span> days, and the Pro (PRO+) Plan for <span className="font-dm-sans">15</span> days. Each daily session is <span className="font-dm-sans">30</span> minutes of practical driving.</>,
+      <>The Basic Plan runs for <span className="font-dm-sans">7</span> days, the PLUS Plan for <span className="font-dm-sans">10</span> days, and the PRO+ Plan for <span className="font-dm-sans">15</span> days. Each daily session is <span className="font-dm-sans">30</span> minutes of practical driving.</>,
   },
   {
     question: "Can complete beginners join?",
@@ -166,7 +166,7 @@ const faqs = [
   {
     question: "Is pick & drop available?",
     answer:
-      "Yes. Pick & drop is available in selected areas of Lahore. Contact Razia Driving Center to confirm availability for your location.",
+      "Yes. Pick & drop is available across Lahore. Contact Razia Driving Center to confirm availability for your location.",
   },
   {
     question: "What areas does Razia Driving Center serve?",
@@ -176,7 +176,7 @@ const faqs = [
   {
     question: "What are the training hours?",
     answer:
-      <>Driving training runs from <span className="font-dm-sans">8</span>:<span className="font-dm-sans">00</span> AM to <span className="font-dm-sans">8</span>:<span className="font-dm-sans">00</span> PM, Monday to Sunday.</>,
+      <>Driving training runs from <span className="font-dm-sans">7</span>:<span className="font-dm-sans">00</span> AM to <span className="font-dm-sans">7</span>:<span className="font-dm-sans">00</span> PM, Monday to Sunday.</>,
   },
   {
     question: "What are the consultation hours?",

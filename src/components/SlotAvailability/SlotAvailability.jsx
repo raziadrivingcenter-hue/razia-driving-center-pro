@@ -18,6 +18,7 @@ import { useRouter } from "../../router";
 import slotBg from "../../assets/slot-page-bg.png";
 
 import { fetchAvailability } from "../../lib/slotAvailability";
+import { useMeta } from "../../useMeta";
 import BookingForm from "./BookingForm";
 
 // 24 half-hour slots from 07:00 to 19:00 (start times)
@@ -69,6 +70,16 @@ const PERIODS = [
 
 export default function SlotAvailability() {
   const { navigate } = useRouter();
+
+  // Route-specific meta so crawlers / AI engines see a proper title + description
+  // for the public slot-booking page.
+  useMeta({
+    title: "Book Your Slot | Razia Driving Center",
+    description:
+      "Pick a date and claim an available 30-minute driving lesson slot with Razia Driving Center, Lahore. 7 AM – 7 PM, one-to-one training.",
+    canonical: "https://raziadrivingcenter.com/slot-availability/",
+  });
+
   const [selectedDate, setSelectedDate] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);

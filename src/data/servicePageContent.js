@@ -114,6 +114,6 @@ export const staticContent = {
   location: {
     address: "28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan",
     phone: "+92 309 4461407",
-    hours: "8:00 AM – 8:00 PM, Monday – Sunday",
+    hours: "7:00 AM – 7:00 PM, Monday – Sunday",
   },
 };

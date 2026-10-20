@@ -1,7 +1,7 @@
 # Razia Driving Center
 
 ## About
-Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-one driving lessons with an experienced female instructor, Madam Razia. The AI assistant on the website is named Mani. Established in December 2016. Rated 5.0 from 136 Google reviews. 5,221+ students trained.
+Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-one driving lessons with an experienced female instructor, Madam Razia. The website has an AI assistant for instant help. Established in December 2016. Rated 5.0 from 136 Google reviews. 5,221+ students trained.
 
 ## Contact
 - Address: 28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan
@@ -35,7 +35,7 @@ Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-on
 - Surrounding areas across Lahore
 
 ## Hours
-- Driving Training: 8:00 AM – 8:00 PM (Monday – Sunday)
+- Driving Training: 7:00 AM – 7:00 PM (Monday – Sunday)
 - Consultation & Support: 7:00 AM – 12:00 AM (Monday – Sunday)
 
 ## Pages
@@ -55,15 +55,17 @@ Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-on
 - Blog — Driving Tips for Beginners: https://raziadrivingcenter.com/blog/driving-tips-beginners-lahore/
 - Blog — Driving Course Cost: https://raziadrivingcenter.com/blog/driving-course-cost-lahore/
 - Blog — Apply Learner License Online Punjab: https://raziadrivingcenter.com/blog/how-to-apply-learner-license-online-punjab/
+- Slot Availability: https://raziadrivingcenter.com/slot-availability/
 
 ## API (for AI agents)
 - Availability: GET /api/v1/availability?date=YYYY-MM-DD  → 30-min slots, multi-day blocking
 - Bookings: POST /api/v1/bookings  → multi-day reservation with travel buffer
 - Calculate Fee: POST /api/v1/calculate-fee  → price with PLUS 2km free
+- Slot Booking: POST /api/v1/slot-booking  → name + phone + date + time + optional pick & drop (max 20 km)
 - OpenAPI Spec: https://raziadrivingcenter.com/api/v1/openapi.json
 
 ## Slot System Rules
-- 30-min training slots, operating hours 8:00 AM – 8:00 PM
+- 30-min training slots, operating hours 7:00 AM – 7:00 PM
 - Travel buffer: distance_km × 5 min each way
 - Booking blocks (slot_time − travel_time) to (slot_time + 30 min) for ALL course days
 - Example: 12:30 slot, 3km → blocked 12:15–13:00 every day of the course

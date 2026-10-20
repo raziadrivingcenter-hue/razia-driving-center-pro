@@ -159,7 +159,7 @@ function ServicePage() {
                   { label: "Students trained", value: "5,221+" },
                   { label: "Experience", value: "20+ years" },
                   { label: "Google rating", value: "5.0 from 136 reviews" },
-                  { label: "Training hours", value: "8:00 AM – 8:00 PM daily" },
+                  { label: "Training hours", value: "7:00 AM – 7:00 PM daily" },
                   { label: "Lesson type", value: "One-to-one, manual car" },
                 ].map(({ label, value }) => (
                   <div
@@ -509,7 +509,7 @@ function ServicePage() {
                   <div>
                     <h3 className="font-bold text-gray-900">Training Hours</h3>
                     <p className="mt-1 text-gray-600">
-                      8:00 AM – 8:00 PM, Monday – Sunday
+                      7:00 AM – 7:00 PM, Monday – Sunday
                     </p>
                   </div>
                 </div>
