@@ -867,9 +867,9 @@ function extractBookingData(messages) {
     }
 
     // Time selection
-    if (text.includes("Morning")) data.time = "Morning (8 AM - 12 PM)";
+    if (text.includes("Morning")) data.time = "Morning (7 AM - 12 PM)";
     if (text.includes("Afternoon")) data.time = "Afternoon (12 PM - 4 PM)";
-    if (text.includes("Evening")) data.time = "Evening (4 PM - 8 PM)";
+    if (text.includes("Evening")) data.time = "Evening (4 PM - 7 PM)";
 
     // Distance — look for numbers followed by KM/unit or standalone numbers
     // when pick & drop context is active

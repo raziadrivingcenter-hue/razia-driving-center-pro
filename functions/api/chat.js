@@ -226,9 +226,9 @@ export async function onRequest(context) {
 
     // Detect time-of-day preference
     const TIME_PERIODS = {
-      morning: { keywords: ["morning", "subah", "8 am - 12 pm", "8am-12pm"], start: 8 * 60, end: 12 * 60 },
+      morning: { keywords: ["morning", "subah", "7 am - 12 pm", "7am-12pm"], start: 7 * 60, end: 12 * 60 },
       afternoon: { keywords: ["afternoon", "dopahar", "12 pm - 4 pm", "12pm-4pm"], start: 12 * 60, end: 16 * 60 },
-      evening: { keywords: ["evening", "shaam", "4 pm - 8 pm", "4pm-8pm"], start: 16 * 60, end: 20 * 60 },
+      evening: { keywords: ["evening", "shaam", "4 pm - 7 pm", "4pm-7pm"], start: 16 * 60, end: 19 * 60 },
     };
 
     let selectedPeriod = null;
@@ -405,7 +405,7 @@ export async function onRequest(context) {
           filteredSlots = allSlots.filter(
             (s) => s.startMin >= config.start && s.startMin < config.end
           );
-          periodLabel = selectedPeriod === "morning" ? "Morning (8 AM - 12 PM)" : selectedPeriod === "afternoon" ? "Afternoon (12 PM - 4 PM)" : "Evening (4 PM - 8 PM)";
+          periodLabel = selectedPeriod === "morning" ? "Morning (7 AM - 12 PM)" : selectedPeriod === "afternoon" ? "Afternoon (12 PM - 4 PM)" : "Evening (4 PM - 7 PM)";
         }
 
         if (filteredSlots.length > 0) {

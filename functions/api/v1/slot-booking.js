@@ -5,6 +5,8 @@
 /*  Collects name + phone + course + pick&drop, then reserves the slot.
 /* ------------------------------------------------------------------ */
 
+import { validateSlotTime } from "../../lib/slotConfig.js";
+
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -42,6 +44,11 @@ export async function onRequest(context) {
     }
     if (!body.preferred_time) {
       errors.push("Preferred time is required");
+    } else {
+      const timeCheck = validateSlotTime(body.preferred_time);
+      if (!timeCheck.ok) {
+        errors.push(`Preferred time: ${timeCheck.error}`);
+      }
     }
 
     // Pick & Drop validation (optional — only when enabled)

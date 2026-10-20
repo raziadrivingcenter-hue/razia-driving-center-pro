@@ -6,6 +6,8 @@
 /*  Falls back to generated schedule for future dates not yet synced.
 /* ------------------------------------------------------------------ */
 
+import { OPERATING_HOURS, SLOT_DURATION_MIN } from "../../lib/slotConfig.js";
+
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -105,8 +107,8 @@ export async function onRequest(context) {
     return new Response(
       JSON.stringify({
         date,
-        operating_hours: { start: "08:00", end: "20:00" },
-        slot_duration_min: 60,
+        operating_hours: OPERATING_HOURS,
+        slot_duration_min: SLOT_DURATION_MIN,
         available_slots: available.map((s) => ({
           time: s.slot_start,
           end: s.slot_end,
@@ -151,7 +153,7 @@ export async function onRequest(context) {
 }
 
 function formatTime(timeStr) {
-  // "08:00" or "08:00:00" → "8:00 AM"
+  // "07:00" or "07:00:00" → "7:00 AM"
   const parts = timeStr.split(":");
   const h = parseInt(parts[0], 10);
   const m = parts[1];

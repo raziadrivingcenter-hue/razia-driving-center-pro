@@ -10,6 +10,8 @@
     "postbuild": "node scripts/build-service-page.js",
     "lint": "eslint .",
     "test:reviews": "node scripts/test-reviews-api.mjs",
+    "test:slot-config": "node scripts/test-slot-config.mjs",
+    "test:booking-handlers": "node --test scripts/test-booking-handlers.mjs",
     "fetch:reviews": "node scripts/fetch-google-reviews.mjs",
     "preview": "vite preview"
   },

@@ -5,6 +5,8 @@
 /*  Staff accepts in SOD software → creates lessons → syncs slot_availability.
 /* ------------------------------------------------------------------ */
 
+import { validateSlotTime } from "../../lib/slotConfig.js";
+
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -39,6 +41,14 @@ export async function onRequest(context) {
     }
     if (!body.plan_type || !["basic", "plus", "pro"].includes(body.plan_type.toLowerCase())) {
       errors.push("plan_type must be: basic, plus, or pro");
+    }
+
+    // Optional preferred time — validate format + operating hours if provided.
+    if (body.slot_time) {
+      const timeCheck = validateSlotTime(body.slot_time);
+      if (!timeCheck.ok) {
+        errors.push(`slot_time: ${timeCheck.error}`);
+      }
     }
 
     if (errors.length > 0) {

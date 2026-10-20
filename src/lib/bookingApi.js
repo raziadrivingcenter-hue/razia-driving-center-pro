@@ -119,8 +119,8 @@ export async function calculateFee({ planType, courseFee, totalDays, distanceKm 
  */
 export function getSlotSystemInfo() {
   return {
-    slotDurationMin: 60,
-    operatingHours: { start: "08:00", end: "20:00" },
+    slotDurationMin: 30,
+    operatingHours: { start: "07:00", end: "19:00" },
     maxDistanceKm: 20,
     ratePerKm: 50,
     plusFreeKm: 2,

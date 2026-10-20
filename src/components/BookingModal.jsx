@@ -185,9 +185,9 @@ Please contact me.`;
             className="w-full rounded-xl border p-4 outline-none focus:border-[#FF6201]"
           >
             <option value="">Preferred Training Time</option>
-            <option>Morning (8 AM - 12 PM)</option>
+            <option>Morning (7 AM - 12 PM)</option>
             <option>Afternoon (12 PM - 4 PM)</option>
-            <option>Evening (4 PM - 8 PM)</option>
+            <option>Evening (4 PM - 7 PM)</option>
           </select>
 
           <textarea

@@ -301,7 +301,7 @@ function FooterLinks() {
             />
 
             <span className="text-gray-400">
-              Training <span className="font-dm-sans">8</span> AM – <span className="font-dm-sans">8</span> PM | Consultation <span className="font-dm-sans">7</span> AM – <span className="font-dm-sans">12</span> AM
+              Training <span className="font-dm-sans">7</span> AM – <span className="font-dm-sans">7</span> PM | Consultation <span className="font-dm-sans">7</span> AM – <span className="font-dm-sans">12</span> AM
             </span>
 
           </div>
