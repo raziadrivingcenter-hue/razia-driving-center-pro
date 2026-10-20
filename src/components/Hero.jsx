@@ -9,7 +9,7 @@ const fadeUp = {
 };
 
 function Hero({ onBookNow }) {
-  const title = "Driving School in Gulberg 2, Lahore";
+  const title = "Driving School in Gulberg, Lahore";
 
   return (
     <section
@@ -64,17 +64,13 @@ function Hero({ onBookNow }) {
             className="mt-5 max-w-[540px] space-y-4"
           >
             <p className="text-[12px] font-bold leading-[0.88] text-gray-700 md:text-[14px]">
-              Razia Driving Center is a trusted driving school in Lahore,
-              offering personalized one-to-one driving lessons.
+              Learn one-to-one with Madam Razia, a female driving instructor.
             </p>
             <p className="text-[12px] leading-[0.88] text-gray-500 md:text-[14px]">
-              Looking for the best driving school in Gulberg, Lahore? Learn to drive
-              confidently with Madam Razia through personalized one-to-one driving
-              lessons, real-road traffic practice, parking, reverse driving, and
-              U-turns. We offer pick-up and drop-off services across Lahore, helping
-              beginners gain practical skills, overcome driving anxiety, and prepare
-              for independent driving. Whether you&#39;re in Gulberg 1, 2, or 3, get
-              patient guidance and learn at your own pace.
+              Practise on roads around your area with convenient pick-up within
+              20&nbsp;km. We can drop you home after your lesson, or arrange home
+              pick-up with drop-off at your office to help fit driving lessons into a
+              busy routine.
             </p>
           </motion.div>
 
@@ -138,6 +134,33 @@ function Hero({ onBookNow }) {
               <Sparkles size={16} />
               Chat With AI
             </a>
+          </motion.div>
+
+          {/* Supporting benefit labels — restrained, no clutter */}
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.5, delay: 0.28, ease: "easeOut" }}
+            className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2"
+            aria-label="Key benefits"
+          >
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#FF6201]" />
+              20 km pick-up
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#FF6201]" />
+              Local-road practice
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#FF6201]" />
+              Female instructor
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#FF6201]" />
+              Home-to-office option
+            </span>
           </motion.div>
 
           {/* Social proof — lucide icons + mini text, company-logo feel */}

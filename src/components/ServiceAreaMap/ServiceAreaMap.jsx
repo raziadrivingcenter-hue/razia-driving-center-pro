@@ -11,24 +11,20 @@ import { MapPin } from "lucide-react";
 // Razia Driving Center — 28/A, S Block, Gulberg 2, Lahore
 const CENTER = [31.5204, 74.3587];
 
-// Gulberg sub-areas (approximate centroids)
-const GULBERG_AREAS = [
-  { name: "Gulberg 1", pos: [31.5145, 74.3490] },
-  { name: "Gulberg 2", pos: CENTER },
-  { name: "Gulberg 3", pos: [31.5260, 74.3670] },
+// Confirmed service areas across Lahore (pick-up within 20 km of the office).
+// Text-only list — no per-area coordinates are asserted.
+const AREAS = [
+  "Gulberg 1", "Gulberg 2", "Gulberg 3", "Falcon Complex", "Makka Colony",
+  "Calvary Ground", "Gulbahar Colony", "Madina Colony", "Walton", "Askari 5",
+  "Shah Jamal", "Ghalib Road", "Canal Park", "Fazlia Colony", "Shadman 1",
+  "Upper Mall Scheme", "Mian Mir Colony", "CMA Colony", "Super Town",
+  "New Super Town", "Model Town", "Muslim Town", "Faisal Town",
+  "Rehmanpura Colony", "Ichhra", "Shershah Colony", "DHA Phase 1",
+  "DHA Phase 2", "DHA Phase 3", "DHA Phase 4", "Nishat Colony",
+  "Shami Road Cantt", "Tufail Road Cantt", "R.A. Bazar Cantt", "Saddar Town Cantt",
 ];
 
 // Fix Leaflet default marker icons (broken with bundlers)
-const defaultIcon = new Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
 const originIcon = new Icon({
   iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -132,28 +128,18 @@ export default function ServiceAreaMap() {
               </Popup>
             </Marker>
 
-            {/* Gulberg area markers */}
-            {GULBERG_AREAS.map((area) => (
-              <Marker
-                key={area.name}
-                position={area.pos}
-                icon={defaultIcon}
-              >
-                <Popup>{area.name}</Popup>
-              </Marker>
-            ))}
           </MapContainer>
         </div>
 
-        {/* Gulberg area pills */}
+        {/* Confirmed service areas — text list, no per-area coordinates asserted */}
         <div className="mt-6 flex flex-wrap gap-2">
-          {GULBERG_AREAS.map((area) => (
+          {AREAS.map((area) => (
             <span
-              key={area.name}
+              key={area}
               className="inline-flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-[11px] font-semibold text-gray-600 ring-1 ring-gray-100"
             >
               <MapPin size={11} className="text-[#FF6201]" />
-              {area.name}
+              {area}
             </span>
           ))}
         </div>

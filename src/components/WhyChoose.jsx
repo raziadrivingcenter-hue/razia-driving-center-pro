@@ -75,7 +75,7 @@ const features = [
     icon: MapPinned,
     title: "Gulberg 2 & Across Lahore",
     description:
-      "Based in Gulberg 2. Serving Gulberg III, Lahore Cantt and surrounding Lahore areas.",
+      "Based in Gulberg 2. Serving Gulberg, DHA, Model Town, Muslim Town, Lahore Cantt and surrounding Lahore areas.",
   },
 ];
 

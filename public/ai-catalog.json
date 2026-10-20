@@ -4,7 +4,17 @@
   "url": "https://raziadrivingcenter.com",
   "telephone": "+92 309 4461407",
   "address": "28/A, S Block, Gulberg 2, Lahore, 54660, Pakistan",
-  "areaServed": ["Gulberg 2", "Gulberg III", "Lahore Cantt", "Lahore"],
+  "areaServed": [
+    "Gulberg 1", "Gulberg 2", "Gulberg 3", "Falcon Complex", "Makka Colony",
+    "Calvary Ground", "Gulbahar Colony", "Madina Colony", "Walton", "Askari 5",
+    "Shah Jamal", "Ghalib Road", "Canal Park", "Fazlia Colony", "Shadman 1",
+    "Upper Mall Scheme", "Mian Mir Colony", "CMA Colony", "Super Town",
+    "New Super Town", "Model Town", "Muslim Town", "Faisal Town",
+    "Rehmanpura Colony", "Ichhra", "Shershah Colony", "DHA Phase 1",
+    "DHA Phase 2", "DHA Phase 3", "DHA Phase 4", "Nishat Colony",
+    "Shami Road Cantt", "Tufail Road Cantt", "R.A. Bazar Cantt", "Saddar Town Cantt",
+    "Lahore"
+  ],
   "priceRange": "$$",
   "courses": [
     {

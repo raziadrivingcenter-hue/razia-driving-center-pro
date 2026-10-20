@@ -84,7 +84,7 @@ const faqStructuredData = {
       name: "What areas does Razia Driving Center serve?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Razia Driving Center is based in Gulberg 2 and serves Gulberg III, Lahore Cantt and surrounding areas across Lahore.",
+        text: "Razia Driving Center is based in Gulberg 2 and serves Gulberg, DHA, Model Town, Muslim Town, Lahore Cantt and surrounding areas across Lahore.",
       },
     },
     {
@@ -171,7 +171,7 @@ const faqs = [
   {
     question: "What areas does Razia Driving Center serve?",
     answer:
-      "Razia Driving Center is based in Gulberg 2 and serves Gulberg III, Lahore Cantt and surrounding areas across Lahore.",
+      "Razia Driving Center is based in Gulberg 2 and serves Gulberg, DHA, Model Town, Muslim Town, Lahore Cantt and surrounding areas across Lahore.",
   },
   {
     question: "What are the training hours?",
