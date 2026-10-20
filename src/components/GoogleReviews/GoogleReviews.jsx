@@ -1,8 +1,42 @@
 import { useState, useEffect } from "react";
 import googleLogo from "../../assets/google-logo.png";
-import fallbackReviews, { yandexReviews } from "./reviewsData";
+import { yandexReviews } from "./reviewsData";
+import cachedReviewsData from "../../data/cached-reviews.json";
 import MasonryReviews from "./MasonryReviews";
 import MarqueeReviews from "./MarqueeReviews";
+
+// Convert an ISO timestamp to a relative-time string, matching the format
+// the /api/reviews endpoint produces (so cached reviews render identically).
+function toRelativeTime(isoString) {
+  const then = new Date(isoString).getTime();
+  const diffMs = Date.now() - then;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 60) return "Just now";
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  if (diffDays < 30) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12)
+    return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+  const diffYears = Math.floor(diffMonths / 12);
+  return `${diffYears} year${diffYears > 1 ? "s" : ""} ago`;
+}
+
+// Real Google reviews captured from the API, used as the local fallback
+// when the live endpoint is slow or unavailable. Normalized to the same
+// shape the API returns (photoUrl, relative time, verified flag) so the
+// ReviewCard component renders them identically.
+const cachedReviews = (cachedReviewsData.reviews || []).map((r) => ({
+  id: r.id,
+  name: r.name,
+  rating: r.rating,
+  time: toRelativeTime(r.time),
+  verified: true,
+  review: r.review,
+  photoUrl: r.photo || null,
+}));
 
 function GoogleReviews() {
   const [reviews, setReviews] = useState(null); // null = loading
@@ -63,9 +97,9 @@ function GoogleReviews() {
   const isBlocked = (r) =>
     BLOCKED_NAMES.includes((r.name || r.author_name || "").toLowerCase());
 
-  // Use API reviews if loaded, otherwise fallback to hardcoded data.
+  // Use API reviews if loaded, otherwise fallback to cached real reviews.
   // Always prepend Yandex reviews so they appear regardless of API status.
-  const baseReviews = (reviews || fallbackReviews).filter((r) => !isBlocked(r));
+  const baseReviews = (reviews || cachedReviews).filter((r) => !isBlocked(r));
   const displayReviews = [
     ...yandexReviews.filter((r) => !isBlocked(r)),
     ...baseReviews,
