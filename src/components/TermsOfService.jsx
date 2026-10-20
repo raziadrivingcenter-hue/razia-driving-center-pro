@@ -9,7 +9,7 @@ const TERMS_META = {
   title: "Terms of Service | Razia Driving Center",
   description:
     "Read the Terms of Service for Razia Driving Center in Lahore, Pakistan, covering driving lesson inquiries, bookings, fees, website use, and service conditions.",
-  canonical: "https://raziadrivingcenter.com/terms",
+  canonical: "https://raziadrivingcenter.com/terms/",
 };
 
 function Section({ title, children }) {
