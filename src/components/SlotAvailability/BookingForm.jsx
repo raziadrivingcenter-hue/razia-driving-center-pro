@@ -67,14 +67,22 @@ function CourseSelect({ value, onChange, error }) {
   );
 }
 
-export default function BookingForm({ slot, date, onBack }) {
-  // Pre-select course when arriving from a course card (?course=...).
+export default function BookingForm({ slot, date, onBack, prefill }) {
+  // Pre-select course when arriving from a course card (?course=...) or the
+  // student dashboard. The dashboard also hands off a verified name + Supabase
+  // access token via sessionStorage (consumed in SlotAvailability and passed
+  // here as `prefill`). The token proves identity server-side; the email is
+  // derived from the verified Auth user and is NEVER an editable field here.
   const initialCourse = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("course") || "";
   }, []);
 
-  const [name, setName] = useState("");
+  // Supabase session JWT (dashboard only) — sent as an Authorization header.
+  // Public visitors have no token, so the booking's email column stays NULL.
+  const accessToken = prefill?.accessToken || "";
+
+  const [name, setName] = useState(prefill?.name || "");
   const [phone, setPhone] = useState("");
   const [course, setCourse] = useState(initialCourse);
   const [pickup, setPickup] = useState("No");
@@ -207,12 +215,20 @@ export default function BookingForm({ slot, date, onBack }) {
         distance_km: wantsPickDrop ? distanceNum : 0,
         home_service: wantsPickDrop,
         address: wantsPickDrop ? address.trim() : "",
+        accessToken,
       });
       setResult(res);
     } catch (err) {
-      setSubmitError(
-        err.details?.join(", ") || err.message || "Something went wrong. Please try again."
-      );
+      // A 401 means the dashboard session token was invalid/expired — guide the
+      // student back to sign-in rather than showing a generic failure.
+      const msg =
+        err.status === 401 || /sign-in|expired|invalid/i.test(err.message || "")
+          ? err.message ||
+            "Your sign-in expired. Please sign in again to book your slot."
+          : err.details?.join(", ") ||
+            err.message ||
+            "Something went wrong. Please try again.";
+      setSubmitError(msg);
     } finally {
       setSubmitting(false);
     }

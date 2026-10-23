@@ -11,6 +11,12 @@ const API_BASE = import.meta.env.VITE_BOOKING_API_URL || "";
 
 /**
  * Reserve a slot via the on-page registration form.
+ *
+ * Identity is proven with a Supabase access token (dashboard bookings). The
+ * endpoint verifies the token server-side and derives the email from the
+ * verified Auth user — the email is NEVER sent in the request body, so a
+ * malicious or anonymous caller cannot impersonate a signed-in student.
+ *
  * @param {{
  *   customer_name: string,
  *   customer_phone: string,
@@ -20,6 +26,7 @@ const API_BASE = import.meta.env.VITE_BOOKING_API_URL || "";
  *   distance_km?: number,
  *   home_service?: boolean,
  *   address?: string,
+ *   accessToken?: string,   // Supabase session JWT (dashboard only); omitted for public bookings
  * }} params
  * @returns {{ success: boolean, bookingId: string, status: string, message: string, whatsappLink: string }}
  */
@@ -32,10 +39,14 @@ export async function submitSlotBooking({
   distance_km = 0,
   home_service = false,
   address = "",
+  accessToken = "",
 }) {
   const res = await fetch(`${API_BASE}/api/v1/slot-booking`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
     body: JSON.stringify({
       customer_name,
       customer_phone,
@@ -52,12 +63,24 @@ export async function submitSlotBooking({
     const err = await res.json();
     const error = new Error(err.error || "Validation failed");
     error.code = "VALIDATION_ERROR";
+    error.status = 400;
     error.details = err.details || [];
     throw error;
   }
 
+  // 401 is returned when a dashboard access token is invalid/expired — surface
+  // it distinctly so the UI can guide the student back to sign-in.
+  if (res.status === 401) {
+    const err = await res.json().catch(() => ({}));
+    const error = new Error(err.error || "Your sign-in is invalid. Please sign in again.");
+    error.status = 401;
+    throw error;
+  }
+
   if (!res.ok) {
-    throw new Error("Booking submission failed. Please try again.");
+    const error = new Error("Booking submission failed. Please try again.");
+    error.status = res.status;
+    throw error;
   }
 
   const data = await res.json();

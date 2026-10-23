@@ -14,7 +14,13 @@ import {
 import { useMeta } from "../useMeta";
 import { useRouter } from "../router";
 import { getSession, signOut, onAuthStateChange } from "../lib/auth";
-import { getMyLink, fetchMyProgress } from "../lib/progress";
+import {
+  getMyLink,
+  fetchMyProgress,
+  resolvePortalStudent,
+  fetchPortalProgress,
+} from "../lib/progress";
+import EnrollNow from "./EnrollNow";
 import Navbar from "./Navbar";
 import ScrollProgress from "./ScrollProgress";
 import WhatsAppButton from "./WhatsAppButton";
@@ -34,7 +40,12 @@ const DASHBOARD_META = {
 export default function Dashboard() {
   const { navigate } = useRouter();
   const [user, setUser] = useState(null);
-  const [status, setStatus] = useState("loading"); // loading | signed-out | unlinked | ready
+  // loading        → spinner
+  // signed-out     → redirecting home (renders null)
+  // ready          → resolved to one student with lessons → show progress
+  // enroll         → no student matched, or matched but no course → Enroll Now form
+  // contact        → multiple students matched → ask them to contact the school
+  const [status, setStatus] = useState("loading");
   const [progress, setProgress] = useState([]);
   const [fetchError, setFetchError] = useState("");
 
@@ -69,22 +80,48 @@ export default function Dashboard() {
       });
 
       try {
-        const link = await getMyLink();
+        // Primary path: resolve the verified Google email to a student record
+        // via the private student_portal_registry (server-side only).
+        const identity = await resolvePortalStudent();
         if (cancelled) return;
 
-        if (!link) {
-          // Signed in, but no admin-created student_link row yet.
-          setStatus("unlinked");
+        if (identity?.status === "linked") {
+          // Exactly one student matched and has lessons → show their progress.
+          const rows = await fetchPortalProgress();
+          if (cancelled) return;
+          setProgress(rows);
+          setStatus("ready");
           return;
         }
 
-        const rows = await fetchMyProgress();
+        if (identity?.status === "multiple") {
+          // Ambiguous: don't guess, don't expose data. Ask them to contact school.
+          setStatus("contact");
+          return;
+        }
+
+        // status "no_match" or "no_course".
+        // Backwards-compat: if the legacy student_link mapping exists and yields
+        // lessons, honour it. Registry always wins when it has a match, so this
+        // path is only reached when the registry has nothing for this email.
+        const link = await getMyLink();
         if (cancelled) return;
-        setProgress(rows);
-        setStatus("ready");
+        if (link) {
+          const rows = await fetchMyProgress();
+          if (cancelled) return;
+          if (rows.length > 0) {
+            setProgress(rows);
+            setStatus("ready");
+            return;
+          }
+        }
+
+        // No student matched, or matched without a course/lessons → Enroll Now.
+        setStatus("enroll");
       } catch {
-        if (!cancelled) setFetchError("Couldn't load your progress. Please try again shortly.");
-        if (!cancelled) setStatus("ready");
+        if (!cancelled)
+          setFetchError("Couldn't load your dashboard. Please try again shortly.");
+        if (!cancelled) setStatus("enroll");
       }
     })();
 
@@ -285,12 +322,18 @@ export default function Dashboard() {
                 Your Progress
               </span>
               <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">
-                {status === "unlinked" ? "Account not linked yet" : "At a glance"}
+                {status === "ready"
+                  ? "At a glance"
+                  : status === "contact"
+                  ? "Contact the school"
+                  : "Enroll Now"}
               </h2>
               <p className="mt-2 text-sm leading-6 text-gray-500">
-                {status === "unlinked"
-                  ? "Your Google account is signed in, but it hasn't been connected to a student record yet."
-                  : "Detailed lesson-by-lesson breakdown, updated after every session."}
+                {status === "ready"
+                  ? "Detailed lesson-by-lesson breakdown, updated after every session."
+                  : status === "contact"
+                  ? "We found more than one student record for your account. To keep your data safe, we won't guess which is yours — please reach out and we'll get you set up."
+                  : "Your Google account is signed in. Choose a course and share your details to get started."}
               </p>
             </div>
 
@@ -301,22 +344,22 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* ── Not-linked nudge ── */}
-            {status === "unlinked" ? (
+            {/* ── Contact the school (ambiguous match) ── */}
+            {status === "contact" && (
               <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-8 text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-orange-50">
                   <User size={22} className="text-[#FF6201]" />
                 </div>
                 <p className="mt-4 text-base font-semibold text-gray-800">
-                  Your account isn't linked to a student record yet
+                  We need to confirm your student record
                 </p>
                 <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
-                  Sign-in worked. To see your lessons and progress, the school needs to connect
-                  this Google account to your student record. Reach out and we'll set it up —
-                  then sign in again.
+                  Sign-in worked, but we found more than one student record for your account.
+                  To keep your data safe we won't guess which is yours. Reach out and we'll
+                  connect you to the right record.
                 </p>
                 <a
-                  href="https://wa.me/923094461407?text=Hello%2C%20please%20link%20my%20dashboard%20to%20my%20student%20record."
+                  href="https://wa.me/923094461407?text=Hello%2C%20please%20help%20me%20set%20up%20my%20dashboard."
                   target="_blank"
                   rel="noreferrer"
                   className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700"
@@ -324,7 +367,13 @@ export default function Dashboard() {
                   Contact us on WhatsApp
                 </a>
               </div>
-            ) : (
+            )}
+
+            {/* ── Enroll Now (no / unassigned student) ── */}
+            {status === "enroll" && <EnrollNow user={user} />}
+
+            {/* ── Ready: lessons + metrics ── */}
+            {status === "ready" && (
               <>
                 {/* Metric cards */}
                 <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

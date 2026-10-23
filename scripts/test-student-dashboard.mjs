@@ -137,6 +137,110 @@ $$
 $$;
 revoke all on function public.get_my_progress() from public, anon;
 grant execute on function public.get_my_progress() to authenticated;
+
+-- ── student_portal_registry (published by the SoD desktop app; private) ──
+create table if not exists public.student_portal_registry (
+  student_id integer not null primary key,
+  email      text not null,
+  synced_at  timestamptz not null default now()
+);
+grant select, insert, update, delete on public.student_portal_registry to service_role;
+revoke all on public.student_portal_registry from public, anon, authenticated;
+alter table public.student_portal_registry enable row level security;
+
+-- ── resolve_portal_student: match auth user's email to a registry row ──
+create or replace function public.resolve_portal_student()
+returns table (match_status text, student_id integer)
+language sql stable security definer
+set search_path = ''
+$$
+  with mine as (
+    select lower(trim(email)) as email from auth.users where id = auth.uid()
+  ),
+  hits as (
+    select r.student_id, count(*) over () as cnt
+    from public.student_portal_registry r
+    join mine m on lower(trim(r.email)) = m.email
+  )
+  select
+    case
+      when (select count(*) from hits) = 0 then 'none'
+      when (select count(*) from hits) > 1 then 'multiple'
+      when exists (
+        select 1 from public.lessons l
+        join hits h on l.student_id = h.student_id
+      ) then 'linked'
+      else 'no_course'
+    end,
+    (select h.student_id from hits h limit 1)
+$$;
+revoke all on function public.resolve_portal_student() from public, anon;
+grant execute on function public.resolve_portal_student() to authenticated;
+
+-- ── get_portal_progress: lessons for the resolved registry student ──
+create or replace function public.get_portal_progress()
+returns table (
+  lesson_number integer, lesson_date text, duration_minutes integer,
+  status text, course text, vehicle text, distance_km double precision,
+  duration_seconds integer, started_at timestamptz, ended_at timestamptz,
+  point_count integer, tracking_status text
+)
+language sql stable security definer
+set search_path = ''
+$$
+  with mine as (
+    select lower(trim(email)) as email from auth.users where id = auth.uid()
+  ),
+  target as (
+    select r.student_id
+    from public.student_portal_registry r
+    join mine m on lower(trim(r.email)) = m.email
+    limit 1
+  )
+  select l.lesson_number, l.lesson_date, l.duration_minutes, l.status, l.course,
+         l.vehicle, t.distance_km, t.duration_seconds, t.started_at, t.ended_at,
+         t.point_count, t.tracking_status
+  from public.lessons l
+  join target x on l.student_id = x.student_id
+  left join public.lesson_tracking_sessions t on t.lesson_id = l.local_id
+  order by l.lesson_date desc;
+$$;
+revoke all on function public.get_portal_progress() from public, anon;
+grant execute on function public.get_portal_progress() to authenticated;
+
+-- ── enrollment_requests (private intake table) ──
+create table if not exists public.enrollment_requests (
+  id           uuid primary key default gen_random_uuid(),
+  student_email  text not null,
+  course         text not null,
+  student_name   text,
+  student_phone  text,
+  message        text,
+  status         text not null default 'pending',
+  created_at     timestamptz not null default now()
+);
+alter table public.enrollment_requests enable row level security;
+revoke all on public.enrollment_requests from public, anon, authenticated;
+
+-- ── submit_enrollment_request: email taken from auth.uid(), never client ──
+create or replace function public.submit_enrollment_request(
+  p_course     text,
+  p_name       text default null,
+  p_phone      text default null,
+  p_message    text default null
+)
+returns uuid
+language sql security definer
+set search_path = ''
+$$
+  insert into public.enrollment_requests (student_email, course, student_name, student_phone, message, status)
+  values (
+    (select email from auth.users where id = auth.uid()),
+    p_course, p_name, p_phone, p_message, 'pending'
+  )
+  returning id;
+$$;
+grant execute on function public.submit_enrollment_request() to authenticated;
 `;
 
 async function setupSchema() {

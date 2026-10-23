@@ -86,6 +86,26 @@ export default function SlotAvailability() {
   const [error, setError] = useState("");
   const [bookingSlot, setBookingSlot] = useState(null); // { time }
 
+  // Identity prefill handed off from the authenticated student dashboard.
+  // The dashboard stashes { name, accessToken } in sessionStorage (verified
+  // Google profile name + Supabase session JWT) before navigating here. The
+  // token proves identity server-side; the email is derived from the verified
+  // Auth user and is NEVER exposed as an editable field. Public visitors have
+  // no entry here and the form stays blank (email column stays NULL).
+  // Read once on mount, then clear it so it can't leak into a later booking.
+  const [prefill] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem("rdc_dashboard_prefill");
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  });
+  useEffect(() => {
+    if (prefill) sessionStorage.removeItem("rdc_dashboard_prefill");
+  }, [prefill]);
+
   // Compute once on mount (lazy init) — avoids impure Date.now() during render.
   const [today] = useState(() => new Date().toISOString().split("T")[0]);
   const [maxDate] = useState(() =>
@@ -429,6 +449,7 @@ export default function SlotAvailability() {
                     slot={bookingSlot}
                     date={selectedDate}
                     onBack={() => setBookingSlot(null)}
+                    prefill={prefill}
                   />
                 </motion.div>
               )}
