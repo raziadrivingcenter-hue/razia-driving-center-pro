@@ -144,7 +144,12 @@ export default function Dashboard() {
 
   // ── Derived metrics (only meaningful in "ready") ──
   const metrics = (() => {
-    const totalLessons = progress.length;
+    // Only count lessons whose actual status marks them as completed, so the
+    // "Lessons — completed" total agrees with the lesson rows shown in the
+    // table (scheduled lessons are excluded).
+    const isCompleted = (r) =>
+      String(r.status).trim().toLowerCase() === "completed";
+    const totalLessons = progress.filter(isCompleted).length;
     const totalKm = progress.reduce(
       (sum, r) => sum + (Number(r.distance_km) || 0),
       0
