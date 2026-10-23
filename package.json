@@ -12,6 +12,7 @@
     "test:reviews": "node scripts/test-reviews-api.mjs",
     "test:slot-config": "node scripts/test-slot-config.mjs",
     "test:booking-handlers": "node --test scripts/test-booking-handlers.mjs",
+    "test:student-dashboard": "node scripts/test-student-dashboard.mjs",
     "fetch:reviews": "node scripts/fetch-google-reviews.mjs",
     "preview": "vite preview"
   },

@@ -11,6 +11,7 @@ const SlotAvailability = lazy(() => import("./components/SlotAvailability/SlotAv
 const PaymentProcedure = lazy(() => import("./components/PaymentProcedure"));
 const AIChatPage = lazy(() => import("./components/AIChatPage"));
 const Community = lazy(() => import("./components/Community/Community"));
+const Dashboard = lazy(() => import("./components/Dashboard"));
 
 function App() {
   const { route } = useRouter();
@@ -78,6 +79,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <Community />
+      </Suspense>
+    );
+  }
+
+  if (route === "/dashboard/" || route === "/dashboard") {
+    return (
+      <Suspense fallback={null}>
+        <Dashboard />
       </Suspense>
     );
   }

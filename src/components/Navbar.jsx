@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "../router";
 import { cn } from "../lib/utils";
 import rdcLogo from "../assets/LOGORDC.svg";
+import googleLogo from "../assets/google-logo.png";
+import CustomerSignup from "./CustomerSignup";
+import { getSession, signOut, onAuthStateChange } from "../lib/auth";
 
 
 /* Smart floating navbar constants */
@@ -23,6 +26,42 @@ function Navbar({ onBookNow }) {
   const [activeSection, setActiveSection] = useState("home");
   const guidesRef = useRef(null);
   const guidesTimeout = useRef(null);
+
+  /* ── Auth state (real Supabase Auth session) ── */
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    // Resolve any existing session on first paint.
+    getSession().then((session) => {
+      if (!cancelled) {
+        setUser(session?.user ?? null);
+        setAuthReady(true);
+      }
+    });
+    // Keep in sync: sign-in, token refresh, sign-out (also from the dashboard).
+    const unsubscribe = onAuthStateChange((u) => {
+      if (!cancelled) setUser(u);
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
+  const isAuthenticated = authReady && user != null;
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch {
+      /* ignore */
+    }
+    setUser(null);
+    navigate("/");
+  };
 
   /* ── Smart floating state ── */
   const [floatingActive, setFloatingActive] = useState(false); // scrolled past threshold
@@ -381,8 +420,27 @@ function Navbar({ onBookNow }) {
               </button>
             </div>
 
-            {/* Right — Book Now + mobile toggle */}
+            {/* Right — Signup/Dashboard + Book Now + mobile toggle */}
             <div className="flex items-center gap-2">
+              {isAuthenticated ? (
+                <button
+                  onClick={() => navigate("/dashboard/")}
+                  className="hidden items-center gap-1.5 rounded-full bg-gray-900 px-3.5 py-1.5 text-[13px] font-semibold text-white transition hover:bg-gray-700 lg:flex"
+                  aria-label="Go to your dashboard"
+                >
+                  <User size={14} />
+                  Dashboard
+                </button>
+              ) : (
+                <button
+                  onClick={() => setSignupOpen(true)}
+                  className="hidden items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-[13px] font-semibold text-gray-700 transition hover:bg-gray-50 lg:flex"
+                  aria-label="Sign in"
+                >
+                  <img src={googleLogo} alt="" width="16" height="16" className="h-4 w-4" />
+                  Sign in
+                </button>
+              )}
               <button onClick={onBookNow} className="nav-btn-book">
                 Book Now
               </button>
@@ -429,8 +487,27 @@ function Navbar({ onBookNow }) {
               <span className="text-[14px] font-bold tracking-tight text-gray-900">Razia Driving Center</span>
             </a>
 
-            {/* Right — Book Now + toggle */}
+            {/* Right — Signup/Dashboard + Book Now + toggle */}
             <div className="flex items-center gap-2">
+              {isAuthenticated ? (
+                <button
+                  onClick={() => navigate("/dashboard/")}
+                  className="flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1.5 text-[12px] font-semibold text-white transition hover:bg-gray-700 lg:hidden"
+                  aria-label="Go to your dashboard"
+                >
+                  <User size={13} />
+                  Dashboard
+                </button>
+              ) : (
+                <button
+                  onClick={() => setSignupOpen(true)}
+                  className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:bg-gray-50 lg:hidden"
+                  aria-label="Sign in"
+                >
+                  <img src={googleLogo} alt="" width="14" height="14" className="h-3.5 w-3.5" />
+                  Sign in
+                </button>
+              )}
               <button onClick={onBookNow} className="nav-btn-book">
                 Book Now
               </button>
@@ -446,6 +523,12 @@ function Navbar({ onBookNow }) {
           </motion.div>
         </motion.div>
       </motion.nav>
+
+      {/* ── Sign-in modal (real Google OAuth) ── */}
+      <CustomerSignup
+        open={signupOpen}
+        onClose={() => setSignupOpen(false)}
+      />
 
       {/* ════════ MOBILE SIDE PANEL ════════ */}
       <AnimatePresence>
@@ -509,6 +592,20 @@ function Navbar({ onBookNow }) {
                     </a>
                   );
                 })}
+
+                {/* Dashboard — only when signed in */}
+                {isAuthenticated && (
+                  <button
+                    onClick={() => {
+                      navigate("/dashboard/");
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-left text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"
+                  >
+                    <User size={16} className="text-[#FF6201]" />
+                    Dashboard
+                  </button>
+                )}
 
                 {/* Book a Slot */}
                 <button
@@ -577,6 +674,17 @@ function Navbar({ onBookNow }) {
               >
                 Book Now
               </button>
+
+              {/* Mobile Sign out — only when signed in */}
+              {isAuthenticated && (
+                <button
+                  onClick={() => { handleSignOut(); setMenuOpen(false); }}
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-200 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-50"
+                >
+                  <LogOut size={16} />
+                  Sign out
+                </button>
+              )}
 
               {/* Mobile WhatsApp */}
               <a
