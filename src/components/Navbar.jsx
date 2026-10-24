@@ -487,27 +487,8 @@ function Navbar({ onBookNow }) {
               <span className="text-[14px] font-bold tracking-tight text-gray-900">Razia Driving Center</span>
             </a>
 
-            {/* Right — Signup/Dashboard + Book Now + toggle */}
+            {/* Right — Book Now + toggle (Sign in/Dashboard lives in the hero on mobile) */}
             <div className="flex items-center gap-2">
-              {isAuthenticated ? (
-                <button
-                  onClick={() => navigate("/dashboard/")}
-                  className="flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1.5 text-[12px] font-semibold text-white transition hover:bg-gray-700 lg:hidden"
-                  aria-label="Go to your dashboard"
-                >
-                  <User size={13} />
-                  Dashboard
-                </button>
-              ) : (
-                <button
-                  onClick={() => setSignupOpen(true)}
-                  className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:bg-gray-50 lg:hidden"
-                  aria-label="Sign in"
-                >
-                  <img src={googleLogo} alt="" width="14" height="14" className="h-3.5 w-3.5" />
-                  Sign in
-                </button>
-              )}
               <button onClick={onBookNow} className="nav-btn-book">
                 Book Now
               </button>

@@ -1,7 +1,12 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Star, MessageSquareText, Calendar, Sparkles } from "lucide-react";
+import { Users, Star, MessageSquareText, Calendar, Sparkles, User } from "lucide-react";
+import { useRouter } from "../router";
 import HeroFeaturesMarquee from "./Hero/HeroFeaturesMarquee";
 import HeroTestimonial from "./Hero/HeroTestimonial";
+import CustomerSignup from "./CustomerSignup";
+import { getSession, onAuthStateChange } from "../lib/auth";
+import googleLogo from "../assets/google-logo.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -9,9 +14,35 @@ const fadeUp = {
 };
 
 function Hero({ onBookNow }) {
+  const { navigate } = useRouter();
   const title = "Driving School in Gulberg, Lahore";
 
+  /* ── Auth state (mirrors Navbar: real Supabase session) ── */
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getSession().then((session) => {
+      if (!cancelled) {
+        setUser(session?.user ?? null);
+        setAuthReady(true);
+      }
+    });
+    const unsubscribe = onAuthStateChange((u) => {
+      if (!cancelled) setUser(u);
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
+  const isAuthenticated = authReady && user != null;
+
   return (
+    <>
     <section
       id="home"
       className="font-raleway relative overflow-hidden bg-white py-20 md:py-28 lg:py-32"
@@ -107,6 +138,25 @@ function Hero({ onBookNow }) {
             >
               View Slots
             </button>
+            {isAuthenticated ? (
+              <button
+                onClick={() => navigate("/dashboard/")}
+                className="flex h-12 items-center justify-center gap-1.5 rounded-md bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-gray-700 lg:hidden"
+                aria-label="Go to your dashboard"
+              >
+                <User size={16} />
+                Dashboard
+              </button>
+            ) : (
+              <button
+                onClick={() => setSignupOpen(true)}
+                className="flex h-12 items-center justify-center gap-1.5 rounded-md border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 lg:hidden"
+                aria-label="Sign in"
+              >
+                <img src={googleLogo} alt="" width="16" height="16" className="h-4 w-4" />
+                Sign in
+              </button>
+            )}
             <a
               href="/chat/"
               className="
@@ -201,6 +251,13 @@ function Hero({ onBookNow }) {
         </div>
       </div>
     </section>
+
+      {/* ── Sign-in modal (mobile hero button only) ── */}
+      <CustomerSignup
+        open={signupOpen}
+        onClose={() => setSignupOpen(false)}
+      />
+    </>
   );
 }
 
