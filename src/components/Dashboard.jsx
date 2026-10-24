@@ -30,6 +30,33 @@ const fadeUp = {
   show: { opacity: 1, y: 0 },
 };
 
+// Compact, restrained status badge. Distinct but on-brand styles for each
+// lesson state; falls back to a neutral pill for anything unexpected.
+function StatusBadge({ status }) {
+  const key = String(status || "").trim().toLowerCase();
+  let label = String(status || "").trim() || "—";
+  let styles = "bg-gray-100 text-gray-600 ring-gray-200";
+
+  if (key === "completed") {
+    styles = "bg-emerald-50 text-emerald-700 ring-emerald-200";
+  } else if (key === "scheduled") {
+    styles = "bg-blue-50 text-blue-700 ring-blue-200";
+  } else if (key === "in progress" || key === "in_progress" || key === "inprogress") {
+    styles = "bg-amber-50 text-amber-700 ring-amber-200";
+  } else if (key === "cancelled" || key === "canceled" || key === "no show" || key === "noshow") {
+    styles = "bg-red-50 text-red-700 ring-red-200";
+  }
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ring-1 ring-inset ${styles}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" aria-hidden="true" />
+      {label}
+    </span>
+  );
+}
+
 const DASHBOARD_META = {
   title: "My Dashboard | Razia Driving Center",
   description:
@@ -142,6 +169,71 @@ export default function Dashboard() {
     navigate("/");
   };
 
+  // Actual practice minutes from a recorded session's timestamps, or null when
+  // the lesson has no recorded session (e.g. it is still scheduled) or the
+  // timestamps are invalid. The planned lessons.duration_minutes is never used
+  // as actual driving time.
+  const practiceMinutesForRow = (r) => {
+    const start = r.started_at ? new Date(r.started_at) : null;
+    const end = r.ended_at ? new Date(r.ended_at) : null;
+    if (!start || !end) return null;
+    const startMs = start.getTime();
+    const endMs = end.getTime();
+    if (isNaN(startMs) || isNaN(endMs)) return null;
+    const ms = endMs - startMs;
+    return ms > 0 ? Math.round(ms / 60000) : null;
+  };
+
+  // Label for a lesson's Duration column: actual practice time for recorded
+  // sessions, otherwise the planned/scheduled duration (so scheduled lessons
+  // still show their scheduled duration).
+  const rowTimeLabel = (r) => {
+    const practiced = practiceMinutesForRow(r);
+    if (practiced != null) return `${practiced} min`;
+    if (r.duration_minutes) return `${r.duration_minutes} min`;
+    return null;
+  };
+
+  // Format a stored 24-hour time ("08:00", "14:30") into a human slot
+  // ("8:00 AM", "2:30 PM"). Returns null when missing or unparseable.
+  const rowSlotLabel = (time) => {
+    if (!time) return null;
+    const match = String(time).trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return null;
+    let hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+    const period = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    return `${hours}:${String(minutes).padStart(2, "0")} ${period}`;
+  };
+
+  // Sort lessons earliest-first: by lesson_date ascending, then lesson_time
+  // ascending for lessons on the same date. Uses the raw stored values, never
+  // the formatted display strings. Rows with missing/invalid values sink last.
+  const sortedProgress = [...progress].sort((a, b) => {
+    const dateA = a.lesson_date ? new Date(a.lesson_date) : new Date("");
+    const dateB = b.lesson_date ? new Date(b.lesson_date) : new Date("");
+    const tA = isNaN(dateA.getTime()) ? Infinity : dateA.getTime();
+    const tB = isNaN(dateB.getTime()) ? Infinity : dateB.getTime();
+    if (tA !== tB) return tA - tB;
+    const slotA = rowSlotSortKey(a.lesson_time);
+    const slotB = rowSlotSortKey(b.lesson_time);
+    return slotA - slotB;
+  });
+
+  // Minutes-since-midnight for a stored "HH:MM" time; invalid/missing sorts last.
+  function rowSlotSortKey(time) {
+    if (!time) return Infinity;
+    const match = String(time).trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return Infinity;
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return Infinity;
+    return hours * 60 + minutes;
+  }
+
   // ── Derived metrics (only meaningful in "ready") ──
   const metrics = (() => {
     // Only count lessons whose actual status marks them as completed, so the
@@ -154,12 +246,9 @@ export default function Dashboard() {
       (sum, r) => sum + (Number(r.distance_km) || 0),
       0
     );
-    const totalMinutes = progress.reduce((sum, r) => {
-      const fromLesson = r.duration_minutes || 0;
-      const fromTrack = Math.round((r.duration_seconds || 0) / 60);
-      return sum + fromLesson + fromTrack;
-    }, 0);
-    const tracked = progress.filter((r) => r.duration_seconds > 0).length;
+    const perRowMins = progress.map(practiceMinutesForRow);
+    const totalMinutes = perRowMins.reduce((sum, m) => sum + (m || 0), 0);
+    const tracked = perRowMins.filter((m) => m != null).length;
 
     const timeLabel =
       totalMinutes >= 60
@@ -404,47 +493,60 @@ export default function Dashboard() {
                   })}
                 </div>
 
-                {/* Lesson rows — or empty state */}
-                {progress.length === 0 ? (
-                  <div className="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-                      <GraduationCap size={22} className="text-gray-400" />
+                {/* Lesson grid — or empty state */}
+                {sortedProgress.length === 0 ? (
+                  <div className="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white p-10 sm:p-14 text-center">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                      <GraduationCap size={24} className="text-[#FF6201]" />
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-gray-700">
+                    <p className="mt-4 text-base font-bold text-gray-900">
                       No lessons recorded yet
                     </p>
-                    <p className="mx-auto mt-1 max-w-md text-xs leading-5 text-gray-400">
-                      Your progress will appear here as lessons are recorded. Your details are
-                      private — only you can see them.
+                    <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500">
+                      Your lessons will appear here as they are recorded. Your
+                      progress is private — only you can see it.
                     </p>
                   </div>
                 ) : (
-                  <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-                    <div className="max-h-96 overflow-y-auto">
-                      <table className="w-full table-fixed text-sm">
-                        <thead className="sticky top-0 bg-gray-50 text-xs uppercase tracking-wide text-gray-400">
+                  <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <div className="rdc-table-scroll max-h-[28rem] overflow-y-auto overscroll-contain">
+                      <table className="w-full min-w-[640px] border-collapse text-sm">
+                        <thead className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur text-xs uppercase tracking-wider text-gray-500">
                           <tr>
-                            <th className="px-4 py-3 text-left font-semibold">Date</th>
-                            <th className="px-4 py-3 text-left font-semibold">Course</th>
-                            <th className="px-4 py-3 text-left font-semibold">Distance</th>
-                            <th className="px-4 py-3 text-left font-semibold">Time</th>
-                            <th className="px-4 py-3 text-left font-semibold">Status</th>
+                            <th scope="col" className="px-5 py-3.5 text-left font-semibold">Date</th>
+                            <th scope="col" className="px-5 py-3.5 text-left font-semibold">Slot</th>
+                            <th scope="col" className="px-5 py-3.5 text-left font-semibold">Course</th>
+                            <th scope="col" className="px-5 py-3.5 text-right font-semibold">Distance</th>
+                            <th scope="col" className="px-5 py-3.5 text-right font-semibold">Duration</th>
+                            <th scope="col" className="px-5 py-3.5 text-left font-semibold">Status</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {progress.map((row, i) => (
-                            <tr key={i} className="border-t border-gray-100 text-gray-700">
-                              <td className="px-4 py-3">{row.lesson_date || "—"}</td>
-                              <td className="px-4 py-3">{row.course || "—"}</td>
-                              <td className="px-4 py-3">
+                        <tbody className="divide-y divide-gray-100">
+                          {sortedProgress.map((row) => (
+                            <tr
+                              key={`${row.lesson_date}-${row.lesson_time}-${row.lesson_number}`}
+                              className="transition-colors duration-150 hover:bg-orange-50/40 focus-within:bg-orange-50/40"
+                            >
+                              <td className="px-5 py-3.5 font-bold text-gray-900">
+                                {row.lesson_date || "—"}
+                              </td>
+                              <td className="px-5 py-3.5 font-medium text-gray-700">
+                                {rowSlotLabel(row.lesson_time) || "—"}
+                              </td>
+                              <td className="px-5 py-3.5 text-gray-700">
+                                {row.course || "—"}
+                              </td>
+                              <td className="px-5 py-3.5 text-right tabular-nums text-gray-700">
                                 {row.distance_km != null && row.distance_km !== 0
                                   ? `${Number(row.distance_km).toFixed(1)} km`
                                   : "—"}
                               </td>
-                              <td className="px-4 py-3">
-                                {row.duration_minutes ? `${row.duration_minutes} min` : "—"}
+                              <td className="px-5 py-3.5 text-right tabular-nums text-gray-700">
+                                {rowTimeLabel(row) || "—"}
                               </td>
-                              <td className="px-4 py-3 capitalize">{row.status || "—"}</td>
+                              <td className="px-5 py-3.5">
+                                <StatusBadge status={row.status} />
+                              </td>
                             </tr>
                           ))}
                         </tbody>

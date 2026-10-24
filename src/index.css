@@ -185,3 +185,36 @@ html {
     animation: none !important;
   }
 }
+
+/* ==========================================
+   Student dashboard lesson grid scrollbar
+   ========================================== */
+
+.rdc-table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.rdc-table-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.rdc-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rdc-table-scroll::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.rdc-table-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+.rdc-table-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
