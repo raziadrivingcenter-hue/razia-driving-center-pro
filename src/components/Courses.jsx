@@ -108,6 +108,55 @@ function Courses({ onCustomBooking }) {
 
         </div>
 
+        {/* Student progress dashboard promo */}
+
+        <div className="mx-auto mt-6 max-w-6xl">
+          <a
+            href="/student-progress-dashboard/"
+            className="
+              flex
+              items-center
+              justify-between
+              gap-4
+              rounded-xl
+              border
+              border-gray-200
+              bg-white
+              p-5
+              transition-shadow
+              duration-200
+              hover:shadow-md
+            "
+          >
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Track Your Driving Progress
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Students get a personal dashboard with scheduled lessons and
+                recorded practice progress.
+              </p>
+            </div>
+            <span
+              className="
+                shrink-0
+                rounded-md
+                bg-gray-900
+                px-4
+                py-2.5
+                text-sm
+                font-semibold
+                text-white
+                transition-colors
+                duration-200
+                hover:bg-gray-800
+              "
+            >
+              Learn more →
+            </span>
+          </a>
+        </div>
+
         {/* Practice game promo */}
 
         <div className="mx-auto mt-6 max-w-6xl">

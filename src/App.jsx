@@ -12,6 +12,9 @@ const PaymentProcedure = lazy(() => import("./components/PaymentProcedure"));
 const AIChatPage = lazy(() => import("./components/AIChatPage"));
 const Community = lazy(() => import("./components/Community/Community"));
 const Dashboard = lazy(() => import("./components/Dashboard"));
+const StudentProgressLanding = lazy(() =>
+  import("./components/StudentProgressLanding")
+);
 
 function App() {
   const { route } = useRouter();
@@ -87,6 +90,17 @@ function App() {
     return (
       <Suspense fallback={null}>
         <Dashboard />
+      </Suspense>
+    );
+  }
+
+  if (
+    route === "/student-progress-dashboard/" ||
+    route === "/student-progress-dashboard"
+  ) {
+    return (
+      <Suspense fallback={null}>
+        <StudentProgressLanding />
       </Suspense>
     );
   }

@@ -57,6 +57,14 @@ function FooterLinks() {
 
           <li>
             <a
+              href="/student-progress-dashboard/"
+              className="text-gray-400 transition hover:text-[#FF6201]"
+            >
+              Student Progress Dashboard
+            </a>
+          </li>
+          <li>
+            <a
               href="#faq"
               className="text-gray-400 transition hover:text-[#FF6201]"
             >
