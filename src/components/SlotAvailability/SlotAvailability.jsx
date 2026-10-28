@@ -43,13 +43,6 @@ function formatTime12(timeStr) {
   return `${displayH}:${m} ${ampm}`;
 }
 
-// Mask a booked slot's student name: first 3 letters visible, rest → *
-// "Rizwan" → "Riz***", "Ali" → "Ali"
-function maskName(name) {
-  if (!name) return "";
-  return name.slice(0, 3) + "*".repeat(Math.max(0, name.length - 3));
-}
-
 // "Today" / "Tomorrow" / "in N days"
 function daysLeftLabel(dateStr) {
   const today = new Date();
@@ -81,6 +74,7 @@ export default function SlotAvailability() {
   });
 
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedArea, setSelectedArea] = useState(""); // visitor's town for area discount
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -131,6 +125,7 @@ export default function SlotAvailability() {
     setLoading(true);
     setError("");
     setBookingSlot(null);
+    setSelectedArea(""); // date changed → area options may differ
 
     fetchAvailability(selectedDate)
       .then((res) => {
@@ -151,9 +146,28 @@ export default function SlotAvailability() {
     };
   }, [selectedDate]);
 
-  // Aggregate per time-slot across all vehicles: a slot is "available" if ANY
-  // vehicle is free at that time, "booked" if at least one booking covers it,
-  // or "empty" if no vehicle operates then. Vehicle names stay out of the UI.
+  // Normalize an area string for comparison: trim, lowercase, collapse spaces.
+  // Used to match the visitor's selected area against a slot's promo_area.
+  const normalizeArea = (a) =>
+    (a || "").trim().toLowerCase().replace(/\s+/g, " ");
+
+  // Distinct, non-null towns the visitor can pick from: every promo_area on an
+  // available tile and every area on a travel tile, de-duplicated and sorted,
+  // with "Other" appended as the no-discount catch-all.
+  const areaOptions = useMemo(() => {
+    if (!data) return [];
+    const towns = new Set();
+    for (const s of data.availableSlots || []) if (s.promoArea) towns.add(s.promoArea);
+    for (const s of data.travelSlots || []) if (s.area) towns.add(s.area);
+    return [...towns].sort((a, b) => a.localeCompare(b));
+  }, [data]);
+
+  // Aggregate per time-slot across all vehicles, priority:
+  //   available (any vehicle free) > booked (any booking) > travel > empty
+  // A slot is available as long as ANY vehicle can take it, even if others are
+  // booked/traveling. Travel is shown only when NO vehicle can take it (none
+  // available, none booked, at least one travel-blocked). Travel is keyed
+  // strictly on block_reason, never on area. Vehicle names stay out of the UI.
   const slotStatus = useMemo(() => {
     const result = {};
     for (const slot of SLOT_STARTS) result[slot] = { status: "empty" };
@@ -162,21 +176,41 @@ export default function SlotAvailability() {
     for (const slot of SLOT_STARTS) {
       const gridMin = timeToMin(slot);
 
-      // Find any booking covering this grid cell (60-min API slot spans two cells).
+      // 1) Available takes priority if ANY vehicle is free at this cell — a
+      //    slot is bookable as long as one vehicle can take it, even if other
+      //    vehicles are booked/traveling. Surface promo info if present.
+      const freeEntries = (data.availableSlots || []).filter(
+        (s) => gridMin >= timeToMin(s.time) && gridMin < timeToMin(s.end)
+      );
+      if (freeEntries.length > 0) {
+        const withPromo = freeEntries.find((s) => s.promoPercent && s.promoArea);
+        result[slot] = {
+          status: "available",
+          promoPercent: withPromo ? withPromo.promoPercent : null,
+          promoArea: withPromo ? withPromo.promoArea : null,
+        };
+        continue;
+      }
+
+      // 2) Booked — no vehicle free, at least one booking.
       const booking = (data.blockedSlots || []).find(
         (s) => gridMin >= timeToMin(s.time) && gridMin < timeToMin(s.end)
       );
       if (booking) {
-        result[slot] = { status: "booked", studentName: booking.studentName };
+        result[slot] = { status: "booked" };
         continue;
       }
 
-      // Available if any available-slot entry covers this cell.
-      const free = (data.availableSlots || []).some(
+      // 3) Travel — no vehicle free or booked, at least one travel-blocked.
+      const travel = (data.travelSlots || []).find(
         (s) => gridMin >= timeToMin(s.time) && gridMin < timeToMin(s.end)
       );
-      if (free) {
-        result[slot] = { status: "available" };
+      if (travel) {
+        result[slot] = {
+          status: "travel",
+          blockReason: travel.blockReason,
+          area: travel.area,
+        };
       }
     }
     return result;
@@ -196,8 +230,26 @@ export default function SlotAvailability() {
 
   const vehicles = data?.vehicles || [];
   const synced = data?.synced ?? false;
-  const availableCount = data?.availableCount ?? 0;
-  const blockedCount = data?.blockedCount ?? 0;
+
+  // Effective area for promo matching: "" and the "Other" sentinel both mean
+  // "no town selected" → no discount can apply.
+  const effectiveArea =
+    selectedArea === "" || selectedArea === "__other__" ? "" : selectedArea;
+
+  // Count per-cell statuses from slotStatus so the stats bar reflects what the
+  // grid actually shows. Travel cells are counted separately, never as
+  // available (a travel-blocked cell is not bookable).
+  const slotCounts = useMemo(
+    () => {
+      const vals = Object.values(slotStatus);
+      return {
+        available: vals.filter((e) => e.status === "available").length,
+        booked: vals.filter((e) => e.status === "booked").length,
+        travel: vals.filter((e) => e.status === "travel").length,
+      };
+    },
+    [slotStatus]
+  );
 
   // Sunday = weekly off. Still bookable on request (WhatsApp / special slot).
   const isSunday = useMemo(() => {
@@ -208,7 +260,11 @@ export default function SlotAvailability() {
   const handleSlotClick = (slot) => {
     const entry = slotStatus[slot];
     if (entry?.status === "available") {
-      setBookingSlot({ time: slot });
+      setBookingSlot({
+        time: slot,
+        promoPercent: entry.promoPercent || null,
+        promoArea: entry.promoArea || null,
+      });
     }
   };
 
@@ -333,15 +389,23 @@ export default function SlotAvailability() {
                     <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 shadow-sm">
                       <CheckCircle2 size={14} className="text-green-500" />
                       <span className="text-xs font-medium text-gray-700">
-                        <span className="font-dm-sans font-semibold">{availableCount}</span> available
+                        <span className="font-dm-sans font-semibold">{slotCounts.available}</span> available
                       </span>
                     </div>
                     <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 shadow-sm">
                       <Users size={14} className="text-red-400" />
                       <span className="text-xs font-medium text-gray-700">
-                        <span className="font-dm-sans font-semibold">{blockedCount}</span> booked
+                        <span className="font-dm-sans font-semibold">{slotCounts.booked}</span> booked
                       </span>
                     </div>
+                    {slotCounts.travel > 0 && (
+                      <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 shadow-sm">
+                        <CarFront size={14} className="text-yellow-500" />
+                        <span className="text-xs font-medium text-gray-700">
+                          <span className="font-dm-sans font-semibold">{slotCounts.travel}</span> traveling
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 shadow-sm">
                       <CarFront size={14} className="text-gray-400" />
                       <span className="text-xs font-medium text-gray-700">
@@ -349,6 +413,37 @@ export default function SlotAvailability() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Area discount picker — only shown when promos/travel towns exist */}
+                  {areaOptions.length > 0 && (
+                    <div className="mb-6 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                      <label
+                        htmlFor="area-select"
+                        className="text-xs font-semibold text-gray-600"
+                      >
+                        Your area
+                      </label>
+                      <select
+                        id="area-select"
+                        value={selectedArea}
+                        onChange={(e) => setSelectedArea(e.target.value)}
+                        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm outline-none transition focus:border-[#FF6201] focus:ring-2 focus:ring-[#FF6201]/10"
+                      >
+                        <option value="">Select your area</option>
+                        {areaOptions.map((town) => (
+                          <option key={town} value={town}>
+                            {town}
+                          </option>
+                        ))}
+                        <option value="__other__">Other</option>
+                      </select>
+                      {effectiveArea && (
+                        <span className="text-[11px] font-medium text-green-600">
+                          Promo applies when slot matches <strong>{effectiveArea}</strong>
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* 3-column periods */}
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -375,6 +470,16 @@ export default function SlotAvailability() {
                               const label = formatTime12(slot);
 
                               if (entry.status === "available") {
+                                // Promo badge only when selected area matches the
+                                // slot's promo_area (normalized). Otherwise hint
+                                // the visitor to pick their area to claim it.
+                                const promoMatch =
+                                  entry.promoPercent &&
+                                  entry.promoArea &&
+                                  normalizeArea(effectiveArea) === normalizeArea(entry.promoArea);
+                                const showPromoHint =
+                                  entry.promoPercent && entry.promoArea && !promoMatch;
+
                                 return (
                                   <motion.button
                                     key={slot}
@@ -382,14 +487,32 @@ export default function SlotAvailability() {
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.97 }}
                                     onClick={() => handleSlotClick(slot)}
-                                    className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-left transition hover:border-green-300 hover:bg-green-100"
+                                    className="flex flex-col gap-1 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-left transition hover:border-green-300 hover:bg-green-100"
                                   >
-                                    <span className="font-dm-sans text-sm font-semibold text-green-700">
-                                      {label}
-                                    </span>
-                                    <span className="rounded-full bg-green-200/60 px-2 py-0.5 text-[10px] font-bold text-green-700">
-                                      Book
-                                    </span>
+                                    <div className="flex items-center justify-between">
+                                      <span
+                                        className="font-dm-sans text-sm font-semibold text-green-700 truncate"
+                                        title={label}
+                                      >
+                                        {label}
+                                      </span>
+                                      <span className="shrink-0 rounded-full bg-green-200/60 px-2 py-0.5 text-[10px] font-bold text-green-700">
+                                        Book
+                                      </span>
+                                    </div>
+                                    {promoMatch && (
+                                      <span
+                                        className="inline-flex w-fit items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700"
+                                        title={`${entry.promoPercent}% off pick & drop in ${entry.promoArea}`}
+                                      >
+                                        {entry.promoPercent}% off · {entry.promoArea}
+                                      </span>
+                                    )}
+                                    {showPromoHint && (
+                                      <span className="text-[10px] font-medium text-gray-400">
+                                        Select your area to claim
+                                      </span>
+                                    )}
                                   </motion.button>
                                 );
                               }
@@ -401,16 +524,44 @@ export default function SlotAvailability() {
                                     className="rounded-lg border border-red-100 bg-red-50 px-3 py-2"
                                   >
                                     <div className="flex items-center justify-between">
-                                      <span className="font-dm-sans text-sm font-medium text-red-700">
+                                      <span
+                                        className="font-dm-sans text-sm font-medium text-red-700 truncate"
+                                        title={label}
+                                      >
                                         {label}
                                       </span>
-                                      <span className="font-dm-sans rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">
+                                      <span className="font-dm-sans shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">
                                         {daysLeftLabel(selectedDate)}
                                       </span>
                                     </div>
-                                    <span className="mt-0.5 block truncate text-[11px] text-gray-500">
-                                      {maskName(entry.studentName)}
-                                    </span>
+                                  </div>
+                                );
+                              }
+
+                              if (entry.status === "travel") {
+                                const travelLabel = entry.area
+                                  ? `Traveling to ${entry.area}`
+                                  : "Traveling";
+                                return (
+                                  <div
+                                    key={slot}
+                                    className="rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2"
+                                    title={travelLabel}
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span
+                                        className="font-dm-sans text-sm font-medium text-yellow-700 truncate"
+                                        title={label}
+                                      >
+                                        {label}
+                                      </span>
+                                      <span
+                                        className="shrink-0 rounded-full bg-yellow-200/70 px-2 py-0.5 text-[10px] font-bold text-yellow-700 truncate"
+                                        title={travelLabel}
+                                      >
+                                        {travelLabel}
+                                      </span>
+                                    </div>
                                   </div>
                                 );
                               }
@@ -448,6 +599,9 @@ export default function SlotAvailability() {
                   <BookingForm
                     slot={bookingSlot}
                     date={selectedDate}
+                    area={effectiveArea}
+                    promoPercent={bookingSlot.promoPercent}
+                    promoArea={bookingSlot.promoArea}
                     onBack={() => setBookingSlot(null)}
                     prefill={prefill}
                   />

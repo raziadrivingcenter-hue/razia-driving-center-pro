@@ -67,7 +67,15 @@ function CourseSelect({ value, onChange, error }) {
   );
 }
 
-export default function BookingForm({ slot, date, onBack, prefill }) {
+export default function BookingForm({
+  slot,
+  date,
+  area,
+  promoPercent,
+  promoArea,
+  onBack,
+  prefill,
+}) {
   // Pre-select course when arriving from a course card (?course=...) or the
   // student dashboard. The dashboard also hands off a verified name + Supabase
   // access token via sessionStorage (consumed in SlotAvailability and passed
@@ -215,6 +223,7 @@ export default function BookingForm({ slot, date, onBack, prefill }) {
         distance_km: wantsPickDrop ? distanceNum : 0,
         home_service: wantsPickDrop,
         address: wantsPickDrop ? address.trim() : "",
+        area,
         accessToken,
       });
       setResult(res);
@@ -446,7 +455,18 @@ export default function BookingForm({ slot, date, onBack, prefill }) {
                     Rs. {pricing.totalPayable.toLocaleString()}
                   </span>
                 </div>
-                <p className="mt-1.5 text-[10px] leading-4 text-gray-400">
+                {wantsPickDrop &&
+                  promoPercent &&
+                  promoArea &&
+                  area &&
+                  area.toLowerCase().trim() === promoArea.toLowerCase().trim() && (
+                    <p className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-green-600">
+                      <CheckCircle2 size={10} />
+                      Eligible for {promoPercent}% off pick &amp; drop. Final price
+                      confirmed by our team.
+                    </p>
+                  )}
+                <p className="mt-1 text-[10px] leading-4 text-gray-400">
                   Final charges are verified by our team before booking confirmation.
                 </p>
               </div>

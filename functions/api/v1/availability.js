@@ -51,9 +51,13 @@ export async function onRequest(context) {
       );
     }
 
-    // Build query for slot_availability table
+    // Build query for slot_availability table.
+    // student_name is intentionally NOT selected: the contract guarantees it is
+    // always NULL and it must never leave this function (client must never see
+    // any personal data). We add block_reason, area, promo_percent, promo_area
+    // so the UI can render travel tiles and area-discount badges.
     let query = `${supabaseUrl}/rest/v1/slot_availability?slot_date=eq.${date}`;
-    query += `&select=slot_start,slot_end,status,vehicle_id,vehicle_name,student_name`;
+    query += `&select=slot_start,slot_end,status,vehicle_id,vehicle_name,block_reason,area,promo_percent,promo_area`;
 
     if (vehicleId) {
       query += `&vehicle_id=eq.${vehicleId}`;
@@ -80,12 +84,20 @@ export async function onRequest(context) {
 
     const data = await response.json();
 
-    // Separate available vs booked
+    // Bucket rows by status. 'blocked' rows are no longer dropped: travel
+    // blocks (travel_going / travel_returning) go to `travel_slots`, other
+    // blocked rows keep the legacy "booked" look via `blocked_slots`.
     const available = data.filter((s) => s.status === "available");
     const booked = data.filter((s) => s.status === "booked");
+    const travel = data.filter(
+      (s) =>
+        s.status === "blocked" &&
+        (s.block_reason === "travel_going" || s.block_reason === "travel_returning")
+    );
+    const otherBlocked = data.filter((s) => s.status === "blocked" && !s.block_reason);
 
-    // Group by vehicle — include ALL vehicles (available or booked-only)
-    // so grids can place booked slots in the correct column.
+    // Group by vehicle — include ALL vehicles (available, booked, travel, or
+    // other-blocked) so the grid can place every tile in the right column.
     const vehicles = {};
     const ensureVehicle = (vid, vname) => {
       if (!vehicles[vid]) {
@@ -100,9 +112,13 @@ export async function onRequest(context) {
         display: formatTime(slot.slot_start),
       });
     }
-    for (const slot of booked) {
+    for (const slot of [...booked, ...travel, ...otherBlocked]) {
       ensureVehicle(slot.vehicle_id, slot.vehicle_name);
     }
+
+    // Tiles that look "booked" to the visitor: real bookings + non-travel blocks.
+    // Neither carries student_name (it is never selected and never exposed).
+    const bookedDisplay = [...booked, ...otherBlocked];
 
     return new Response(
       JSON.stringify({
@@ -115,20 +131,30 @@ export async function onRequest(context) {
           display: formatTime(s.slot_start),
           vehicle_id: s.vehicle_id,
           vehicle_name: s.vehicle_name,
+          promo_percent: s.promo_percent ?? null,
+          promo_area: s.promo_area ?? null,
         })),
-        blocked_slots: booked.map((s) => ({
+        blocked_slots: bookedDisplay.map((s) => ({
           time: s.slot_start,
           end: s.slot_end,
           display: formatTime(s.slot_start),
           reason: "Booked",
-          student_name: s.student_name,
+          vehicle_id: s.vehicle_id,
+          vehicle_name: s.vehicle_name,
+        })),
+        travel_slots: travel.map((s) => ({
+          time: s.slot_start,
+          end: s.slot_end,
+          display: formatTime(s.slot_start),
+          block_reason: s.block_reason,
+          area: s.area,
           vehicle_id: s.vehicle_id,
           vehicle_name: s.vehicle_name,
         })),
         vehicles: Object.values(vehicles),
         total_slots: data.length,
         available_count: available.length,
-        blocked_count: booked.length,
+        blocked_count: bookedDisplay.length,
         synced: data.length > 0,
         note: data.length === 0
           ? "No synced data for this date yet. Slots will appear after sync."

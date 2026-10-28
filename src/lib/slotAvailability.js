@@ -26,6 +26,7 @@ const API_BASE = import.meta.env.VITE_BOOKING_API_URL || "";
  *   distance_km?: number,
  *   home_service?: boolean,
  *   address?: string,
+ *   area?: string,          // visitor-selected town; server matches against slot promo_area
  *   accessToken?: string,   // Supabase session JWT (dashboard only); omitted for public bookings
  * }} params
  * @returns {{ success: boolean, bookingId: string, status: string, message: string, whatsappLink: string }}
@@ -39,6 +40,7 @@ export async function submitSlotBooking({
   distance_km = 0,
   home_service = false,
   address = "",
+  area = "",
   accessToken = "",
 }) {
   const res = await fetch(`${API_BASE}/api/v1/slot-booking`, {
@@ -56,6 +58,7 @@ export async function submitSlotBooking({
       distance_km,
       home_service,
       address,
+      area,
     }),
   });
 

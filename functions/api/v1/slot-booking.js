@@ -83,6 +83,11 @@ export async function onRequest(context) {
       }
     }
 
+    // Visitor-selected town for area-discount display. Optional, trimmed.
+    // Never trusted for the discount itself — the RPC derives the discount
+    // server-side from slot_availability.
+    const area = body.area ? String(body.area).trim() : "";
+
     if (errors.length > 0) {
       return new Response(
         JSON.stringify({ error: "Validation failed", details: errors }),
@@ -201,6 +206,10 @@ export async function onRequest(context) {
       p_distance_km: wantsPickDrop ? Number(body.distance_km) : 0,
       p_home_service: wantsPickDrop,
       p_address: wantsPickDrop && body.address ? String(body.address).trim() : null,
+      // Visitor-selected town. The RPC uses it ONLY to match against the
+      // slot's promo_area server-side — it never trusts the client's own
+      // promo percent.
+      p_area: area || null,
     };
     if (verifiedEmail) {
       if (!serviceRoleKey) {
@@ -216,13 +225,58 @@ export async function onRequest(context) {
       rpcKey = serviceRoleKey;
     }
 
+    // ── Pre-check: is the slot still 'available'? ──
+    // Defense in depth. The RPC performs the same check (and is the authority
+    // since it is directly callable with the anon key), but failing here lets
+    // us return a clear, friendly message instead of a generic RPC failure —
+    // and avoids an RPC round-trip that we know will reject.
+    //
+    // Normalize preferred_time to 'HH:MM' (24h) so it matches slot_start
+    // whether the column stores 'HH:MM' or 'HH:MM:SS'.
+    const normalizedTime = (() => {
+      const m = String(body.preferred_time || "").match(/(\d{1,2}):(\d{2})/);
+      if (!m) return "";
+      return `${m[1].padStart(2, "0")}:${m[2]}`;
+    })();
+    const slotCheckQuery =
+      `${supabaseUrl}/rest/v1/slot_availability` +
+      `?slot_date=eq.${encodeURIComponent(body.preferred_date)}` +
+      `&select=slot_start,status`;
+    const slotCheckRes = await fetch(slotCheckQuery, {
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+    });
+    if (slotCheckRes.ok) {
+      const slotRows = await slotCheckRes.json();
+      const stillAvailable = slotRows.some((s) => {
+        const start = String(s.slot_start || "").slice(0, 5);
+        return s.status === "available" && start === normalizedTime;
+      });
+      if (!stillAvailable) {
+        return new Response(
+          JSON.stringify({
+            error:
+              "This slot is no longer available. Please go back and pick another time.",
+          }),
+          { status: 409, headers: responseHeaders() }
+        );
+      }
+    }
+    // If the lookup itself failed (network/Supabase error), do NOT block the
+    // booking — the RPC is the real gate and will catch a bad slot. Log and proceed.
+    else {
+      console.warn("Slot pre-check lookup failed:", slotCheckRes.status);
+    }
+
     // Call the SECURITY DEFINER RPC. The chosen role (anon or service_role)
     // only needs EXECUTE on its overload — it cannot read or write
     // booking_requests directly, so student names/phones stay private.
     //
-    // PostgreSQL resolves the overload by argument count:
-    //   8 args → anonymous public booking (customer_email stays NULL)
-    //   9 args → verified dashboard booking (customer_email persisted)
+    // Single function with DEFAULT NULL on the optional params. Anonymous
+    // public bookings omit p_customer_email → customer_email stays NULL;
+    // verified dashboard bookings (service_role key) set it.
     // Bound the upstream RPC so a slow/hung Supabase edge can't hold the
     // function past the browser's QUIC idle timeout (~30s). Fail fast → 503.
     const rpcAbort = new AbortController();
