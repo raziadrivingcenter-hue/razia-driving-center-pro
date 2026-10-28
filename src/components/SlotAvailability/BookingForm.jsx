@@ -93,7 +93,8 @@ export default function BookingForm({
   const [name, setName] = useState(prefill?.name || "");
   const [phone, setPhone] = useState("");
   const [course, setCourse] = useState(initialCourse);
-  const [pickup, setPickup] = useState("No");
+  // Default Pick & Drop to Yes when a real area is selected; visitor can override.
+  const [pickup, setPickup] = useState(() => (area ? "Yes" : "No"));
   const [address, setAddress] = useState("");
   const [distance, setDistance] = useState("");
   const [locationStatus, setLocationStatus] = useState("idle");
@@ -119,6 +120,24 @@ export default function BookingForm({
           planType: getPlanType(courseInternal),
         })
       : null;
+
+  // Normalize an area string for comparison: trim, lowercase, collapse spaces.
+  const normalize = (a) =>
+    (a || "").trim().toLowerCase().replace(/\s+/g, " ");
+
+  // Area discount: only when Pick & Drop is on, the selected tile carries a
+  // promo, and the visitor's area matches the tile's promo_area (normalized).
+  // The server is the authority on the discount; this is a display preview.
+  const promoMatches =
+    wantsPickDrop &&
+    pricing &&
+    promoPercent &&
+    promoArea &&
+    area &&
+    normalize(area) === normalize(promoArea);
+  const discount = promoMatches
+    ? Math.round(pricing.pickDropCharges * (promoPercent / 100))
+    : 0;
 
   // Open Google Maps directions. If origin is null, Maps uses its own
   // location detection (works even when the browser geolocation API is blocked).
@@ -433,44 +452,83 @@ export default function BookingForm({
             </div>
 
             {/* Pricing preview */}
-            {pricing && pricing.courseFee > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Course Fee</span>
-                  <span className="font-dm-sans font-semibold text-gray-800">
-                    Rs. {pricing.courseFee.toLocaleString()}
-                  </span>
-                </div>
-                {pricing.pickDropCharges > 0 && (
-                  <div className="mt-1 flex items-center justify-between text-xs">
+            {pricing && pricing.courseFee > 0 && (() => {
+              // Effective per-km rate across the whole course (rate × days × round
+              // trip) — taken straight from the calculator, not recomputed here.
+              const perKmRate = pricing.effectiveRatePerKm;
+              const withinFree =
+                pricing.freeKm > 0 && pricing.distanceKm <= pricing.freeKm;
+              const totalPayable =
+                pricing.courseFee + pricing.pickDropCharges - discount;
+
+              return (
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                  {/* 1) Course Fee */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Course Fee</span>
+                    <span className="font-dm-sans font-semibold text-gray-800">
+                      Rs. {pricing.courseFee.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* 2) Pick & Drop + calculation */}
+                  <div className="mt-1.5 flex items-center justify-between text-xs">
                     <span className="text-gray-500">Pick & Drop</span>
                     <span className="font-dm-sans font-semibold text-gray-800">
                       Rs. {pricing.pickDropCharges.toLocaleString()}
                     </span>
                   </div>
-                )}
-                <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-2">
-                  <span className="text-sm font-bold text-gray-900">Total Payable</span>
-                  <span className="font-dm-sans text-sm font-black text-[#FF6201]">
-                    Rs. {pricing.totalPayable.toLocaleString()}
-                  </span>
-                </div>
-                {wantsPickDrop &&
-                  promoPercent &&
-                  promoArea &&
-                  area &&
-                  area.toLowerCase().trim() === promoArea.toLowerCase().trim() && (
-                    <p className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-green-600">
-                      <CheckCircle2 size={10} />
-                      Eligible for {promoPercent}% off pick &amp; drop. Final price
-                      confirmed by our team.
-                    </p>
+                  <p className="mt-0.5 text-[10px] leading-4 text-gray-400">
+                    {withinFree ? (
+                      "Within free distance"
+                    ) : pricing.freeKm > 0 ? (
+                      <>
+                        {pricing.distanceKm} km &minus; {pricing.freeKm} km free ={" "}
+                        {pricing.chargeableKm} km &times; Rs.{" "}
+                        {perKmRate.toLocaleString()}
+                      </>
+                    ) : (
+                      <>
+                        {pricing.distanceKm} km &times; Rs.{" "}
+                        {perKmRate.toLocaleString()}
+                      </>
+                    )}
+                  </p>
+
+                  {/* 3) Area discount — only when tile promo matches selected area */}
+                  {promoMatches && discount > 0 && (
+                    <>
+                      <div className="mt-1.5 flex items-center justify-between text-xs">
+                        <span className="text-gray-500">
+                          Area discount ({promoPercent}% off pick &amp; drop)
+                        </span>
+                        <span className="font-dm-sans font-semibold text-green-600">
+                          &minus; Rs. {discount.toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[10px] leading-4 text-gray-400">
+                        {promoPercent}% of Rs.{" "}
+                        {pricing.pickDropCharges.toLocaleString()} = Rs.{" "}
+                        {discount.toLocaleString()}
+                      </p>
+                    </>
                   )}
-                <p className="mt-1 text-[10px] leading-4 text-gray-400">
-                  Final charges are verified by our team before booking confirmation.
-                </p>
-              </div>
-            )}
+
+                  {/* 4) Total Payable */}
+                  <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-2">
+                    <span className="text-sm font-bold text-gray-900">Total Payable</span>
+                    <span className="font-dm-sans text-sm font-black text-[#FF6201]">
+                      Rs. {totalPayable.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* 5) Confirmation note */}
+                  <p className="mt-1.5 text-[10px] leading-4 text-gray-400">
+                    Final price confirmed by our team before booking confirmation.
+                  </p>
+                </div>
+              );
+            })()}
 
             {/* Error */}
             {submitError && (

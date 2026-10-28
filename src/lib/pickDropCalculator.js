@@ -114,9 +114,8 @@ export const calculatePickDropCharges = (distanceKm, durationDays, planType = nu
     chargeableKm = Math.max(0, distance - PLUS_FREE_KM);
   }
 
-  const pickDropCharges = Math.round(
-    chargeableKm * RATE_PER_KM * duration * ROUND_TRIP_MULTIPLIER
-  );
+  const effectiveRatePerKm = RATE_PER_KM * duration * ROUND_TRIP_MULTIPLIER;
+  const pickDropCharges = Math.round(chargeableKm * effectiveRatePerKm);
 
   return {
     distanceKm: distance,
@@ -125,6 +124,7 @@ export const calculatePickDropCharges = (distanceKm, durationDays, planType = nu
     durationDays: duration,
     ratePerKm: RATE_PER_KM,
     roundTripMultiplier: ROUND_TRIP_MULTIPLIER,
+    effectiveRatePerKm,
     maxDistanceKm: MAX_DISTANCE_KM,
     plusFreeKmApplied: freeKm > 0,
     pickDropCharges,
@@ -152,6 +152,10 @@ export const calculateTotalPayable = (
         distanceKm: 0,
         chargeableKm: 0,
         freeKm: 0,
+        durationDays,
+        ratePerKm: RATE_PER_KM,
+        roundTripMultiplier: ROUND_TRIP_MULTIPLIER,
+        effectiveRatePerKm: RATE_PER_KM * durationDays * ROUND_TRIP_MULTIPLIER,
         pickDropCharges: 0,
         plusFreeKmApplied: false,
       };
@@ -163,6 +167,10 @@ export const calculateTotalPayable = (
     distanceKm: pickDropResult.distanceKm,
     chargeableKm: pickDropResult.chargeableKm,
     freeKm: pickDropResult.freeKm,
+    durationDays,
+    ratePerKm: pickDropResult.ratePerKm,
+    roundTripMultiplier: pickDropResult.roundTripMultiplier,
+    effectiveRatePerKm: pickDropResult.effectiveRatePerKm,
     plusFreeKmApplied: pickDropResult.plusFreeKmApplied,
   };
 };
