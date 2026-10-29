@@ -323,9 +323,9 @@ function AreaSelectInner({
         {open && (
           <motion.div
             className="area-select__panel-wrap"
-            initial={{ opacity: 0, scale: 0.96, y: -4 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: -4 }}
+            initial={{ scale: 0.96, y: -4 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.96, y: -4 }}
             transition={
               shouldReduceMotion
                 ? { duration: 0 }

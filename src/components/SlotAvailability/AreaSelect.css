@@ -103,13 +103,21 @@
 }
 
 /* ---- Panel ------------------------------------------------------------- *
- * Open/close opacity + scale/translate are driven entirely by framer-motion
- * on the wrapper (inline styles win over these). This block supplies the
- * static chrome only. The panel is only mounted while open (AnimatePresence),
- * so pointer-events is auto when present.                                   */
+ * Open/close scale/translate are driven entirely by framer-motion on the
+ * wrapper (inline styles win over these). The panel itself carries a fully
+ * opaque background so the slot grid never shows through. The panel is only
+ * mounted while open (AnimatePresence), so pointer-events is auto when
+ * present.                                                                    */
 
 /* Animated wrapper — framer-motion. motion.ul is unsafe under React 19, so the
    transform lives here while the <ul> below keeps the listbox semantics. */
+/* Glass surface lives on the framer-motion wrapper, NOT the <ul> inside it.
+   The wrapper carries inline transform + will-change: transform (the open/close
+   animation), which makes it the "backdrop root" per the Compositing spec — a
+   backdrop-filter on a CHILD element only samples the wrapper's own interior
+   and never sees the slot grid behind it. Putting backdrop-filter on the root
+   element itself lets it sample the page behind the wrapper, so the blur
+   actually has content to blur. */
 .area-select__panel-wrap {
   position: absolute;
   top: calc(100% + 6px);
@@ -117,6 +125,19 @@
   min-width: 100%;
   z-index: 60;
   pointer-events: auto;
+  border-radius: var(--rd-radius-lg, 14px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* Browsers without backdrop-filter support get a solid panel. */
+@supports not (backdrop-filter: blur(1px)) {
+  .area-select__panel-wrap {
+    background: var(--rd-surface-solid, #ffffff);
+  }
 }
 
 .area-select__panel {
@@ -126,12 +147,6 @@
   padding: 6px;
   list-style: none;
   border-radius: var(--rd-radius-lg, 14px);
-  border: 1px solid var(--rd-border-soft, rgba(0, 0, 0, 0.06));
-  /* 0.97 opaque: the slot grid must not show through the open options. */
-  background: var(--rd-glass-opaque, rgba(255, 255, 255, 0.97));
-  backdrop-filter: var(--rd-blur-strong, blur(20px) saturate(180%));
-  -webkit-backdrop-filter: var(--rd-blur-strong, blur(20px) saturate(180%));
-  box-shadow: var(--rd-shadow-lg, 0 12px 32px rgba(0, 0, 0, 0.12));
   pointer-events: auto;
 }
 
@@ -204,7 +219,6 @@
     transition: none;
   }
   .area-select__panel {
-    opacity: 1;
     transform: none;
   }
 }

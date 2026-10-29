@@ -22,7 +22,8 @@
   /* ---- Glass surfaces ------------------------------------------------ */
   --rd-glass: rgba(255, 255, 255, 0.85);
   --rd-glass-strong: rgba(255, 255, 255, 0.92);
-  --rd-glass-opaque: rgba(255, 255, 255, 0.97); /* panel: grid must NOT show through */
+  --rd-glass-opaque: rgba(255, 255, 255, 0.97); /* not used for panel — kept for touch native */
+  --rd-surface-solid: #ffffff; /* panel: fully opaque so the grid never shows through */
 
   /* ---- Blur ---------------------------------------------------------- */
   --rd-blur: blur(12px) saturate(180%);
