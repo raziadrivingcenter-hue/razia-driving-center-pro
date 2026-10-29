@@ -21,6 +21,7 @@ import { fetchAvailability } from "../../lib/slotAvailability";
 import { useMeta } from "../../useMeta";
 import BookingForm from "./BookingForm";
 import AreaSelect from "./AreaSelect";
+import "./slot-tokens.css";
 
 // 24 half-hour slots from 07:00 to 19:00 (start times)
 const SLOT_STARTS = Array.from({ length: 24 }, (_, i) => {
@@ -270,7 +271,7 @@ export default function SlotAvailability() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16 pt-24 relative overflow-hidden">
+    <div className="rdc-booking min-h-screen bg-gray-50 pb-16 pt-24 relative overflow-hidden">
       {/* Background image — 50% transparent, cover fills 1920×1080 desktop, crops on mobile */}
       <div
         aria-hidden="true"

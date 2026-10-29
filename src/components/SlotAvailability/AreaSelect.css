@@ -1,6 +1,9 @@
 /* =============================================================================
    AreaSelect — Apple-style dropdown.
    Light-mode values use the site's orange accent #FF6201.
+   Chrome (glass surfaces, radius, shadow, type) is now driven by the shared
+   slot tokens in slot-tokens.css. Each declaration keeps a literal fallback so
+   the control renders correctly even outside a .rdc-booking wrapper.
    ============================================================================= */
 
 .area-select {
@@ -15,10 +18,10 @@
 .area-select__label {
   display: block;
   margin-bottom: 4px;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--rd-label-size, 11px);
+  font-weight: var(--rd-label-weight, 600);
   color: #6b7280;
-  letter-spacing: 0.01em;
+  letter-spacing: var(--rd-label-tracking, 0.01em);
 }
 
 /* ---- Trigger ----------------------------------------------------------- */
@@ -28,26 +31,26 @@
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  height: 40px;
+  height: var(--rd-trigger-h, 40px);
   padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  border-radius: var(--rd-radius-md, 12px);
+  border: 1px solid var(--rd-border, rgba(0, 0, 0, 0.08));
+  background: var(--rd-glass, rgba(255, 255, 255, 0.85));
+  backdrop-filter: var(--rd-blur, blur(12px) saturate(180%));
+  -webkit-backdrop-filter: var(--rd-blur, blur(12px) saturate(180%));
+  box-shadow: var(--rd-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
   color: #111827;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--rd-body-size, 15px);
+  font-weight: var(--rd-body-weight, 500);
   cursor: pointer;
   text-align: left;
   transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease;
+    border-color var(--rd-dur-fast, 120ms) var(--rd-ease, ease),
+    box-shadow var(--rd-dur-fast, 120ms) var(--rd-ease, ease);
 }
 
 .area-select__trigger:hover {
-  border-color: rgba(0, 0, 0, 0.16);
+  border-color: var(--rd-border-hover, rgba(0, 0, 0, 0.16));
 }
 
 .area-select__trigger:focus {
@@ -55,11 +58,11 @@
 }
 
 .area-select__trigger:focus-visible {
-  box-shadow: 0 0 0 3px rgba(255, 98, 1, 0.25);
+  box-shadow: var(--rd-accent-ring, 0 0 0 3px rgba(255, 98, 1, 0.25));
 }
 
 .area-select--open .area-select__trigger {
-  box-shadow: 0 0 0 3px rgba(255, 98, 1, 0.25);
+  box-shadow: var(--rd-accent-ring, 0 0 0 3px rgba(255, 98, 1, 0.25));
 }
 
 .area-select__value {
@@ -75,7 +78,7 @@
 .area-select__chevron {
   flex-shrink: 0;
   color: #6b7280;
-  transition: transform 160ms ease;
+  transition: transform var(--rd-dur-med, 160ms) var(--rd-ease, ease);
 }
 
 .area-select--open .area-select__chevron {
@@ -85,17 +88,17 @@
 /* ---- Native select (touch / coarse pointer) ---------------------------- */
 .area-select__native {
   width: 100%;
-  height: 40px;
+  height: var(--rd-trigger-h, 40px);
   padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  border-radius: var(--rd-radius-md, 12px);
+  border: 1px solid var(--rd-border, rgba(0, 0, 0, 0.08));
+  background: var(--rd-glass, rgba(255, 255, 255, 0.85));
+  backdrop-filter: var(--rd-blur, blur(12px) saturate(180%));
+  -webkit-backdrop-filter: var(--rd-blur, blur(12px) saturate(180%));
+  box-shadow: var(--rd-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
   color: #111827;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--rd-body-size, 15px);
+  font-weight: var(--rd-body-weight, 500);
   cursor: pointer;
 }
 
@@ -122,12 +125,13 @@
   margin: 0;
   padding: 6px;
   list-style: none;
-  border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  border-radius: var(--rd-radius-lg, 14px);
+  border: 1px solid var(--rd-border-soft, rgba(0, 0, 0, 0.06));
+  /* 0.97 opaque: the slot grid must not show through the open options. */
+  background: var(--rd-glass-opaque, rgba(255, 255, 255, 0.97));
+  backdrop-filter: var(--rd-blur-strong, blur(20px) saturate(180%));
+  -webkit-backdrop-filter: var(--rd-blur-strong, blur(20px) saturate(180%));
+  box-shadow: var(--rd-shadow-lg, 0 12px 32px rgba(0, 0, 0, 0.12));
   pointer-events: auto;
 }
 
@@ -148,10 +152,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 38px;
+  height: var(--rd-option-h, 38px);
   padding: 0 12px;
-  border-radius: 9px;
-  font-size: 15px;
+  border-radius: var(--rd-radius-sm, 9px);
+  font-size: var(--rd-body-size, 15px);
   color: #111827;
   cursor: pointer;
 }
@@ -162,7 +166,7 @@
 }
 
 .area-select__option--selected {
-  color: #ff6201;
+  color: var(--rd-accent, #ff6201);
   font-weight: 600;
 }
 
@@ -175,7 +179,7 @@
 .area-select__check {
   flex-shrink: 0;
   margin-left: 10px;
-  color: #ff6201;
+  color: var(--rd-accent, #ff6201);
 }
 
 /* ---- Touch: native select only, hide custom UI ------------------------- */

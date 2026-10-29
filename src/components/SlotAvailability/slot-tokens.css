@@ -1,0 +1,69 @@
+/* =============================================================================
+   SlotAvailability design tokens — Apple-style glass language.
+   Scoped to .rdc-booking (the page wrapper) so the variables cascade to every
+   child, including <AreaSelect/> (which renders inside the wrapper — no portal;
+   verified). Each var() carries a bare fallback so the component CSS never
+   breaks if rendered outside the scope before the class is applied.
+   ============================================================================= */
+
+.rdc-booking {
+  /* ---- Radius scale -------------------------------------------------- */
+  --rd-radius-sm: 9px;
+  --rd-radius-md: 12px;
+  --rd-radius-lg: 14px;
+  --rd-radius-xl: 20px;
+  --rd-radius-pill: 9999px;
+
+  /* ---- Borders ------------------------------------------------------- */
+  --rd-border: rgba(0, 0, 0, 0.08);
+  --rd-border-hover: rgba(0, 0, 0, 0.16);
+  --rd-border-soft: rgba(0, 0, 0, 0.06);
+
+  /* ---- Glass surfaces ------------------------------------------------ */
+  --rd-glass: rgba(255, 255, 255, 0.85);
+  --rd-glass-strong: rgba(255, 255, 255, 0.92);
+  --rd-glass-opaque: rgba(255, 255, 255, 0.97); /* panel: grid must NOT show through */
+
+  /* ---- Blur ---------------------------------------------------------- */
+  --rd-blur: blur(12px) saturate(180%);
+  --rd-blur-strong: blur(20px) saturate(180%);
+
+  /* ---- Shadows ------------------------------------------------------- */
+  --rd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --rd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --rd-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+  /* ---- Accent -------------------------------------------------------- */
+  --rd-accent: #ff6201;
+  --rd-accent-ring: 0 0 0 3px rgba(255, 98, 1, 0.25);
+  --rd-accent-soft: rgba(255, 98, 1, 0.2);
+
+  /* ---- Type ---------------------------------------------------------- */
+  /* Split into size / weight / tracking (no shorthand like 11px/600). */
+  --rd-label-size: 11px;
+  --rd-label-weight: 600;
+  --rd-label-tracking: 0.01em;
+  --rd-body-size: 15px;
+  --rd-body-weight: 500;
+  --rd-body-sm-size: 13px;
+  --rd-body-sm-weight: 500;
+  --rd-h3-size: 18px;
+  --rd-h3-weight: 800;
+
+  /* ---- Control sizes ------------------------------------------------- */
+  --rd-trigger-h: 40px;
+  --rd-option-h: 38px;
+  --rd-input-h: 40px;
+
+  /* ---- Motion -------------------------------------------------------- */
+  --rd-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --rd-dur-fast: 120ms;
+  --rd-dur-med: 160ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rdc-booking {
+    --rd-dur-fast: 0ms;
+    --rd-dur-med: 0ms;
+  }
+}
