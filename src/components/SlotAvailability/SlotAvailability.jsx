@@ -20,6 +20,7 @@ import slotBg from "../../assets/slot-page-bg.png";
 import { fetchAvailability } from "../../lib/slotAvailability";
 import { useMeta } from "../../useMeta";
 import BookingForm from "./BookingForm";
+import AreaSelect from "./AreaSelect";
 
 // 24 half-hour slots from 07:00 to 19:00 (start times)
 const SLOT_STARTS = Array.from({ length: 24 }, (_, i) => {
@@ -416,27 +417,13 @@ export default function SlotAvailability() {
 
                   {/* Area discount picker — only shown when promos/travel towns exist */}
                   {areaOptions.length > 0 && (
-                    <div className="mb-6 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                      <label
-                        htmlFor="area-select"
-                        className="text-xs font-semibold text-gray-600"
-                      >
-                        Your area
-                      </label>
-                      <select
-                        id="area-select"
+                    <div className="mb-6 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
+                      <AreaSelect
+                        label="Your area"
                         value={selectedArea}
-                        onChange={(e) => setSelectedArea(e.target.value)}
-                        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm outline-none transition focus:border-[#FF6201] focus:ring-2 focus:ring-[#FF6201]/10"
-                      >
-                        <option value="">Select your area</option>
-                        {areaOptions.map((town) => (
-                          <option key={town} value={town}>
-                            {town}
-                          </option>
-                        ))}
-                        <option value="__other__">Other</option>
-                      </select>
+                        onChange={setSelectedArea}
+                        options={areaOptions}
+                      />
                       {effectiveArea && (
                         <span className="text-[11px] font-medium text-green-600">
                           Promo applies when slot matches <strong>{effectiveArea}</strong>

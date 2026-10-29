@@ -1,0 +1,199 @@
+/* =============================================================================
+   AreaSelect — Apple-style dropdown.
+   Light-mode values use the site's orange accent #FF6201.
+   ============================================================================= */
+
+.area-select {
+  position: relative;
+  display: inline-block;
+  min-width: 180px;
+  font-family: var(--font-raleway, "Raleway", ui-sans-serif, system-ui, sans-serif);
+}
+
+/* The <label> is visually rendered but the trigger carries the accessible
+   name + relationship via aria-labelledby. Keep it visible and crisp. */
+.area-select__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Trigger ----------------------------------------------------------- */
+.area-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  color: #111827;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.area-select__trigger:hover {
+  border-color: rgba(0, 0, 0, 0.16);
+}
+
+.area-select__trigger:focus {
+  outline: none;
+}
+
+.area-select__trigger:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 98, 1, 0.25);
+}
+
+.area-select--open .area-select__trigger {
+  box-shadow: 0 0 0 3px rgba(255, 98, 1, 0.25);
+}
+
+.area-select__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.area-select__value--placeholder {
+  color: #9ca3af;
+}
+
+.area-select__chevron {
+  flex-shrink: 0;
+  color: #6b7280;
+  transition: transform 160ms ease;
+}
+
+.area-select--open .area-select__chevron {
+  transform: rotate(180deg);
+}
+
+/* ---- Native select (touch / coarse pointer) ---------------------------- */
+.area-select__native {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  color: #111827;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ---- Panel ------------------------------------------------------------- *
+ * Open/close opacity + scale/translate are driven entirely by framer-motion
+ * (inline styles win over these). This block supplies the static chrome and
+ * the reduced-motion fallback only. The panel is only mounted while open
+ * (AnimatePresence), so pointer-events is auto when present.                */
+.area-select__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 60;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  pointer-events: auto;
+}
+
+/* thin scrollbar */
+.area-select__panel::-webkit-scrollbar {
+  width: 6px;
+}
+.area-select__panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+.area-select__panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---- Options ----------------------------------------------------------- */
+.area-select__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font-size: 15px;
+  color: #111827;
+  cursor: pointer;
+}
+
+.area-select__option:hover,
+.area-select__option--highlight {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.area-select__option--selected {
+  color: #ff6201;
+  font-weight: 600;
+}
+
+.area-select__option-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.area-select__check {
+  flex-shrink: 0;
+  margin-left: 10px;
+  color: #ff6201;
+}
+
+/* ---- Touch: native select only, hide custom UI ------------------------- */
+@media (pointer: coarse) {
+  .area-select__trigger,
+  .area-select__panel {
+    display: none;
+  }
+}
+
+@media (pointer: fine) {
+  .area-select__native {
+    display: none;
+  }
+}
+
+/* ---- Reduced motion ---------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .area-select__panel,
+  .area-select__chevron,
+  .area-select__trigger {
+    transition: none;
+  }
+  .area-select__panel {
+    opacity: 1;
+    transform: none;
+  }
+}
