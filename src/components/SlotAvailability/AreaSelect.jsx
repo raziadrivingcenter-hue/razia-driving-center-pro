@@ -1,4 +1,12 @@
-import { useId, useReducer, useRef, useEffect, useCallback, useMemo } from "react";
+import {
+  useId,
+  useReducer,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+  Component,
+} from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   OTHER_VALUE,
@@ -13,6 +21,50 @@ import "./AreaSelect.css";
 
 const TYPEAHEAD_TIMEOUT = 500;
 
+// ---------------------------------------------------------------------------
+// Error boundary: if the custom dropdown throws (e.g. a framer-motion /
+// React incompatibility that slips past tests), fall back to a plain native
+// <select> so the booking page never goes blank. The fallback keeps the same
+// value/onChange contract, so the user can still pick an area and proceed.
+// ---------------------------------------------------------------------------
+export class AreaSelectErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, info) {
+    console.error("AreaSelect crashed — falling back to native select:", {
+      error: String(error),
+      info,
+    });
+  }
+  render() {
+    if (this.state.hasError) {
+      const { value, onChange, options, label, placeholder } = this.props;
+      return (
+        <select
+          className="area-select__native area-select__fallback"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+        >
+          <option value="">{placeholder || "Select your area"}</option>
+          {(options || []).map((town) => (
+            <option key={town} value={town}>
+              {town}
+            </option>
+          ))}
+          <option value={OTHER_VALUE}>Other</option>
+        </select>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 /**
  * Apple-style dropdown. Props:
  *   value      — current selection ("", a town, or "__other__")
@@ -23,11 +75,14 @@ const TYPEAHEAD_TIMEOUT = 500;
  *
  * On touch devices (@media pointer: coarse) a native <select> is shown instead.
  * Both write to the same `value`/`onChange`.
+ *
+ * The default export wraps this in AreaSelectErrorBoundary so a render crash
+ * degrades to a native <select> instead of blanking the page.
  */
-export default function AreaSelect({
+function AreaSelectInner({
   value,
   onChange,
-  options,
+  options = [],
   label,
   placeholder = "Select your area",
 }) {
@@ -42,7 +97,19 @@ export default function AreaSelect({
     [value, allOptions]
   );
 
-  const [state, dispatch] = useReducer(areaReducer, initialState, (init) =>
+  // IMPORTANT: the reducer signature is reducer(state, action, options), but
+  // React's useReducer only forwards (state, action) on dispatch — it never
+  // passes a third argument. If we passed the raw reducer, every dispatch would
+  // run against `options = []` (the default), so typeahead/move/Home/End would
+  // silently operate on an empty list. Wrapping it here closes over the REAL
+  // options for this render. The `[]` default in the reducer stays only as a
+  // safety net for direct calls (e.g. unit tests, error-boundary fallback).
+  const reducerWithOptions = useCallback(
+    (state, action) => areaReducer(state, action, allOptions),
+    [allOptions]
+  );
+
+  const [state, dispatch] = useReducer(reducerWithOptions, initialState, (init) =>
     // Seed highlight from the current selection so opening lands on it.
     ({ ...init, highlighted: indexOfValue(value, allOptions) })
   );
@@ -210,7 +277,7 @@ export default function AreaSelect({
         aria-labelledby={labelId}
       >
         <option value="">{placeholder}</option>
-        {options.map((town) => (
+        {(options || []).map((town) => (
           <option key={town} value={town}>
             {town}
           </option>
@@ -248,17 +315,14 @@ export default function AreaSelect({
         <ChevronDown className="area-select__chevron" size={16} aria-hidden="true" />
       </button>
 
-      {/* Panel — fine pointers only; animated via framer-motion. */}
+      {/* Panel — fine pointers only; animated via framer-motion.
+         NOTE: motion.ul crashes under React 19 (createElement reads __self),
+         so the animation lives on a motion.div wrapping a plain <ul>. The
+         listbox semantics (role + aria) stay on the <ul>. */}
       <AnimatePresence>
         {open && (
-          <motion.ul
-            ref={panelRef}
-            id={panelId}
-            role="listbox"
-            aria-label={label}
-            aria-labelledby={labelId}
-            tabIndex={-1}
-            className="area-select__panel"
+          <motion.div
+            className="area-select__panel-wrap"
             initial={{ opacity: 0, scale: 0.96, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -4 }}
@@ -269,37 +333,59 @@ export default function AreaSelect({
             }
             style={{ transformOrigin: "top left" }}
           >
-            {allOptions.map((opt, idx) => {
-              const selected = idx === selectedIndex;
-              const isHighlight = idx === normalizedHighlighted;
-              return (
-                <li
-                  key={opt}
-                  id={optionId(idx)}
-                  role="option"
-                  aria-selected={selected}
-                  ref={(el) => {
-                    optionRefs.current[idx] = el;
-                  }}
-                  className={`area-select__option${
-                    selected ? " area-select__option--selected" : ""
-                  }${isHighlight ? " area-select__option--highlight" : ""}`}
-                  onMouseDown={onOptionPointerDown(idx)}
-                  onMouseEnter={onOptionMouseEnter(idx)}
-                >
-                  <span className="area-select__option-text" title={optionLabel(opt)}>
-                    {optionLabel(opt)}
-                  </span>
-                  {selected && (
-                    <Check className="area-select__check" size={16} aria-hidden="true" />
-                  )}
-                </li>
-              );
-            })}
-          </motion.ul>
+            <ul
+              ref={panelRef}
+              id={panelId}
+              role="listbox"
+              aria-label={label}
+              aria-labelledby={labelId}
+              tabIndex={-1}
+              className="area-select__panel"
+            >
+              {allOptions.map((opt, idx) => {
+                const selected = idx === selectedIndex;
+                const isHighlight = idx === normalizedHighlighted;
+                return (
+                  <li
+                    key={opt}
+                    id={optionId(idx)}
+                    role="option"
+                    aria-selected={selected}
+                    ref={(el) => {
+                      optionRefs.current[idx] = el;
+                    }}
+                    className={`area-select__option${
+                      selected ? " area-select__option--selected" : ""
+                    }${isHighlight ? " area-select__option--highlight" : ""}`}
+                    onMouseDown={onOptionPointerDown(idx)}
+                    onMouseEnter={onOptionMouseEnter(idx)}
+                  >
+                    <span className="area-select__option-text" title={optionLabel(opt)}>
+                      {optionLabel(opt)}
+                    </span>
+                    {selected && (
+                      <Check className="area-select__check" size={16} aria-hidden="true" />
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// The inner component is always wrapped in the error boundary so a render
+// crash in the custom dropdown (e.g. a framer-motion/React mismatch that
+// slipped past tests) degrades to a native <select> instead of blanking the
+// page. The parent (SlotAvailability) imports this default export.
+export default function AreaSelect(props) {
+  return (
+    <AreaSelectErrorBoundary {...props}>
+      <AreaSelectInner {...props} />
+    </AreaSelectErrorBoundary>
   );
 }
 

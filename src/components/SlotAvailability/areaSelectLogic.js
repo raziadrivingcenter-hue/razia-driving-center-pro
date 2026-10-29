@@ -12,8 +12,8 @@ export const OTHER_VALUE = "__other__";
 // The selectable list: distinct towns + the "Other" sentinel. The placeholder
 // ("Select your area") is intentionally NOT an option — it is only the
 // trigger's empty-state label.
-export function buildOptions(towns) {
-  return [...towns, OTHER_VALUE];
+export function buildOptions(towns = []) {
+  return [...(towns || []), OTHER_VALUE];
 }
 
 // Display label for a value. Only "Other" differs from the raw value.
@@ -27,9 +27,9 @@ export function triggerLabel(value, placeholder) {
 }
 
 // Index of `value` in the option list, or -1 when empty / not found.
-export function indexOfValue(value, options) {
+export function indexOfValue(value, options = []) {
   if (!value) return -1;
-  return options.indexOf(value);
+  return (options || []).indexOf(value);
 }
 
 // Move the keyboard highlight with wrapping. Returns -1 when list is empty.
@@ -51,10 +51,10 @@ export function moveHighlight(current, key, count) {
 
 // Typeahead: first option whose label starts with `query` (case-insensitive),
 // searching circularly from `startIndex`. Returns -1 when nothing matches.
-export function typeaheadMatch(query, options, startIndex = 0) {
+export function typeaheadMatch(query, options = [], startIndex = 0) {
   if (!query) return -1;
   const q = query.toLowerCase();
-  const n = options.length;
+  const n = (options || []).length;
   for (let i = 0; i < n; i++) {
     const idx = (startIndex + i) % n;
     if (optionLabel(options[idx]).toLowerCase().startsWith(q)) return idx;
@@ -69,8 +69,8 @@ export function typeaheadMatch(query, options, startIndex = 0) {
 // ---------------------------------------------------------------------------
 export const initialState = { open: false, highlighted: -1, typeahead: "" };
 
-export function reducer(state, action, options) {
-  const count = options.length;
+export function reducer(state, action, options = []) {
+  const count = (options || []).length;
   switch (action.type) {
     case "open":
       return {

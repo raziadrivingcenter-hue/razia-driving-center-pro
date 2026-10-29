@@ -101,17 +101,24 @@
 
 /* ---- Panel ------------------------------------------------------------- *
  * Open/close opacity + scale/translate are driven entirely by framer-motion
- * (inline styles win over these). This block supplies the static chrome and
- * the reduced-motion fallback only. The panel is only mounted while open
- * (AnimatePresence), so pointer-events is auto when present.                */
-.area-select__panel {
+ * on the wrapper (inline styles win over these). This block supplies the
+ * static chrome only. The panel is only mounted while open (AnimatePresence),
+ * so pointer-events is auto when present.                                   */
+
+/* Animated wrapper — framer-motion. motion.ul is unsafe under React 19, so the
+   transform lives here while the <ul> below keeps the listbox semantics. */
+.area-select__panel-wrap {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
   min-width: 100%;
+  z-index: 60;
+  pointer-events: auto;
+}
+
+.area-select__panel {
   max-height: 260px;
   overflow-y: auto;
-  z-index: 60;
   margin: 0;
   padding: 6px;
   list-style: none;
