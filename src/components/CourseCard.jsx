@@ -11,6 +11,7 @@ function CourseCard({
   onBook,
   popular = false,
   compact = false,
+  glass = false,
 }) {
   const savings =
     oldPrice && price
@@ -26,17 +27,19 @@ function CourseCard({
   return (
     <div
       className={`
-        relative overflow-hidden rounded-xl bg-white
-        shadow-sm transition-shadow duration-200
-        hover:shadow-md
-        ${popular
-          ? "border-2 border-[#FF6201]"
-          : "border border-gray-200 hover:border-gray-300"}
+        ${glass ? "h-full" : "relative"}
+        overflow-hidden
+        ${glass ? "" : "rounded-xl bg-white shadow-sm transition-shadow duration-200 hover:shadow-md"}
+        ${glass
+          ? ""
+          : popular
+            ? "border-2 border-[#FF6201]"
+            : "border border-gray-200 hover:border-gray-300"}
       `}
     >
       {/* Free Pick & Drop marquee — PLUS Plan only */}
       {popular && (
-        <div className="relative overflow-hidden bg-gray-100 py-1">
+        <div className={`relative overflow-hidden py-1 ${glass ? "" : "bg-gray-100"}`}>
           <div
             className="flex w-max whitespace-nowrap animate-marquee"
             style={{ animationDuration: "30s" }}
@@ -97,7 +100,7 @@ function CourseCard({
         )}
 
         {/* Duration */}
-        <div className={compact ? "mt-2 inline-flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1" : "mt-3 inline-flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5"}>
+        <div className={`${compact ? "mt-2" : "mt-3"} inline-flex items-center gap-2 rounded-lg ${glass ? "bg-white/15" : "bg-gray-50"} px-2.5 py-1`}>
           <Clock3 size={14} className="shrink-0 text-[#FF6201]" />
           <span className="text-xs font-semibold text-gray-700">
             <span className="font-dm-sans">{durationNumber}</span> {durationUnit}
@@ -113,7 +116,7 @@ function CourseCard({
             return (
               <li key={feature.text} className="flex items-start gap-2.5">
                 <Icon size={15} className={`mt-0.5 shrink-0 ${iconColor}`} />
-                <span className="text-sm leading-[1.45] text-gray-600">
+                <span className={`text-sm leading-[1.45] ${glass ? "text-gray-800" : "text-gray-600"}`}>
                   {feature.text}
                 </span>
               </li>
@@ -122,7 +125,7 @@ function CourseCard({
         </ul>
 
         {/* Divider */}
-        <div className={compact ? "mt-3 border-t border-gray-100" : "mt-4 border-t border-gray-100"} />
+        <div className={`${compact ? "mt-3" : "mt-4"} border-t ${glass ? "border-white/25" : "border-gray-100"}`} />
 
         {/* CTA */}
         <button

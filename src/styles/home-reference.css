@@ -160,3 +160,113 @@
   .rdc-home .rdc-topbar nav { gap: 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .rdc-home * { transition: none !important; } }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SCREEN-READER-ONLY — visually hidden but present in the DOM for
+   structure / SEO / accessibility. Used for the in-scene "Choose Your
+   Driving Course" h2 (the visible heading is omitted from the scene).
+   ═══════════════════════════════════════════════════════════════════ */
+.rdc-home .rdc-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GLASS MORPHISM COURSE CARD — lives on the motion.div that carries
+   the enter/exit transform, because transformed ancestors disable
+   backdrop-filter. The element fills its slot (position:absolute,
+   inset:0). No ancestor of this element may have opacity<1, filter,
+   will-change, or transform (enforced by the scene structure).
+
+   border-radius 28px, isolation isolate, backdrop-filter blur+saturate,
+   gradient background, inset highlight + drop shadow, gradient edge
+   ring (::before) and specular sheen (::after).
+   ═══════════════════════════════════════════════════════════════════ */
+.rdc-home .rdc-glass-card {
+  border-radius: 28px;
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(135deg,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.20) 55%,
+      rgba(255, 255, 255, 0.10) 100%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  box-shadow:
+    /* top-left inner highlight */
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 1px 0 0 rgba(255, 255, 255, 0.5),
+    /* subtle bottom inner shadow */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+    /* inner glow */
+    inset 0 0 28px rgba(255, 255, 255, 0.25),
+    /* drop shadow */
+    0 28px 60px -14px rgba(20, 20, 20, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* Gradient edge ring — painted on a ::before layer via mask-composite
+   so the centre stays transparent and only the 1.5px border shows. */
+.rdc-home .rdc-glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background:
+    linear-gradient(135deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.15) 40%,
+      rgba(255, 98, 1, 0.28) 75%,
+      rgba(255, 255, 255, 0.7) 100%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Specular sheen — a soft diagonal light streak on a ::after layer,
+   kept above the content via z-index but non-interactive. */
+.rdc-home .rdc-glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(115deg,
+      rgba(255, 255, 255, 0.38) 0%,
+      rgba(255, 255, 255, 0) 38%);
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  z-index: 2;
+}
+
+/* Fallback when backdrop-filter is unsupported — fall back to a near-
+   opaque white card so content stays readable. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .rdc-home .rdc-glass-card {
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
+
+/* Respect reduced-transparency preference the same way. */
+@media (prefers-reduced-transparency: reduce) {
+  .rdc-home .rdc-glass-card {
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
