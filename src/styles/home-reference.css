@@ -81,6 +81,72 @@
 .rdc-home .rdc-sub { margin: 32px 0 0; font-size: 16px; color: var(--rdc-ink); }
 .rdc-home .rdc-links { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 24px; }
 
+/* ═══════════════════════════════════════════════════════════════════
+   HOMEPAGE NAVBAR — the shared floating pill becomes a flat topbar
+   matching the reference design. Scoped under .rdc-home only; every
+   other page keeps the original floating pill.
+   framer-motion sets inline transform / opacity / width on the two
+   wrapper divs; !important is required to override those inline styles.
+   ═══════════════════════════════════════════════════════════════════ */
+.rdc-home .rdc-topbar {
+  top: 0 !important;
+  height: 55px;
+  background: var(--rdc-bg);
+  border-bottom: 1px solid var(--rdc-rule);
+}
+/* Kill the show/hide animation wrapper (scaleX, y, opacity inline) */
+.rdc-home .rdc-topbar > div {
+  transform: none !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+/* Desktop inner: flat full-width bar, no pill shape, no blur */
+.rdc-home .rdc-topbar > div > div:first-child {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 var(--rdc-pad);
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  transform: none !important;
+}
+/* Nav links → mono caps, 40px gap */
+.rdc-home .rdc-topbar > div > div:first-child > div:nth-child(2) {
+  gap: 40px;
+}
+.rdc-home .rdc-topbar > div > div:first-child > div:nth-child(2) a,
+.rdc-home .rdc-topbar > div > div:first-child > div:nth-child(2) button {
+  font-family: var(--rdc-font-mono) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.18em !important;
+  color: var(--rdc-ink) !important;
+}
+.rdc-home .rdc-topbar > div > div:first-child > div:nth-child(2) a:hover,
+.rdc-home .rdc-topbar > div > div:first-child > div:nth-child(2) button:hover {
+  color: var(--rdc-accent) !important;
+}
+/* Mobile inner: flat full-width bar, no pill shape */
+.rdc-home .rdc-topbar > div > div:nth-child(2) {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 var(--rdc-pad);
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  transform: none !important;
+}
+
 @media (max-width: 767px) {
   .rdc-home { --rdc-pad: 20px; }
   .rdc-home .rdc-grid-3 { grid-template-columns: 1fr; row-gap: 56px; }

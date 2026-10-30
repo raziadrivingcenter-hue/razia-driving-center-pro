@@ -45,7 +45,7 @@ function Hero({ onBookNow }) {
     <>
     <section
       id="home"
-      className="font-raleway relative overflow-hidden bg-white py-20 md:py-28 lg:py-32"
+      className="rdc-section relative overflow-hidden"
     >
       <div className="relative mx-auto max-w-6xl px-6 md:px-8">
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_340px] lg:gap-16">
@@ -63,7 +63,7 @@ function Hero({ onBookNow }) {
             className="flex items-center gap-2"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-[#FF3131] to-[#FF6201]" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+            <span className="rdc-mono">
               Gulberg 2, Lahore
             </span>
           </motion.div>
@@ -74,14 +74,20 @@ function Hero({ onBookNow }) {
             initial="hidden"
             animate="show"
             transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
-            className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-950 md:text-5xl lg:text-6xl"
+            className="mt-4 rdc-display"
+            style={{ fontSize: "clamp(48px, 6vw, 96px)", lineHeight: 0.92 }}
           >
-            {title.split("").map((char, i) => (
-              <span
-                key={i}
-                className={`inline-block transition-all duration-200 ease-out md:hover:font-black md:hover:text-[#FF6201]${/\d/.test(char) ? " font-dm-sans" : ""}`}
-              >
-                {char === " " ? " " : char}
+            {title.split(" ").map((word, wi) => (
+              <span key={wi} className="inline-block">
+                {word.split("").map((char, ci) => (
+                  <span
+                    key={ci}
+                    className={`inline-block transition-all duration-200 ease-out md:hover:font-black md:hover:text-[#FF6201]${/\d/.test(char) ? " font-dm-sans" : ""}`}
+                  >
+                    {char}
+                  </span>
+                ))}
+                {wi < title.split(" ").length - 1 ? " " : ""}
               </span>
             ))}
           </motion.h1>
@@ -195,19 +201,19 @@ function Hero({ onBookNow }) {
             className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2"
             aria-label="Key benefits"
           >
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+            <span className="flex items-center gap-1.5 rdc-mono">
               <span className="h-1.5 w-1.5 rounded-full bg-[#FF6201]" />
               20 km pick-up
             </span>
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+            <span className="flex items-center gap-1.5 rdc-mono">
               <span className="h-1.5 w-1.5 rounded-full bg-[#FF6201]" />
               Local-road practice
             </span>
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+            <span className="flex items-center gap-1.5 rdc-mono">
               <span className="h-1.5 w-1.5 rounded-full bg-[#FF6201]" />
               Female instructor
             </span>
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+            <span className="flex items-center gap-1.5 rdc-mono">
               <span className="h-1.5 w-1.5 rounded-full bg-[#FF6201]" />
               Home-to-office option
             </span>

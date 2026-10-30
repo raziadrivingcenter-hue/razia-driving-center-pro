@@ -261,7 +261,7 @@ function Navbar({ onBookNow }) {
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="fixed inset-x-0 top-4 z-50 w-full"
+        className={cn("fixed inset-x-0 top-4 z-50 w-full", isHomepage && "rdc-topbar")}
         onMouseEnter={handleNavMouseEnter}
         onMouseLeave={handleNavMouseLeave}
         aria-hidden={isHidden}
