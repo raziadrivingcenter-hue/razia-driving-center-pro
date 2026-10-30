@@ -75,7 +75,7 @@ function Hero({ onBookNow }) {
             animate="show"
             transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
             className="mt-4 rdc-display"
-            style={{ fontSize: "clamp(48px, 6vw, 96px)", lineHeight: 0.92 }}
+            style={{ fontSize: "clamp(48px, 6vw, 88px)", lineHeight: 0.92 }}
           >
             {title.split(" ").map((word, wi) => (
               <span key={wi} className="inline-block">
@@ -100,10 +100,10 @@ function Hero({ onBookNow }) {
             transition={{ duration: 0.5, delay: 0.16, ease: "easeOut" }}
             className="mt-5 max-w-[540px] space-y-4"
           >
-            <p className="text-[12px] font-bold leading-[0.88] text-gray-700 md:text-[14px]">
+            <p className="text-[12px] font-bold leading-[1.6] text-gray-700 md:text-[14px]">
               Learn one-to-one with Madam Razia, a female driving instructor.
             </p>
-            <p className="text-[12px] leading-[0.88] text-gray-500 md:text-[14px]">
+            <p className="text-[12px] leading-[1.6] text-gray-500 md:text-[14px]">
               Practise on roads around your area with convenient pick-up within
               20&nbsp;km. We can drop you home after your lesson, or arrange home
               pick-up with drop-off at your office to help fit driving lessons into a
@@ -198,7 +198,7 @@ function Hero({ onBookNow }) {
             initial="hidden"
             animate="show"
             transition={{ duration: 0.5, delay: 0.28, ease: "easeOut" }}
-            className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2"
+            className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 rdc-hero-tags"
             aria-label="Key benefits"
           >
             <span className="flex items-center gap-1.5 rdc-mono">

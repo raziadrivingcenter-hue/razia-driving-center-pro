@@ -15,14 +15,20 @@
   line-height: 1.5;
 }
 
-/* BIG HEADINGS: heavy condensed uppercase, letters almost touching */
+/* BIG HEADINGS: heavy condensed uppercase, letters almost touching.
+   line-height, letter-spacing, word-spacing apply ONLY to elements that
+   carry this class — never to body text or paragraphs. */
 .rdc-home .rdc-display {
   font-family: var(--rdc-font-display);
   font-weight: 400;              /* Anton is already heavy; never use bold */
   text-transform: uppercase;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+  word-spacing: 0.25em;          /* clear gaps between words */
   line-height: 0.9;
-  font-size: clamp(56px, 5.1vw, 100px);  /* about 96px on a 1892px screen */
+  font-size: clamp(56px, 5.1vw, 88px);   /* 88px cap on a 1892px screen */
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
   margin: 0;
   color: var(--rdc-ink);
 }
@@ -37,6 +43,7 @@
   line-height: 1.4;
 }
 .rdc-home .rdc-mono--muted { color: var(--rdc-muted); font-weight: 400; }
+.rdc-home .rdc-hero-tags > .rdc-mono { letter-spacing: 0.12em; }
 
 /* TEXT LINK: mono caps + arrow + 1px line under it */
 .rdc-home .rdc-link {
