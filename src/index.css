@@ -10,7 +10,10 @@ body,
 #root {
   width: 100%;
   min-height: 100%;
-  overflow-x: hidden;
+  /* overflow-x: clip (NOT hidden) — hidden forces overflow-y to auto,
+     which makes the element a scroll container and breaks position:sticky
+     on the pinned home-page scene. clip clips without that side effect. */
+  overflow-x: clip;
 }
 
 /* Default font for the whole app — Raleway (headings + text).
