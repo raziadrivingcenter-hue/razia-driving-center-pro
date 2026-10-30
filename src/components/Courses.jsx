@@ -1,16 +1,21 @@
 import { MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 
 import SectionTitle from "./UI/SectionTitle";
 import CustomCourseCard from "./CustomCourseCard";
 import CourseCard from "./CourseCard";
 import { courses } from "../data/courses";
+import { useDesktopMotion } from "../hooks/useDesktopMotion";
 
 function Courses({ onCustomBooking }) {
+  const desktopMotion = useDesktopMotion();
+
   return (
     <section
       id="courses"
       data-aos="fade-up"
       className="bg-gray-50 py-12 md:py-16"
+      style={{ overflowX: "clip" }}
     >
       <div className="mx-auto max-w-6xl px-6">
 
@@ -20,19 +25,46 @@ function Courses({ onCustomBooking }) {
           subtitle="One-to-one driving lessons designed to help you become a safe and confident driver on Lahore's roads."
         />
 
-        {/* Standard Courses */}
+        {/* Standard Courses — 3D slide-in, one by one (desktop only) */}
+        <div
+          className="mt-8 grid gap-5 md:grid-cols-3 md:gap-6"
+          style={{ perspective: desktopMotion ? "1200px" : "none" }}
+        >
 
-        <div className="mt-8 grid gap-5 md:grid-cols-3 md:gap-6">
-
-          {courses.map((course) => (
-
-            <CourseCard
-              key={course.name}
-              {...course}
-              popular={course.name === "Economy Driving Course"}
-              onBook={onCustomBooking}
-            />
-
+          {courses.map((course, index) => (
+            desktopMotion ? (
+              <motion.div
+                key={course.name}
+                initial={{ opacity: 0, x: -120, rotateY: -35, scale: 0.96 }}
+                whileInView={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 90,
+                  damping: 18,
+                  mass: 0.9,
+                  delay: index * 0.18,
+                }}
+                style={{
+                  transformOrigin: "left center",
+                  transformStyle: "preserve-3d",
+                  willChange: "transform, opacity",
+                }}
+              >
+                <CourseCard
+                  {...course}
+                  popular={course.name === "Economy Driving Course"}
+                  onBook={onCustomBooking}
+                />
+              </motion.div>
+            ) : (
+              <CourseCard
+                key={course.name}
+                {...course}
+                popular={course.name === "Economy Driving Course"}
+                onBook={onCustomBooking}
+              />
+            )
           ))}
 
         </div>
