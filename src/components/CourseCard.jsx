@@ -10,6 +10,7 @@ function CourseCard({
   titleIcon: TitleIcon,
   onBook,
   popular = false,
+  compact = false,
 }) {
   const savings =
     oldPrice && price
@@ -67,7 +68,7 @@ function CourseCard({
         </div>
       )}
 
-      <div className="p-5">
+      <div className={compact ? "p-3" : "p-5"}>
         {/* Plan name */}
         <div className="flex items-center gap-2">
           {TitleIcon && (
@@ -79,7 +80,7 @@ function CourseCard({
         </div>
 
         {/* Pricing */}
-        <div className="mt-3 flex items-baseline gap-2">
+        <div className={compact ? "mt-2 flex items-baseline gap-2" : "mt-3 flex items-baseline gap-2"}>
           <span className="text-3xl font-black leading-none text-gray-900">
             <span className="font-dm-sans">{price}</span>
           </span>
@@ -96,7 +97,7 @@ function CourseCard({
         )}
 
         {/* Duration */}
-        <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
+        <div className={compact ? "mt-2 inline-flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1" : "mt-3 inline-flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5"}>
           <Clock3 size={14} className="shrink-0 text-[#FF6201]" />
           <span className="text-xs font-semibold text-gray-700">
             <span className="font-dm-sans">{durationNumber}</span> {durationUnit}
@@ -104,7 +105,7 @@ function CourseCard({
         </div>
 
         {/* Features */}
-        <ul className="mt-4 space-y-2">
+        <ul className={compact ? "mt-3 space-y-1.5" : "mt-4 space-y-2"}>
           {features.map((feature) => {
             const Icon = feature.icon || Check;
             const iconColor = feature.icon ? "text-[#FF6201]" : "text-gray-400";
@@ -121,12 +122,13 @@ function CourseCard({
         </ul>
 
         {/* Divider */}
-        <div className="mt-4 border-t border-gray-100" />
+        <div className={compact ? "mt-3 border-t border-gray-100" : "mt-4 border-t border-gray-100"} />
 
         {/* CTA */}
         <button
           onClick={() => onBook?.({ course: name })}
-          className={`btn-interactive mt-4 inline-flex h-11 w-full items-center justify-center rounded-md text-sm font-semibold transition-colors duration-200
+          className={`btn-interactive inline-flex w-full items-center justify-center rounded-md text-sm font-semibold transition-colors duration-200
+            ${compact ? "mt-3 h-9" : "mt-4 h-11 "}
             ${popular
               ? "bg-[#FF6201] text-white hover:bg-[#e55600]"
               : "bg-gray-900 text-white hover:bg-gray-800"

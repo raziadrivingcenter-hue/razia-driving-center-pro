@@ -12,8 +12,7 @@ import { useRouter } from "../router";
 
 import ScrollProgress from "./ScrollProgress";
 import Navbar from "./Navbar";
-import Hero from "./Hero";
-import Courses from "./Courses";
+import HeroCoursesScene from "./HeroCoursesScene";
 import WhyChoose from "./WhyChoose";
 import GoogleReviews from "./GoogleReviews/GoogleReviews";
 import Instructor from "./Instructor/Instructor";
@@ -128,9 +127,10 @@ function Homepage() {
 
         <Navbar onBookNow={() => navigate("/slot-availability/")} />
 
-        <Hero onBookNow={() => navigate("/slot-availability/")} />
-
-        <Courses onCustomBooking={goToSlotBooking} />
+        <HeroCoursesScene
+          onBookNow={() => navigate("/slot-availability/")}
+          onCustomBooking={goToSlotBooking}
+        />
 
         <WhyChoose />
 
