@@ -5,6 +5,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 import "../App.css";
+import "../styles/home-reference.css";
 
 import LoadingScreen from "./Loading/LoadingScreen";
 import { useRouter } from "../router";
@@ -122,7 +123,7 @@ function Homepage() {
         {loading && <LoadingScreen />}
       </AnimatePresence>
 
-      <div className="min-h-screen bg-white">
+      <div className="rdc-home min-h-screen">
         <ScrollProgress />
 
         <Navbar onBookNow={() => navigate("/slot-availability/")} />

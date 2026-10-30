@@ -1,0 +1,89 @@
+.rdc-home {
+  --rdc-font-display: "Anton", "Archivo Narrow", "Arial Narrow", Impact, sans-serif;
+  --rdc-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --rdc-font-body: "Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --rdc-bg: #F6F4F0;
+  --rdc-ink: #0D0D0D;
+  --rdc-muted: #6B6963;
+  --rdc-rule: #D9D6D0;
+  --rdc-accent: #FF6201;
+  --rdc-pad: 32px;
+  background: var(--rdc-bg);
+  color: var(--rdc-ink);
+  font-family: var(--rdc-font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* BIG HEADINGS: heavy condensed uppercase, letters almost touching */
+.rdc-home .rdc-display {
+  font-family: var(--rdc-font-display);
+  font-weight: 400;              /* Anton is already heavy; never use bold */
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+  font-size: clamp(56px, 5.1vw, 100px);  /* about 96px on a 1892px screen */
+  margin: 0;
+  color: var(--rdc-ink);
+}
+
+/* SMALL MONO LABELS */
+.rdc-home .rdc-mono {
+  font-family: var(--rdc-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  line-height: 1.4;
+}
+.rdc-home .rdc-mono--muted { color: var(--rdc-muted); font-weight: 400; }
+
+/* TEXT LINK: mono caps + arrow + 1px line under it */
+.rdc-home .rdc-link {
+  display: inline-block;
+  font-family: var(--rdc-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--rdc-ink);
+  text-decoration: none;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rdc-rule);
+  transition: border-color 160ms ease, color 160ms ease;
+}
+.rdc-home .rdc-link:hover,
+.rdc-home .rdc-link:focus-visible { color: var(--rdc-accent); border-color: var(--rdc-accent); }
+.rdc-home .rdc-link:focus-visible { outline: 2px solid var(--rdc-accent); outline-offset: 4px; }
+
+/* TOP BAR */
+.rdc-home .rdc-topbar {
+  height: 55px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--rdc-pad);
+  border-bottom: 1px solid var(--rdc-rule);
+}
+.rdc-home .rdc-topbar nav { display: flex; gap: 40px; }
+
+/* SECTIONS: big air, full-width 1px line at the bottom */
+.rdc-home .rdc-section {
+  padding: clamp(72px, 9vw, 165px) 0;
+  border-bottom: 1px solid var(--rdc-rule);
+}
+
+/* 3 COLUMNS: 32px on the left, no gap, each column starts at 1/3 */
+.rdc-home .rdc-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding-left: var(--rdc-pad);
+}
+.rdc-home .rdc-grid-3 > * { padding-right: 24px; }
+.rdc-home .rdc-sub { margin: 32px 0 0; font-size: 16px; color: var(--rdc-ink); }
+.rdc-home .rdc-links { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 24px; }
+
+@media (max-width: 767px) {
+  .rdc-home { --rdc-pad: 20px; }
+  .rdc-home .rdc-grid-3 { grid-template-columns: 1fr; row-gap: 56px; }
+  .rdc-home .rdc-topbar nav { gap: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .rdc-home * { transition: none !important; } }
