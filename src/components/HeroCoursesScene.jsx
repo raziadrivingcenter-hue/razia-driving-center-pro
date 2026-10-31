@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useLayoutEffect } from "react";
+import { Component, useRef, useState, useEffect, useLayoutEffect } from "react";
 import {
   motion,
   useScroll,
@@ -76,6 +76,47 @@ function BackdropShapes({ progress }) {
   const y1 = useTransform(progress, [0, 1], [0, -20]);
   const x2 = useTransform(progress, [0, 1], [0, -25]);
   const y2 = useTransform(progress, [0, 1], [0, 15]);
+
+  // Guard: if progress was not passed (prop-name mismatch), render the
+  // shapes static with no transform instead of crashing on .get().
+  if (!progress) {
+    return (
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            left: "60%",
+            top: "30%",
+            width: 380,
+            height: 380,
+            borderRadius: "50%",
+            background: "rgba(255, 98, 1, 0.30)",
+            filter: "blur(70px)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: "72%",
+            top: "58%",
+            width: 300,
+            height: 300,
+            borderRadius: "50%",
+            background: "rgba(255, 170, 90, 0.28)",
+            filter: "blur(70px)",
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -165,8 +206,12 @@ function SceneGlassCard({ progress, course, onBook, index }) {
   const rotateX = useTransform(progress, rotInput, rotOutput);
   const opacity = useTransform(progress, opInput, opOutput);
 
-  // Toggle interactivity at the 0.5 opacity threshold.
-  const [interactive, setInteractive] = useState(opacity.get() >= 0.5);
+  // Toggle interactivity at the 0.5 opacity threshold. Guard .get() with
+  // optional chaining so a missing motion value defaults to 0 (non-interactive)
+  // instead of crashing.
+  const [interactive, setInteractive] = useState(
+    (opacity?.get() ?? 0) >= 0.5
+  );
   useMotionValueEvent(opacity, "change", (v) => setInteractive(v >= 0.5));
 
   return (
@@ -277,7 +322,7 @@ function PinnedScene({ onBookNow, onCustomBooking }) {
 
   // Pointer-events toggling so the hero isn't clickable once cards arrive.
   const [heroInteractive, setHeroInteractive] = useState(true);
-  useMotionValueEvent(p, "change", (v) => setHeroInteractive(v <= 0.35));
+  useMotionValueEvent(p, "change", (v) => setHeroInteractive((v ?? 0) <= 0.35));
 
   return (
     <>
@@ -345,7 +390,7 @@ function PinnedScene({ onBookNow, onCustomBooking }) {
           }}
         >
           {/* Layer 0: blurred backdrop shapes for glass refraction. */}
-          <BackdropShapes p={p} />
+          <BackdropShapes progress={p} />
 
           {/* Layer 1: hero (left column + review card). This is a SIBLING
               layer of the card slot, not an ancestor — so its transforms do
@@ -443,6 +488,40 @@ function PinnedScene({ onBookNow, onCustomBooking }) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Error boundary — if the pinned scene throws (e.g. a motion-value
+    regression), fall back to the static layout so the page is never blank.
+   ------------------------------------------------------------------ */
+class SceneErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, info) {
+    // Surface the error in the console for debugging but keep the page alive.
+    console.error(
+      "[HeroCoursesScene] pinned scene crashed — falling back to static layout:",
+      error,
+      info
+    );
+  }
+  render() {
+    if (this.state.hasError) {
+      const { onBookNow, onCustomBooking } = this.props;
+      return (
+        <StaticLayout
+          onBookNow={onBookNow}
+          onCustomBooking={onCustomBooking}
+        />
+      );
+    }
+    return this.props.children;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /*  Top-level gate: decides which layout to render.
    ------------------------------------------------------------------ */
 export default function HeroCoursesScene({ onBookNow, onCustomBooking }) {
@@ -461,10 +540,15 @@ export default function HeroCoursesScene({ onBookNow, onCustomBooking }) {
 
   if (desktop && tallEnough) {
     return (
-      <PinnedScene
+      <SceneErrorBoundary
         onBookNow={onBookNow}
         onCustomBooking={onCustomBooking}
-      />
+      >
+        <PinnedScene
+          onBookNow={onBookNow}
+          onCustomBooking={onCustomBooking}
+        />
+      </SceneErrorBoundary>
     );
   }
 

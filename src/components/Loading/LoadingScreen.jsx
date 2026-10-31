@@ -98,7 +98,7 @@ function LoadingScreen() {
           <motion.img
             src={logo}
             alt="Razia Driving Center"
-            fetchpriority="high"
+            fetchPriority="high"
             className="
               relative
               w-44
