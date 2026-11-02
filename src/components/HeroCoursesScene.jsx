@@ -5,6 +5,7 @@ import {
   useSpring,
   useTransform,
   useMotionValueEvent,
+  useMotionTemplate,
 } from "framer-motion";
 
 import SectionTitle from "./UI/SectionTitle";
@@ -15,6 +16,15 @@ import { CoursesRest } from "./Courses";
 import { useDesktopMotion } from "../hooks/useDesktopMotion";
 import heroBg from "../assets/BG.webp";
 import heroBgSmall from "../assets/BG-1280.webp";
+import {
+  useLiquidGlass,
+  useLiquidGlassId,
+  isLiquidGlassSupported,
+  isGlassDebug,
+  LiquidGlassFilter,
+  SATURATION,
+  FROST,
+} from "./LiquidGlass";
 
 /* ------------------------------------------------------------------ */
 /*  Static fallback — mobile, short viewports, or reduced motion.
@@ -112,6 +122,11 @@ const CARD_RANGES = [
    ------------------------------------------------------------------ */
 function SceneGlassCard({ progress, course, onBook, index }) {
   const { enter, exit } = CARD_RANGES[index];
+  const cardRef = useRef(null);
+  const glassId = useLiquidGlassId();
+  const liquid = useLiquidGlass(cardRef);
+  const glassSupported = isLiquidGlassSupported();
+  const glassDebug = isGlassDebug();
 
   // Build keyframe arrays: settle below (70vh) → center (0) → rise (-70vh).
   let yInput, yOutput, rotInput, rotOutput, opInput, opOutput;
@@ -136,6 +151,21 @@ function SceneGlassCard({ progress, course, onBook, index }) {
   const rotateX = useTransform(progress, rotInput, rotOutput);
   const opacity = useTransform(progress, opInput, opOutput);
 
+  // Sheen: sweeps left to right while the card enters (100% to 0%), then
+  // sweeps out while it leaves (0% to -100%). Drives the background-position
+  // of .glass-card::after.
+  let sheenInput, sheenOutput;
+  if (exit) {
+    const [exStart, exEnd] = exit;
+    sheenInput = [0, enter[0], enter[1], exStart, exEnd, 1];
+    sheenOutput = [100, 100, 0, 0, -100, -100];
+  } else {
+    sheenInput = [0, enter[0], enter[1], 1];
+    sheenOutput = [100, 100, 0, 0];
+  }
+  const sheen = useTransform(progress, sheenInput, sheenOutput);
+  const sheenPercent = useMotionTemplate`${sheen}%`;
+
   // Toggle interactivity at the 0.5 opacity threshold. Guard .get() with
   // optional chaining so a missing motion value defaults to 0 (non-interactive)
   // instead of crashing.
@@ -144,9 +174,14 @@ function SceneGlassCard({ progress, course, onBook, index }) {
   );
   useMotionValueEvent(opacity, "change", (v) => setInteractive(v >= 0.5));
 
+  // Real edge refraction. The displacement map is built once per card size
+  // and cached; it is only applied while this card is the visible one.
+  const applyFilter = Boolean(glassSupported && interactive && liquid);
+
   return (
     <motion.div
-      className="glass-card"
+      ref={cardRef}
+      className={"glass-card" + (glassSupported ? "" : " glass-card--plain")}
       style={{
         position: "absolute",
         inset: 0,
@@ -156,9 +191,44 @@ function SceneGlassCard({ progress, course, onBook, index }) {
         pointerEvents: interactive ? "auto" : "none",
         willChange: "transform, opacity",
         transformStyle: "preserve-3d",
+        "--rdc-sheen": sheenPercent,
+        "--rdc-frost": FROST,
+        backdropFilter: applyFilter
+          ? `url(#${glassId}) saturate(${SATURATION})`
+          : undefined,
       }}
       inert={!interactive}
     >
+      {applyFilter && (
+        <svg
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+          }}
+        >
+          <LiquidGlassFilter id={glassId} width={liquid.W} height={liquid.H} />
+        </svg>
+      )}
+      {glassDebug && liquid && (
+        <img
+          src={liquid.dataUri}
+          alt=""
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            width: "100%",
+            height: "100%",
+            marginTop: 8,
+            pointerEvents: "none",
+          }}
+        />
+      )}
       <CourseCard
         {...course}
         popular={course.name === "Economy Driving Course"}
@@ -256,34 +326,6 @@ function PinnedScene({ onBookNow, onCustomBooking }) {
 
   return (
     <>
-      {/* Edge-lensing filter (Chromium only). Applied to the glass card's
-          backdrop via CSS @supports (backdrop-filter: url(#rdc-lens)).
-          feTurbulence → feDisplacementMap bends the backdrop at the glass
-          edges. Acts on the backdrop only — card text is not distorted. */}
-      <svg
-        aria-hidden="true"
-        width="0"
-        height="0"
-        style={{ position: "absolute" }}
-      >
-        <filter id="rdc-lens">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.008"
-            numOctaves="2"
-            seed="3"
-            result="noise"
-          />
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="noise"
-            scale="14"
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-      </svg>
-
       {/* Hidden measurement: every card in natural flow so we can read the
           tallest card's content height. Off-screen, not painted. */}
       <div

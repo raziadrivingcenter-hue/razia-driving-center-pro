@@ -27,7 +27,7 @@ function CourseCard({
   return (
     <div
       className={`
-        ${glass ? "h-full rounded-[28px]" : "relative"}
+        ${glass ? "h-full rounded-[var(--rdc-glass-radius)]" : "relative"}
         overflow-hidden
         ${glass ? "" : "rounded-xl bg-white shadow-sm transition-shadow duration-200 hover:shadow-md"}
         ${glass

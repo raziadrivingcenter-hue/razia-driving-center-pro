@@ -62,6 +62,8 @@ vi.mock("framer-motion", () => ({
     useTransformCalls.count += 1;
     return createMotionValue(0);
   },
+  useMotionTemplate: (strings, ...values) =>
+    strings.reduce((acc, s, i) => acc + s + (values[i] !== undefined ? values[i] : ""), ""),
   useMotionValueEvent: () => {},
   useAnimate: () => [{ current: null }, () => Promise.resolve()],
   AnimatePresence: ({ children }) => children,
