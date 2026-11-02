@@ -139,15 +139,28 @@ describe("HeroCoursesScene pinned scene", () => {
     expect(titles).toContain("PRO+ Plan");
   });
 
-  it("passes a defined progress to BackdropShapes — animated path, not fallback", () => {
+  it("renders the whole pinned scene, not the error-boundary fallback", () => {
     useTransformCalls.count = 0;
     renderScene();
-    // A full pinned-scene render calls useTransform 16×: BackdropShapes 4
-    // (x1,y1,x2,y2) + PinnedScene 3 (leftX, reviewY, reviewOpacity) + 3 cards
-    // × 3 (y, rotateX, opacity) = 16. On the OLD code BackdropShapes received
-    // undefined progress, threw .get() on undefined, and the error boundary
-    // bailed out mid-render → only ~6 calls completed before the fallback.
-    // ≥ 12 proves the whole scene (incl. BackdropShapes) rendered cleanly.
+    // A full pinned-scene render calls useTransform 12×: PinnedScene 3
+    // (leftX, reviewY, reviewOpacity) + 3 cards × 3 (y, rotateX, opacity).
+    // If a motion value were ever undefined the error boundary would bail
+    // out mid-render and far fewer calls would complete.
     expect(useTransformCalls.count).toBeGreaterThanOrEqual(12);
+  });
+
+  it("renders the decorative hero photograph behind the scene", () => {
+    renderScene();
+    const img = document.querySelector('#home img[loading="eager"]');
+    expect(img).toBeTruthy();
+    expect(img.getAttribute("alt")).toBe("");
+    expect(img.getAttribute("aria-hidden")).toBe("true");
+    expect(img.getAttribute("fetchpriority")).toBe("high");
+    expect(img.getAttribute("sizes")).toBe("100vw");
+    expect(img.getAttribute("srcset")).toContain("1280w");
+    expect(img.getAttribute("srcset")).toContain("2560w");
+    // width/height attributes reserve the box → no layout shift.
+    expect(img.getAttribute("width")).toBe("2560");
+    expect(img.getAttribute("height")).toBe("1440");
   });
 });

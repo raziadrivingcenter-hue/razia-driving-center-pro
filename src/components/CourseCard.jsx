@@ -27,7 +27,7 @@ function CourseCard({
   return (
     <div
       className={`
-        ${glass ? "h-full" : "relative"}
+        ${glass ? "h-full rounded-[28px]" : "relative"}
         overflow-hidden
         ${glass ? "" : "rounded-xl bg-white shadow-sm transition-shadow duration-200 hover:shadow-md"}
         ${glass
@@ -64,7 +64,7 @@ function CourseCard({
       {/* Popular badge */}
       {popular && (
         <div className="absolute right-3 top-8 z-10">
-          <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#FF6201]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#0D0D0D]">
             <Sparkles size={10} />
             Most Popular
           </span>
@@ -75,34 +75,34 @@ function CourseCard({
         {/* Plan name */}
         <div className="flex items-center gap-2">
           {TitleIcon && (
-            <TitleIcon size={18} className="shrink-0 text-[#FF6201]" />
+            <TitleIcon size={18} className="shrink-0 text-[#0D0D0D]" />
           )}
-          <h3 className="text-lg font-bold leading-tight text-gray-900">
+          <h3 className="text-lg font-bold leading-tight text-[#0D0D0D]">
             {title}
           </h3>
         </div>
 
         {/* Pricing */}
         <div className={compact ? "mt-2 flex items-baseline gap-2" : "mt-3 flex items-baseline gap-2"}>
-          <span className="text-3xl font-black leading-none text-gray-900">
+          <span className="text-3xl font-black leading-none text-[#0D0D0D]">
             <span className="font-dm-sans">{price}</span>
           </span>
           {oldPrice && (
-            <span className="text-sm text-gray-400 line-through">
+            <span className="text-sm text-[#4A4A4A] line-through">
               <span className="font-dm-sans">{oldPrice}</span>
             </span>
           )}
         </div>
         {savings > 0 && (
-          <span className="mt-1 inline-block text-xs font-semibold text-[#FF6201]">
+          <span className="mt-1 inline-block text-xs font-semibold text-[#B34700]">
             Save Rs. <span className="font-dm-sans">{savings.toLocaleString()}</span>
           </span>
         )}
 
         {/* Duration */}
-        <div className={`${compact ? "mt-2" : "mt-3"} inline-flex items-center gap-2 rounded-lg ${glass ? "bg-white/15" : "bg-gray-50"} px-2.5 py-1`}>
-          <Clock3 size={14} className="shrink-0 text-[#FF6201]" />
-          <span className="text-xs font-semibold text-gray-700">
+        <div className={`${compact ? "mt-2" : "mt-3"} inline-flex items-center gap-2 rounded-lg ${glass ? "bg-transparent" : "bg-gray-50"} px-2.5 py-1`}>
+          <Clock3 size={14} className="shrink-0 text-[#3A3F47]" />
+          <span className="text-xs font-semibold text-[#1F2329]">
             <span className="font-dm-sans">{durationNumber}</span> {durationUnit}
           </span>
         </div>
@@ -111,12 +111,12 @@ function CourseCard({
         <ul className={compact ? "mt-3 space-y-1.5" : "mt-4 space-y-2"}>
           {features.map((feature) => {
             const Icon = feature.icon || Check;
-            const iconColor = feature.icon ? "text-[#FF6201]" : "text-gray-400";
+            const iconColor = "text-[#3A3F47]";
 
             return (
               <li key={feature.text} className="flex items-start gap-2.5">
                 <Icon size={15} className={`mt-0.5 shrink-0 ${iconColor}`} />
-                <span className={`text-sm leading-[1.45] ${glass ? "text-gray-800" : "text-gray-600"}`}>
+                <span className={`text-sm leading-[1.45] ${glass ? "text-[#1F2329]" : "text-gray-600"}`}>
                   {feature.text}
                 </span>
               </li>
@@ -132,10 +132,7 @@ function CourseCard({
           onClick={() => onBook?.({ course: name })}
           className={`btn-interactive inline-flex w-full items-center justify-center rounded-md text-sm font-semibold transition-colors duration-200
             ${compact ? "mt-3 h-9" : "mt-4 h-11 "}
-            ${popular
-              ? "bg-[#FF6201] text-white hover:bg-[#e55600]"
-              : "bg-gray-900 text-white hover:bg-gray-800"
-            }`}
+            bg-[#0D0D0D] text-white hover:bg-[#2a2a2a]`}
         >
           Book This Plan
         </button>

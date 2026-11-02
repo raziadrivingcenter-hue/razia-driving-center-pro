@@ -1,4 +1,5 @@
 .rdc-home {
+  --rdc-hero-scrim: 0.92;
   --rdc-font-display: "Anton", "Archivo Narrow", "Arial Narrow", Impact, sans-serif;
   --rdc-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --rdc-font-body: "Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -179,94 +180,109 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   GLASS MORPHISM COURSE CARD — lives on the motion.div that carries
-   the enter/exit transform, because transformed ancestors disable
+   HERO PHOTOGRAPH SCRIM — sits above the hero <img> (z-index 1) and
+   below the content. The left scrim keeps the heading and paragraph
+   readable over the photograph; the bottom fade joins the next section.
+   Tune the strength with --rdc-hero-scrim (0 → invisible, 1 → solid).
+   ═══════════════════════════════════════════════════════════════════ */
+.rdc-home .rdc-hero-scrim {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(246 244 240 / var(--rdc-hero-scrim)) 0%,
+      rgb(246 244 240 / calc(var(--rdc-hero-scrim) * 0.815)) 38%,
+      rgb(246 244 240 / 0) 72%
+    ),
+    linear-gradient(180deg, rgb(246 244 240 / 0) 70%, #F6F4F0 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIQUID GLASS COURSE CARD — lives on the motion.div that carries the
+   enter/exit transform, because transformed ancestors disable
    backdrop-filter. The element fills its slot (position:absolute,
    inset:0). No ancestor of this element may have opacity<1, filter,
    will-change, or transform (enforced by the scene structure).
 
-   border-radius 28px, isolation isolate, backdrop-filter blur+saturate,
-   gradient background, inset highlight + drop shadow, gradient edge
-   ring (::before) and specular sheen (::after).
+   Clear, nearly-transparent glass with a slight cool-gray tint. Edges
+   are light (inset rim highlights), not outlined. No orange anywhere.
    ═══════════════════════════════════════════════════════════════════ */
-.rdc-home .rdc-glass-card {
-  border-radius: 28px;
+.rdc-home .glass-card {
   position: relative;
   isolation: isolate;
-  background:
-    linear-gradient(135deg,
-      rgba(255, 255, 255, 0.55) 0%,
-      rgba(255, 255, 255, 0.20) 55%,
-      rgba(255, 255, 255, 0.10) 100%);
-  -webkit-backdrop-filter: blur(18px) saturate(170%);
-  backdrop-filter: blur(18px) saturate(170%);
+  border-radius: 28px;
+  border: 0;
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(235, 238, 242, 0.08) 55%,
+      rgba(210, 214, 220, 0.10) 100%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%) brightness(1.04);
+  backdrop-filter: blur(16px) saturate(150%) brightness(1.04);
   box-shadow:
-    /* top-left inner highlight */
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 1px 0 0 rgba(255, 255, 255, 0.5),
-    /* subtle bottom inner shadow */
-    inset 0 -1px 0 rgba(0, 0, 0, 0.05),
-    /* inner glow */
-    inset 0 0 28px rgba(255, 255, 255, 0.25),
-    /* drop shadow */
-    0 28px 60px -14px rgba(20, 20, 20, 0.18),
-    0 2px 6px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+    /* bright top-left rim */
+    inset 1.5px 1.5px 0 -0.5px rgba(255, 255, 255, 0.85),
+    /* faint bottom-right rim */
+    inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.35),
+    /* soft inner glow */
+    inset 0 0 22px 2px rgba(255, 255, 255, 0.18),
+    /* very slight gray depth at the bottom */
+    inset 0 -14px 24px -16px rgba(60, 66, 76, 0.10),
+    /* soft float shadow */
+    0 10px 30px -8px rgba(20, 24, 32, 0.12),
+    0 1px 2px rgba(20, 24, 32, 0.06);
 }
 
-/* Gradient edge ring — painted on a ::before layer via mask-composite
-   so the centre stays transparent and only the 1.5px border shows. */
-.rdc-home .rdc-glass-card::before {
+/* Specular highlight, top-left only */
+.rdc-home .glass-card::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1.5px;
-  background:
-    linear-gradient(135deg,
-      rgba(255, 255, 255, 0.95) 0%,
-      rgba(255, 255, 255, 0.15) 40%,
-      rgba(255, 98, 1, 0.28) 75%,
-      rgba(255, 255, 255, 0.7) 100%);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
   pointer-events: none;
-  z-index: 1;
+  background: radial-gradient(120% 70% at 12% 0%,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0) 55%);
 }
 
-/* Specular sheen — a soft diagonal light streak on a ::after layer,
-   kept above the content via z-index but non-interactive. */
-.rdc-home .rdc-glass-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    linear-gradient(115deg,
-      rgba(255, 255, 255, 0.38) 0%,
-      rgba(255, 255, 255, 0) 38%);
-  pointer-events: none;
-  mix-blend-mode: soft-light;
-  z-index: 2;
+.rdc-home .glass-card::after {
+  content: none;
 }
 
-/* Fallback when backdrop-filter is unsupported — fall back to a near-
-   opaque white card so content stays readable. */
+/* EDGE LENSING (Chromium only) — the SVG #rdc-lens filter displaces the
+   backdrop so the glass bends the photograph at its edges. The filter
+   acts on the backdrop only; card text is not distorted. */
+@supports (backdrop-filter: url(#rdc-lens)) {
+  .rdc-home .glass-card {
+    -webkit-backdrop-filter: blur(14px) saturate(150%) brightness(1.04);
+    backdrop-filter: url(#rdc-lens) blur(14px) saturate(150%) brightness(1.04);
+  }
+}
+
+/* Fallback when backdrop-filter is unsupported — near-opaque white card,
+   keeping only the float shadow. */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .rdc-home .rdc-glass-card {
+  .rdc-home .glass-card {
     background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 30px -8px rgba(20, 24, 32, 0.12);
   }
 }
 
 /* Respect reduced-transparency preference the same way. */
 @media (prefers-reduced-transparency: reduce) {
-  .rdc-home .rdc-glass-card {
+  .rdc-home .glass-card {
     background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 30px -8px rgba(20, 24, 32, 0.12);
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DISPLAY HEADING WORD GAPS — the h1 is built from per-character
+   inline-block spans; the trailing space inside each word span is
+   collapsed, so words run together. Add explicit gaps between the
+   word spans (direct children of .rdc-display).
+   ═══════════════════════════════════════════════════════════════════ */
+.rdc-home .rdc-display > span {
+  margin-right: 0.25em;
+}
+.rdc-home .rdc-display > span:last-child {
+  margin-right: 0;
 }

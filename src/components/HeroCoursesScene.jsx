@@ -13,6 +13,8 @@ import { courses } from "../data/courses";
 import { HeroLeftColumn, HeroRightColumn } from "./Hero";
 import { CoursesRest } from "./Courses";
 import { useDesktopMotion } from "../hooks/useDesktopMotion";
+import heroBg from "../assets/BG.webp";
+import heroBgSmall from "../assets/BG-1280.webp";
 
 /* ------------------------------------------------------------------ */
 /*  Static fallback — mobile, short viewports, or reduced motion.
@@ -23,7 +25,32 @@ function StaticLayout({ onBookNow, onCustomBooking }) {
   return (
     <>
       <section id="home" className="rdc-section relative overflow-x-clip">
-        <div className="relative mx-auto max-w-6xl px-6 md:px-8">
+        <img
+          src={heroBgSmall}
+          width={1280}
+          height={720}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          fetchPriority="high"
+          loading="eager"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          className="rdc-hero-scrim"
+          aria-hidden="true"
+          style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none" }}
+        />
+        <div className="relative z-[2] mx-auto max-w-6xl px-6 md:px-8">
           <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_340px] lg:gap-16">
             <div>
               <div className="max-w-[720px]">
@@ -62,103 +89,6 @@ function StaticLayout({ onBookNow, onCustomBooking }) {
         </div>
       </section>
     </>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Backdrop blurred shapes behind the glass cards. Drift slowly with
-    scroll so the refraction through the glass shifts as the user scrolls.
-    These are NOT ancestors of the glass cards (they live in their own
-    layer), so their filter is fine.
-   ------------------------------------------------------------------ */
-function BackdropShapes({ progress }) {
-  const x1 = useTransform(progress, [0, 1], [0, 30]);
-  const y1 = useTransform(progress, [0, 1], [0, -20]);
-  const x2 = useTransform(progress, [0, 1], [0, -25]);
-  const y2 = useTransform(progress, [0, 1], [0, 15]);
-
-  // Guard: if progress was not passed (prop-name mismatch), render the
-  // shapes static with no transform instead of crashing on .get().
-  if (!progress) {
-    return (
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            left: "60%",
-            top: "30%",
-            width: 380,
-            height: 380,
-            borderRadius: "50%",
-            background: "rgba(255, 98, 1, 0.30)",
-            filter: "blur(70px)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: "72%",
-            top: "58%",
-            width: 300,
-            height: 300,
-            borderRadius: "50%",
-            background: "rgba(255, 170, 90, 0.28)",
-            filter: "blur(70px)",
-          }}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 0,
-        pointerEvents: "none",
-      }}
-    >
-      <motion.div
-        style={{
-          position: "absolute",
-          left: "60%",
-          top: "30%",
-          width: 380,
-          height: 380,
-          borderRadius: "50%",
-          background: "rgba(255, 98, 1, 0.30)",
-          filter: "blur(70px)",
-          x: x1,
-          y: y1,
-          willChange: "transform",
-        }}
-      />
-      <motion.div
-        style={{
-          position: "absolute",
-          left: "72%",
-          top: "58%",
-          width: 300,
-          height: 300,
-          borderRadius: "50%",
-          background: "rgba(255, 170, 90, 0.28)",
-          filter: "blur(70px)",
-          x: x2,
-          y: y2,
-          willChange: "transform",
-        }}
-      />
-    </div>
   );
 }
 
@@ -216,7 +146,7 @@ function SceneGlassCard({ progress, course, onBook, index }) {
 
   return (
     <motion.div
-      className="rdc-glass-card"
+      className="glass-card"
       style={{
         position: "absolute",
         inset: 0,
@@ -326,6 +256,34 @@ function PinnedScene({ onBookNow, onCustomBooking }) {
 
   return (
     <>
+      {/* Edge-lensing filter (Chromium only). Applied to the glass card's
+          backdrop via CSS @supports (backdrop-filter: url(#rdc-lens)).
+          feTurbulence → feDisplacementMap bends the backdrop at the glass
+          edges. Acts on the backdrop only — card text is not distorted. */}
+      <svg
+        aria-hidden="true"
+        width="0"
+        height="0"
+        style={{ position: "absolute" }}
+      >
+        <filter id="rdc-lens">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.008"
+            numOctaves="2"
+            seed="3"
+            result="noise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="14"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
+
       {/* Hidden measurement: every card in natural flow so we can read the
           tallest card's content height. Off-screen, not painted. */}
       <div
@@ -389,17 +347,53 @@ function PinnedScene({ onBookNow, onCustomBooking }) {
             overflow: "clip",
           }}
         >
-          {/* Layer 0: blurred backdrop shapes for glass refraction. */}
-          <BackdropShapes progress={p} />
+          {/* Layer 0: hero photograph. A SIBLING of the card slot (never an
+              ancestor), so it can never break the glass backdrop-filter.
+              Decorative: alt="" + aria-hidden. */}
+          <img
+            src={heroBg}
+            srcSet={`${heroBgSmall} 1280w, ${heroBg} 2560w`}
+            sizes="100vw"
+            width={2560}
+            height={1440}
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+            fetchPriority="high"
+            loading="eager"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center",
+              zIndex: 0,
+              pointerEvents: "none",
+            }}
+          />
 
-          {/* Layer 1: hero (left column + review card). This is a SIBLING
+          {/* Layer 1: readability scrim over the photograph. Sibling of the
+              card slot, below the content. Strength via --rdc-hero-scrim. */}
+          <div
+            className="rdc-hero-scrim"
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 1,
+              pointerEvents: "none",
+            }}
+          />
+
+          {/* Layer 2: hero (left column + review card). This is a SIBLING
               layer of the card slot, not an ancestor — so its transforms do
               not affect the glass cards' backdrop-filter. */}
           <div
             style={{
               position: "absolute",
               inset: 0,
-              zIndex: 1,
+              zIndex: 2,
               pointerEvents: heroInteractive ? "auto" : "none",
             }}
           >
@@ -438,7 +432,7 @@ function PinnedScene({ onBookNow, onCustomBooking }) {
             </div>
           </div>
 
-          {/* Layer 2: card slot. CRUCIALLY, no opacity/filter/transform/will-
+          {/* Layer 3: card slot. CRUCIALLY, no opacity/filter/transform/will-
               change on this layer or any ancestor of the glass cards — those
               properties break backdrop-filter. pointer-events are handled
               per-card (the layer itself passes through). */}
@@ -446,7 +440,7 @@ function PinnedScene({ onBookNow, onCustomBooking }) {
             style={{
               position: "absolute",
               inset: 0,
-              zIndex: 2,
+              zIndex: 3,
               display: "flex",
               alignItems: "center",
               justifyContent: "flex-start",
