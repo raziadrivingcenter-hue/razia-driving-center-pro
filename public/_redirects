@@ -23,5 +23,8 @@
 https://www.raziadrivingcenter.com/*    https://raziadrivingcenter.com/:splat   301
 http://www.raziadrivingcenter.com/*     https://raziadrivingcenter.com/:splat   301
 
+# Open Graph image - served as a real file, not the SPA.
+/og-image-v2.png    /og-image-v2.png    200
+
 # SPA fallback — all remaining deep links serve index.html
 /*    /index.html   200
