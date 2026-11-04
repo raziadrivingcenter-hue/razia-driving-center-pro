@@ -68,3 +68,54 @@
     --rd-dur-med: 0ms;
   }
 }
+
+/* =============================================================================
+   Area-specific travel tile — a `travel_going` slot whose destination matches
+   the visitor's selected area. Red-orange gradient, white text, subtle liquid
+   sheen. Purely presentational; the booking itself is validated server-side.
+   ============================================================================= */
+
+.area-travel-slot {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: var(--rd-radius-md, 12px);
+  padding: 8px 12px;
+  text-align: left;
+  color: #ffffff;
+  background: linear-gradient(110deg, #ff3131, #ff6102);
+  box-shadow: var(--rd-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
+}
+
+/* Liquid-style highlight sweep. Disabled under reduced-motion. */
+.area-travel-slot__sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 80%
+  );
+  transform: translateX(-120%);
+  animation: area-travel-sheen 2.8s var(--rd-ease, ease) infinite;
+}
+
+@keyframes area-travel-sheen {
+  0% {
+    transform: translateX(-120%);
+  }
+  60%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .area-travel-slot__sheen {
+    animation: none;
+  }
+}

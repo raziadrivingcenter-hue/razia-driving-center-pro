@@ -167,7 +167,11 @@ describe("slot-booking.js — operating-hours validation", () => {
   });
 
   test("accepts valid 18:30 (last bookable start) and reaches the mocked RPC", async () => {
-    mockFetch([uuidResponse("11111111-2222-3333-4444-555555555555")]);
+    // Two upstream calls: the slot_availability pre-check, then the RPC.
+    mockFetch([
+      jsonResponse([{ slot_start: "18:30", status: "available" }], 200),
+      uuidResponse("11111111-2222-3333-4444-555555555555"),
+    ]);
     const res = await slotBookingOnRequest({
       request: mockRequest({ body: { ...validBody, preferred_time: "18:30" } }),
       env: mockEnv,
@@ -177,18 +181,24 @@ describe("slot-booking.js — operating-hours validation", () => {
     assert.equal(body.status, "pending");
     assert.equal(body.bookingId, "11111111");
     assert.ok(typeof body.whatsappLink === "string" && body.whatsappLink.startsWith("https://wa.me/"));
-    assert.equal(fetchCalls.length, 1, "RPC must be called exactly once");
+    assert.equal(fetchCalls.length, 2, "pre-check + RPC must be called exactly twice");
+    // A normal available slot keeps the original RPC and carries no extra metadata.
+    assert.match(fetchCalls[1].url, /\/rpc\/submit_slot_booking$/);
+    assert.equal(JSON.parse(fetchCalls[1].init.body).p_extra, undefined);
     clearFetch();
   });
 
   test("accepts 07:00 (opening boundary) and reaches the mocked RPC", async () => {
-    mockFetch([uuidResponse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")]);
+    mockFetch([
+      jsonResponse([{ slot_start: "07:00", status: "available" }], 200),
+      uuidResponse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+    ]);
     const res = await slotBookingOnRequest({
       request: mockRequest({ body: { ...validBody, preferred_time: "07:00" } }),
       env: mockEnv,
     });
     assert.equal(res.status, 201, "07:00 must be accepted");
-    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls.length, 2);
     clearFetch();
   });
 
@@ -213,13 +223,201 @@ describe("slot-booking.js — operating-hours validation", () => {
   });
 
   test("success response has Cache-Control: no-store (pre-existing behavior)", async () => {
-    mockFetch([uuidResponse("99999999-8888-7777-6666-555555555555")]);
+    mockFetch([
+      jsonResponse([{ slot_start: "12:30", status: "available" }], 200),
+      uuidResponse("99999999-8888-7777-6666-555555555555"),
+    ]);
     const res = await slotBookingOnRequest({
       request: mockRequest({ body: { ...validBody, preferred_time: "12:30" } }),
       env: mockEnv,
     });
     assert.equal(res.status, 201);
     assert.equal(res.headers.get("Cache-Control"), "no-store");
+    clearFetch();
+  });
+});
+
+// =============================================================================
+// slot-booking.js — area-specific travel slots
+// =============================================================================
+
+describe("slot-booking.js — area-specific travel slots", () => {
+  const travelBody = {
+    customer_name: "Travel Test",
+    customer_phone: "3001234567",
+    preferred_date: "2026-11-10",
+    preferred_time: "14:00",
+    area: "Shadman",
+  };
+
+  const travelGoingRow = {
+    slot_start: "14:00",
+    status: "blocked",
+    vehicle_id: 3,
+    vehicle_name: "Toyota Corolla",
+    block_reason: "travel_going",
+    area: "Shadman",
+  };
+
+  test("matching travel_going area becomes bookable and persists extra via the metadata RPC", async () => {
+    mockFetch([
+      jsonResponse([travelGoingRow], 200),
+      uuidResponse("bbbbbbbb-cccc-dddd-eeee-ffffffffffff"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201, "matching travel_going slot must be bookable");
+    assert.equal(fetchCalls.length, 2);
+    assert.match(fetchCalls[1].url, /\/rpc\/submit_slot_booking_with_metadata$/);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_area, "Shadman");
+    assert.deepEqual(payload.p_extra, {
+      vehicle_id: 3,
+      vehicle_name: "Toyota Corolla",
+      slot_date: "2026-11-10",
+      slot_start: "14:00",
+      booking_type: "area_travel",
+      travel_area: "Shadman",
+    });
+    clearFetch();
+  });
+
+  test("area matching is case-insensitive and whitespace-normalized", async () => {
+    mockFetch([
+      jsonResponse([{ ...travelGoingRow, area: "  SHADMAN  " }], 200),
+      uuidResponse("11111111-2222-3333-4444-555555555555"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: { ...travelBody, area: "shadman" } }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.vehicle_id, 3);
+    assert.equal(payload.p_extra.travel_area, "SHADMAN");
+    clearFetch();
+  });
+
+  test("does NOT alias 'Shadman' with 'Shadman 1' — mismatched area is rejected", async () => {
+    mockFetch([jsonResponse([{ ...travelGoingRow, area: "Shadman 1" }], 200)]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 409);
+    const body = await res.json();
+    assert.match(body.error, /Shadman 1/);
+    assert.equal(fetchCalls.length, 1, "must not reach the RPC on an area mismatch");
+    clearFetch();
+  });
+
+  test("travel_returning stays unavailable", async () => {
+    mockFetch([
+      jsonResponse([{ ...travelGoingRow, block_reason: "travel_returning" }], 200),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 409);
+    assert.equal(fetchCalls.length, 1);
+    clearFetch();
+  });
+
+  test("availability lookup failure fails closed (503) and never books", async () => {
+    // A failed pre-check must not fall through to the RPC: the RPCs do not
+    // re-check availability, so proceeding would book an unverified slot.
+    mockFetch([new Response("upstream error", { status: 500 })]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 503);
+    const body = await res.json();
+    assert.match(body.error, /could not verify/i);
+    assert.equal(fetchCalls.length, 1, "must not reach the RPC on a lookup failure");
+    clearFetch();
+  });
+
+  test("normal available slot still uses the original RPC (no extra)", async () => {
+    mockFetch([
+      jsonResponse([{ slot_start: "14:00", status: "available" }], 200),
+      uuidResponse("22222222-3333-4444-5555-666666666666"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    assert.match(fetchCalls[1].url, /\/rpc\/submit_slot_booking$/);
+    assert.equal(JSON.parse(fetchCalls[1].init.body).p_extra, undefined);
+    clearFetch();
+  });
+
+  test("never trusts a browser-supplied vehicle_id", async () => {
+    mockFetch([
+      jsonResponse([travelGoingRow], 200),
+      uuidResponse("33333333-4444-5555-6666-777777777777"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: { ...travelBody, vehicle_id: 999 } }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.vehicle_id, 3, "must use the server-derived vehicle");
+    clearFetch();
+  });
+
+  test("missing metadata RPC fails safe with a clear upgrade-required message", async () => {
+    const notFound = new Response(
+      JSON.stringify({
+        code: "PGRST202",
+        message:
+          "Could not find the function public.submit_slot_booking_with_metadata in the schema cache",
+      }),
+      { status: 404, headers: { "Content-Type": "application/json" } }
+    );
+    mockFetch([jsonResponse([travelGoingRow], 200), notFound]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 503);
+    const body = await res.json();
+    assert.match(body.error, /upgrade/i);
+    clearFetch();
+  });
+
+  test("verified dashboard travel booking uses the verified metadata RPC with email", async () => {
+    mockFetch([
+      jsonResponse(
+        { email: "student@example.com", email_confirmed_at: "2026-01-01T00:00:00Z" },
+        200
+      ),
+      jsonResponse([travelGoingRow], 200),
+      uuidResponse("44444444-5555-6666-7777-888888888888"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: {
+        method: "POST",
+        url: "https://example.com/",
+        json: async () => travelBody,
+        headers: { get: () => "Bearer valid-token" },
+      },
+      env: { ...mockEnv, SUPABASE_SERVICE_ROLE_KEY: "mock-service-key" },
+    });
+    assert.equal(res.status, 201);
+    assert.equal(fetchCalls.length, 3, "auth lookup + pre-check + RPC");
+    assert.match(
+      fetchCalls[2].url,
+      /\/rpc\/submit_slot_booking_with_metadata_verified$/
+    );
+    const payload = JSON.parse(fetchCalls[2].init.body);
+    assert.equal(payload.p_customer_email, "student@example.com");
+    assert.equal(payload.p_extra.vehicle_id, 3);
     clearFetch();
   });
 });

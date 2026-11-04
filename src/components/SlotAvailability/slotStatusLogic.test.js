@@ -1,0 +1,123 @@
+// Pure-logic tests for the slot-grid status aggregation — run with:
+//   node --test src/components/SlotAvailability/slotStatusLogic.test.js
+import { test } from "node:test";
+import assert from "node:assert";
+import { computeSlotStatus, normalizeArea } from "./slotStatusLogic.js";
+
+const timeToMin = (t) => {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+};
+const SLOTS = ["14:00", "14:30", "15:00"];
+
+const travel = (over = {}) => ({
+  time: "14:00",
+  end: "14:30",
+  blockReason: "travel_going",
+  area: "Shadman",
+  vehicleId: 3,
+  vehicleName: "Toyota Corolla",
+  ...over,
+});
+
+const status = (data, effectiveArea) =>
+  computeSlotStatus({ data, effectiveArea, slotStarts: SLOTS, timeToMin });
+
+// ── normalizeArea ────────────────────────────────────────────────────────────
+
+test("normalizeArea trims, lowercases and collapses whitespace", () => {
+  assert.strictEqual(normalizeArea("  SHADMAN   Town "), "shadman town");
+  assert.strictEqual(normalizeArea("Shadman"), "shadman");
+});
+
+test("normalizeArea handles null/undefined/empty", () => {
+  assert.strictEqual(normalizeArea(null), "");
+  assert.strictEqual(normalizeArea(undefined), "");
+  assert.strictEqual(normalizeArea(""), "");
+});
+
+// ── area-specific travel ─────────────────────────────────────────────────────
+
+test("matching travel_going area becomes area-available", () => {
+  const s = status({ travelSlots: [travel()] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "area-available");
+  assert.strictEqual(s["14:00"].blockReason, "travel_going");
+  assert.strictEqual(s["14:00"].area, "Shadman");
+  assert.strictEqual(s["14:00"].vehicleId, 3);
+  assert.strictEqual(s["14:00"].vehicleName, "Toyota Corolla");
+});
+
+test("area matching is case-insensitive and whitespace-normalized", () => {
+  const s = status({ travelSlots: [travel({ area: "  SHADMAN  " })] }, "shadman");
+  assert.strictEqual(s["14:00"].status, "area-available");
+});
+
+test("different area stays travel (unavailable)", () => {
+  const s = status({ travelSlots: [travel()] }, "DHA");
+  assert.strictEqual(s["14:00"].status, "travel");
+  assert.strictEqual(s["14:00"].blockReason, "travel_going");
+});
+
+test("'Shadman' does NOT match 'Shadman 1' (no aliasing)", () => {
+  const s = status({ travelSlots: [travel({ area: "Shadman 1" })] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "travel");
+});
+
+test("travel_returning stays travel even when the area matches", () => {
+  const s = status({ travelSlots: [travel({ blockReason: "travel_returning" })] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "travel");
+  assert.strictEqual(s["14:00"].blockReason, "travel_returning");
+});
+
+test("no area selected → travel stays travel", () => {
+  const s = status({ travelSlots: [travel()] }, "");
+  assert.strictEqual(s["14:00"].status, "travel");
+});
+
+test("area match only applies to the matching time cell", () => {
+  const s = status({ travelSlots: [travel()] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "area-available");
+  assert.strictEqual(s["14:30"].status, "empty");
+});
+
+// ── existing statuses are preserved ──────────────────────────────────────────
+
+test("normal available slot still wins over a travel tile", () => {
+  const s = status(
+    { availableSlots: [{ time: "14:00", end: "14:30" }], travelSlots: [travel()] },
+    "Shadman"
+  );
+  assert.strictEqual(s["14:00"].status, "available");
+});
+
+test("booked still wins over a travel tile", () => {
+  const s = status(
+    { blockedSlots: [{ time: "14:00", end: "14:30" }], travelSlots: [travel()] },
+    "Shadman"
+  );
+  assert.strictEqual(s["14:00"].status, "booked");
+});
+
+test("empty cell when no records cover it", () => {
+  const s = status({ travelSlots: [travel()] }, "Shadman");
+  assert.strictEqual(s["15:00"].status, "empty");
+});
+
+test("no data → every cell empty", () => {
+  const s = status(null, "Shadman");
+  for (const slot of SLOTS) assert.strictEqual(s[slot].status, "empty");
+});
+
+test("available surfaces promo info when present", () => {
+  const s = status(
+    {
+      availableSlots: [
+        { time: "14:00", end: "14:30", promoPercent: 10, promoArea: "Shadman" },
+      ],
+    },
+    "Shadman"
+  );
+  assert.strictEqual(s["14:00"].status, "available");
+  assert.strictEqual(s["14:00"].promoPercent, 10);
+  assert.strictEqual(s["14:00"].promoArea, "Shadman");
+});

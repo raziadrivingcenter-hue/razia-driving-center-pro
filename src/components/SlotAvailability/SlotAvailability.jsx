@@ -21,6 +21,7 @@ import { fetchAvailability } from "../../lib/slotAvailability";
 import { useMeta } from "../../useMeta";
 import BookingForm from "./BookingForm";
 import AreaSelect from "./AreaSelect";
+import { computeSlotStatus, normalizeArea } from "./slotStatusLogic";
 import "./slot-tokens.css";
 
 // 24 half-hour slots from 07:00 to 19:00 (start times)
@@ -148,10 +149,10 @@ export default function SlotAvailability() {
     };
   }, [selectedDate]);
 
-  // Normalize an area string for comparison: trim, lowercase, collapse spaces.
-  // Used to match the visitor's selected area against a slot's promo_area.
-  const normalizeArea = (a) =>
-    (a || "").trim().toLowerCase().replace(/\s+/g, " ");
+  // Effective area for matching: "" and the "Other" sentinel both mean
+  // "no town selected" → no promo/travel-area match can apply.
+  const effectiveArea =
+    selectedArea === "" || selectedArea === "__other__" ? "" : selectedArea;
 
   // Distinct, non-null towns the visitor can pick from: every promo_area on an
   // available tile and every area on a travel tile, de-duplicated and sorted,
@@ -164,59 +165,19 @@ export default function SlotAvailability() {
     return [...towns].sort((a, b) => a.localeCompare(b));
   }, [data]);
 
-  // Aggregate per time-slot across all vehicles, priority:
-  //   available (any vehicle free) > booked (any booking) > travel > empty
-  // A slot is available as long as ANY vehicle can take it, even if others are
-  // booked/traveling. Travel is shown only when NO vehicle can take it (none
-  // available, none booked, at least one travel-blocked). Travel is keyed
-  // strictly on block_reason, never on area. Vehicle names stay out of the UI.
-  const slotStatus = useMemo(() => {
-    const result = {};
-    for (const slot of SLOT_STARTS) result[slot] = { status: "empty" };
-    if (!data) return result;
-
-    for (const slot of SLOT_STARTS) {
-      const gridMin = timeToMin(slot);
-
-      // 1) Available takes priority if ANY vehicle is free at this cell — a
-      //    slot is bookable as long as one vehicle can take it, even if other
-      //    vehicles are booked/traveling. Surface promo info if present.
-      const freeEntries = (data.availableSlots || []).filter(
-        (s) => gridMin >= timeToMin(s.time) && gridMin < timeToMin(s.end)
-      );
-      if (freeEntries.length > 0) {
-        const withPromo = freeEntries.find((s) => s.promoPercent && s.promoArea);
-        result[slot] = {
-          status: "available",
-          promoPercent: withPromo ? withPromo.promoPercent : null,
-          promoArea: withPromo ? withPromo.promoArea : null,
-        };
-        continue;
-      }
-
-      // 2) Booked — no vehicle free, at least one booking.
-      const booking = (data.blockedSlots || []).find(
-        (s) => gridMin >= timeToMin(s.time) && gridMin < timeToMin(s.end)
-      );
-      if (booking) {
-        result[slot] = { status: "booked" };
-        continue;
-      }
-
-      // 3) Travel — no vehicle free or booked, at least one travel-blocked.
-      const travel = (data.travelSlots || []).find(
-        (s) => gridMin >= timeToMin(s.time) && gridMin < timeToMin(s.end)
-      );
-      if (travel) {
-        result[slot] = {
-          status: "travel",
-          blockReason: travel.blockReason,
-          area: travel.area,
-        };
-      }
-    }
-    return result;
-  }, [data]);
+  // Aggregate per time-slot across all vehicles. The pure rules live in
+  // slotStatusLogic.js (unit-tested); this memo just feeds it the current data
+  // and the visitor's effective area.
+  const slotStatus = useMemo(
+    () =>
+      computeSlotStatus({
+        data,
+        effectiveArea,
+        slotStarts: SLOT_STARTS,
+        timeToMin,
+      }),
+    [data, effectiveArea]
+  );
 
   // Group slots by period for the 3-column layout.
   const periods = useMemo(
@@ -233,19 +194,16 @@ export default function SlotAvailability() {
   const vehicles = data?.vehicles || [];
   const synced = data?.synced ?? false;
 
-  // Effective area for promo matching: "" and the "Other" sentinel both mean
-  // "no town selected" → no discount can apply.
-  const effectiveArea =
-    selectedArea === "" || selectedArea === "__other__" ? "" : selectedArea;
-
   // Count per-cell statuses from slotStatus so the stats bar reflects what the
-  // grid actually shows. Travel cells are counted separately, never as
-  // available (a travel-blocked cell is not bookable).
+  // grid actually shows. Area-specific travel tiles count as available (they
+  // are bookable); plain travel cells are counted separately.
   const slotCounts = useMemo(
     () => {
       const vals = Object.values(slotStatus);
       return {
-        available: vals.filter((e) => e.status === "available").length,
+        available: vals.filter(
+          (e) => e.status === "available" || e.status === "area-available"
+        ).length,
         booked: vals.filter((e) => e.status === "booked").length,
         travel: vals.filter((e) => e.status === "travel").length,
       };
@@ -261,11 +219,15 @@ export default function SlotAvailability() {
 
   const handleSlotClick = (slot) => {
     const entry = slotStatus[slot];
-    if (entry?.status === "available") {
+    if (entry?.status === "available" || entry?.status === "area-available") {
       setBookingSlot({
         time: slot,
         promoPercent: entry.promoPercent || null,
         promoArea: entry.promoArea || null,
+        area: entry.area || null,
+        blockReason: entry.blockReason || null,
+        vehicleId: entry.vehicleId || null,
+        vehicleName: entry.vehicleName || null,
       });
     }
   };
@@ -523,6 +485,40 @@ export default function SlotAvailability() {
                                       </span>
                                     </div>
                                   </div>
+                                );
+                              }
+
+                              if (entry.status === "area-available") {
+                                const areaLabel = entry.area || effectiveArea;
+                                return (
+                                  <motion.button
+                                    key={slot}
+                                    type="button"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => handleSlotClick(slot)}
+                                    className="area-travel-slot"
+                                    title={`Available for ${areaLabel}`}
+                                  >
+                                    <span
+                                      className="area-travel-slot__sheen"
+                                      aria-hidden="true"
+                                    />
+                                    <span className="relative z-10 flex items-center justify-between gap-2">
+                                      <span
+                                        className="font-dm-sans text-sm font-semibold text-white truncate"
+                                        title={label}
+                                      >
+                                        {label}
+                                      </span>
+                                      <span className="shrink-0 rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold text-white">
+                                        Book
+                                      </span>
+                                    </span>
+                                    <span className="relative z-10 mt-0.5 inline-flex w-fit items-center rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white">
+                                      Available for {areaLabel}
+                                    </span>
+                                  </motion.button>
                                 );
                               }
 

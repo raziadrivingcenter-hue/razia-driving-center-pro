@@ -25,6 +25,12 @@ function responseHeaders() {
   };
 }
 
+// Area comparison key: trim, lowercase, collapse whitespace. Deliberately NO
+// aliasing — "Shadman" and "Shadman 1" are not equivalent.
+function normalizeAreaKey(a) {
+  return String(a || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -225,11 +231,20 @@ export async function onRequest(context) {
       rpcKey = serviceRoleKey;
     }
 
-    // ── Pre-check: is the slot still 'available'? ──
-    // Defense in depth. The RPC performs the same check (and is the authority
-    // since it is directly callable with the anon key), but failing here lets
-    // us return a clear, friendly message instead of a generic RPC failure —
-    // and avoids an RPC round-trip that we know will reject.
+    // ── Pre-check: is the slot still bookable? ──
+    // This lookup is the ONLY availability gate. The booking RPCs do NOT
+    // re-check the slot (they validate name/phone only), so if this request
+    // fails we cannot establish that the slot is bookable and MUST NOT create
+    // a booking. Failing closed is safe: the visitor simply picks another
+    // time, and the slot page only renders this form after a successful
+    // schedule load (so a missing/unreadable slot table never reaches here).
+    //
+    // A slot is bookable when EITHER:
+    //   (a) any vehicle is `available` at that start time — a normal booking, or
+    //   (b) a `travel_going` block's destination area matches the visitor's
+    //       selected area — an area-specific travel booking.
+    // `travel_returning` and non-matching destinations stay unavailable.
+    // The exact vehicle is derived here from Supabase — NEVER from the browser.
     //
     // Normalize preferred_time to 'HH:MM' (24h) so it matches slot_start
     // whether the column stores 'HH:MM' or 'HH:MM:SS'.
@@ -238,10 +253,16 @@ export async function onRequest(context) {
       if (!m) return "";
       return `${m[1].padStart(2, "0")}:${m[2]}`;
     })();
+    let travelBooking = false;
+    let resolvedVehicleId = null;
+    let resolvedVehicleName = null;
+    let resolvedArea = area || null;
+
     const slotCheckQuery =
       `${supabaseUrl}/rest/v1/slot_availability` +
       `?slot_date=eq.${encodeURIComponent(body.preferred_date)}` +
-      `&select=slot_start,status`;
+      `&select=slot_start,status,vehicle_id,vehicle_name,block_reason,area` +
+      `&order=vehicle_id.asc`;
     const slotCheckRes = await fetch(slotCheckQuery, {
       headers: {
         apikey: supabaseAnonKey,
@@ -250,11 +271,47 @@ export async function onRequest(context) {
     });
     if (slotCheckRes.ok) {
       const slotRows = await slotCheckRes.json();
-      const stillAvailable = slotRows.some((s) => {
-        const start = String(s.slot_start || "").slice(0, 5);
-        return s.status === "available" && start === normalizedTime;
-      });
-      if (!stillAvailable) {
+      const timeMatches = slotRows.filter(
+        (s) => String(s.slot_start || "").slice(0, 5) === normalizedTime
+      );
+      const availableRow = timeMatches.find((s) => s.status === "available");
+      if (availableRow) {
+        // Normal booking — unchanged behavior.
+      } else if (area) {
+        // Area-specific travel booking: only `travel_going` tiles whose
+        // destination matches the selected area become bookable. When several
+        // vehicles match, the lowest vehicle_id wins (deterministic).
+        const travelGoing = timeMatches
+          .filter((s) => s.status === "blocked" && s.block_reason === "travel_going")
+          .sort((a, b) => (a.vehicle_id ?? 0) - (b.vehicle_id ?? 0));
+        const areaMatch = travelGoing.find(
+          (s) => normalizeAreaKey(s.area) === normalizeAreaKey(area)
+        );
+        if (areaMatch) {
+          travelBooking = true;
+          resolvedVehicleId = areaMatch.vehicle_id ?? null;
+          resolvedVehicleName = areaMatch.vehicle_name ?? null;
+          // Persist the canonical stored destination, trimmed (the stored value
+          // may carry stray whitespace; matching already normalized it).
+          resolvedArea = (areaMatch.area || area || "").trim() || null;
+        } else if (travelGoing.length > 0) {
+          // There ARE travel_going tiles at this time, but none for the
+          // visitor's area — reject with the destination(s) so the visitor can
+          // pick the right area instead of guessing.
+          const destinations = [
+            ...new Set(travelGoing.map((s) => s.area).filter(Boolean)),
+          ];
+          return new Response(
+            JSON.stringify({
+              error: destinations.length
+                ? `This slot is only available for ${destinations.join(", ")}.`
+                : "This slot is not available for your selected area.",
+            }),
+            { status: 409, headers: responseHeaders() }
+          );
+        }
+      }
+      if (!availableRow && !travelBooking) {
         return new Response(
           JSON.stringify({
             error:
@@ -264,10 +321,36 @@ export async function onRequest(context) {
         );
       }
     }
-    // If the lookup itself failed (network/Supabase error), do NOT block the
-    // booking — the RPC is the real gate and will catch a bad slot. Log and proceed.
+    // The availability lookup failed (network/Supabase error). Fail CLOSED:
+    // never create a booking on a slot we could not verify. The booking RPCs
+    // do not re-check availability, so proceeding here would let a stale or
+    // unavailable slot be booked. A 503 lets the visitor retry or pick another
+    // time instead of believing a slot is reserved when it may not be.
     else {
-      console.warn("Slot pre-check lookup failed:", slotCheckRes.status);
+      console.error("Slot availability lookup failed:", slotCheckRes.status);
+      return new Response(
+        JSON.stringify({
+          error:
+            "We could not verify this slot. Please go back and pick another time, or try again shortly.",
+        }),
+        { status: 503, headers: responseHeaders() }
+      );
+    }
+
+    // Travel bookings persist their metadata (vehicle + area) in the existing
+    // `extra` JSONB column via the metadata-enabled RPC. Normal bookings keep
+    // the original RPC so customers who have not applied the upgrade are
+    // completely unaffected.
+    if (travelBooking) {
+      rpcPayload.p_area = resolvedArea || area || null;
+      rpcPayload.p_extra = {
+        vehicle_id: resolvedVehicleId,
+        vehicle_name: resolvedVehicleName,
+        slot_date: body.preferred_date,
+        slot_start: normalizedTime,
+        booking_type: "area_travel",
+        travel_area: resolvedArea,
+      };
     }
 
     // Call the SECURITY DEFINER RPC. The chosen role (anon or service_role)
@@ -282,8 +365,17 @@ export async function onRequest(context) {
     const rpcAbort = new AbortController();
     const rpcTimeout = setTimeout(() => rpcAbort.abort(), 15000);
 
+    // Travel bookings use the metadata-enabled RPC (separate function names —
+    // no overloading ambiguity); normal bookings keep the original RPC so
+    // existing customers are unaffected.
+    const rpcFunction = travelBooking
+      ? verifiedEmail
+        ? "submit_slot_booking_with_metadata_verified"
+        : "submit_slot_booking_with_metadata"
+      : "submit_slot_booking";
+
     const response = await fetch(
-      `${supabaseUrl}/rest/v1/rpc/submit_slot_booking`,
+      `${supabaseUrl}/rest/v1/rpc/${rpcFunction}`,
       {
         method: "POST",
         headers: {
@@ -301,6 +393,21 @@ export async function onRequest(context) {
       const errorText = await response.text();
       // Log a safe diagnostic (no credentials or personal data) for debugging.
       console.error("Slot booking RPC failed:", response.status, errorText);
+      // A missing metadata RPC means the customer has not applied the Website
+      // Connector upgrade. Fail safely with a clear, actionable message rather
+      // than a generic booking failure.
+      const missingFunction =
+        response.status === 404 ||
+        /PGRST202|could not find the function/i.test(errorText);
+      if (travelBooking && missingFunction) {
+        return new Response(
+          JSON.stringify({
+            error:
+              "Area-specific travel booking requires a website upgrade. Please choose a regular available slot or contact the school.",
+          }),
+          { status: 503, headers: responseHeaders() }
+        );
+      }
       const status = response.status === 400 ? 400 : 503;
       const errorBody = { error: "Booking submission failed" };
       if (response.status === 400) {
