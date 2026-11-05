@@ -21,13 +21,15 @@
 --   * any client-supplied promo_requested in p_extra is always overwritten or
 --     removed.
 --
+-- Area normalization (both sides) matches the JavaScript normalizeAreaKey:
+--   lower(regexp_replace(btrim(x), '\s+', ' ', 'g'))
+--
 -- ROLLBACK / PRE-MIGRATION CAPTURE:
 -- Run these BEFORE applying this script. They capture the current definitions so
 -- you can restore them if the migration must be reverted.
 --
 --   SELECT pg_get_functiondef('public.submit_slot_booking_with_metadata(text,text,date,text,text,numeric,boolean,text,text,jsonb)'::regprocedure);
 --   SELECT pg_get_functiondef('public.submit_slot_booking_with_metadata_verified(text,text,date,text,text,numeric,boolean,text,text,text,jsonb)'::regprocedure);
---   SELECT pg_get_functiondef('public.derive_slot_promo_for_booking(date,text,text,jsonb)'::regprocedure);
 --
 -- This script is wrapped in BEGIN/COMMIT. If any statement fails, PostgreSQL
 -- rolls the whole transaction back and the pre-existing functions remain.
@@ -55,19 +57,19 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_date            text := to_char(p_date, 'YYYY-MM-DD');
-  v_time            text := concat(
-                          lpad(split_part(p_time, ':', 1), 2, '0'),
-                          ':',
-                          split_part(p_time, ':', 2)
-                        );
-  v_area            text := btrim(lower(COALESCE(p_area, '')));
-  v_extra           jsonb := COALESCE(p_extra, '{}'::jsonb);
-  v_available       boolean := false;
-  v_travel          boolean := false;
-  v_matched_percent integer := null;
-  v_matched_promo   text := null;
-  v_promo           integer := null;
+  v_date              text := to_char(p_date, 'YYYY-MM-DD');
+  v_time              text := concat(
+                            lpad(split_part(p_time, ':', 1), 2, '0'),
+                            ':',
+                            split_part(p_time, ':', 2)
+                          );
+  v_area              text := lower(regexp_replace(btrim(COALESCE(p_area, '')), '\s+', ' ', 'g'));
+  v_extra             jsonb := COALESCE(p_extra, '{}'::jsonb);
+  v_available         boolean := false;
+  v_travel            boolean := false;
+  v_matched_percent   integer := null;
+  v_matched_promo_key text := null;
+  v_promo             integer := null;
 BEGIN
   -- (a) Bookable only when an 'available' row exists, or a claimable travel
   --     row whose normalized area equals the normalized p_area.
@@ -87,7 +89,7 @@ BEGIN
        AND s.status = 'blocked'
        AND s.block_reason IN ('travel_going', 'travel_returning')
        AND v_area <> ''
-       AND btrim(lower(COALESCE(s.area, ''))) = v_area
+       AND lower(regexp_replace(btrim(COALESCE(s.area, '')), '\s+', ' ', 'g')) = v_area
   ) INTO v_travel;
 
   IF NOT v_available AND NOT v_travel THEN
@@ -99,20 +101,21 @@ BEGIN
   --     take promo_requested from its promo_percent only when its normalized
   --     promo_area equals p_area.
   IF NOT v_available AND v_travel THEN
-    SELECT s.promo_percent, s.promo_area
-      INTO v_matched_percent, v_matched_promo
+    SELECT s.promo_percent,
+           lower(regexp_replace(btrim(COALESCE(s.promo_area, '')), '\s+', ' ', 'g'))
+      INTO v_matched_percent, v_matched_promo_key
       FROM public.slot_availability s
      WHERE s.slot_date = v_date
        AND left(s.slot_start, 5) = v_time
        AND s.status = 'blocked'
        AND s.block_reason IN ('travel_going', 'travel_returning')
        AND v_area <> ''
-       AND btrim(lower(COALESCE(s.area, ''))) = v_area
+       AND lower(regexp_replace(btrim(COALESCE(s.area, '')), '\s+', ' ', 'g')) = v_area
      ORDER BY s.vehicle_id ASC
      LIMIT 1;
 
     IF v_matched_percent IS NOT NULL
-       AND btrim(lower(COALESCE(v_matched_promo, ''))) = v_area THEN
+       AND v_matched_promo_key = v_area THEN
       v_promo := v_matched_percent;
     END IF;
   END IF;
@@ -132,12 +135,28 @@ REVOKE EXECUTE ON FUNCTION public.derive_slot_promo_for_booking(date, text, text
   FROM PUBLIC, anon, authenticated;
 
 -- ---------------------------------------------------------------------------
+-- Drop EVERY overload of the two metadata functions, so the CREATEs below are
+-- unambiguous even if an older signature is still present. This deliberately
+-- does NOT touch the original submit_slot_booking overloads.
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE
+  r record;
+BEGIN
+  FOR r IN
+    SELECT oid::regprocedure AS sig
+      FROM pg_proc
+     WHERE proname IN ('submit_slot_booking_with_metadata',
+                       'submit_slot_booking_with_metadata_verified')
+       AND pronamespace = 'public'::regnamespace
+  LOOP
+    EXECUTE 'DROP FUNCTION ' || r.sig::text;
+  END LOOP;
+END $$;
+
+-- ---------------------------------------------------------------------------
 -- Anon metadata RPC: identical signature, extra is sanitized before insert.
 -- ---------------------------------------------------------------------------
-DROP FUNCTION IF EXISTS public.submit_slot_booking_with_metadata(
-  text, text, date, text, text, numeric, boolean, text, text, jsonb
-);
-
 CREATE FUNCTION public.submit_slot_booking_with_metadata(
   p_customer_name    text,
   p_customer_phone   text,
@@ -197,10 +216,6 @@ $$;
 -- ---------------------------------------------------------------------------
 -- Verified metadata RPC: same sanitization.
 -- ---------------------------------------------------------------------------
-DROP FUNCTION IF EXISTS public.submit_slot_booking_with_metadata_verified(
-  text, text, date, text, text, numeric, boolean, text, text, text, jsonb
-);
-
 CREATE FUNCTION public.submit_slot_booking_with_metadata_verified(
   p_customer_name    text,
   p_customer_phone   text,
