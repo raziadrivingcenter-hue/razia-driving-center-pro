@@ -150,6 +150,11 @@ export async function onRequest(context) {
           area: s.area,
           vehicle_id: s.vehicle_id,
           vehicle_name: s.vehicle_name,
+          // Claimable travel tiles carry the decayed discount + the area it
+          // applies to. The booking handler derives `promo_requested` from
+          // these SERVER-SIDE; the browser never supplies a percent.
+          promo_percent: s.promo_percent ?? null,
+          promo_area: s.promo_area ?? null,
         })),
         vehicles: Object.values(vehicles),
         total_slots: data.length,

@@ -63,10 +63,38 @@ test("'Shadman' does NOT match 'Shadman 1' (no aliasing)", () => {
   assert.strictEqual(s["14:00"].status, "travel");
 });
 
-test("travel_returning stays travel even when the area matches", () => {
+test("matching travel_returning area becomes area-available", () => {
   const s = status({ travelSlots: [travel({ blockReason: "travel_returning" })] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "area-available");
+  assert.strictEqual(s["14:00"].blockReason, "travel_returning");
+  assert.strictEqual(s["14:00"].area, "Shadman");
+});
+
+test("travel_returning with a different area stays travel", () => {
+  const s = status({ travelSlots: [travel({ blockReason: "travel_returning" })] }, "DHA");
   assert.strictEqual(s["14:00"].status, "travel");
   assert.strictEqual(s["14:00"].blockReason, "travel_returning");
+});
+
+test("area-available surfaces the tile's decayed promo", () => {
+  const s = status(
+    {
+      travelSlots: [
+        travel({ blockReason: "travel_returning", promoPercent: 8, promoArea: "Shadman" }),
+      ],
+    },
+    "Shadman"
+  );
+  assert.strictEqual(s["14:00"].status, "area-available");
+  assert.strictEqual(s["14:00"].promoPercent, 8);
+  assert.strictEqual(s["14:00"].promoArea, "Shadman");
+});
+
+test("area-available promo is null when the tile carries none", () => {
+  const s = status({ travelSlots: [travel()] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "area-available");
+  assert.strictEqual(s["14:00"].promoPercent, null);
+  assert.strictEqual(s["14:00"].promoArea, null);
 });
 
 test("no area selected → travel stays travel", () => {

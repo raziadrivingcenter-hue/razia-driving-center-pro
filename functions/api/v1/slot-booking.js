@@ -90,8 +90,9 @@ export async function onRequest(context) {
     }
 
     // Visitor-selected town for area-discount display. Optional, trimmed.
-    // Never trusted for the discount itself — the RPC derives the discount
-    // server-side from slot_availability.
+    // Never trusted for the discount itself — the discount is derived
+    // SERVER-SIDE below from the matched tile's promo_percent/promo_area.
+    // Any promo value in the request body is ignored.
     const area = body.area ? String(body.area).trim() : "";
 
     if (errors.length > 0) {
@@ -241,9 +242,10 @@ export async function onRequest(context) {
     //
     // A slot is bookable when EITHER:
     //   (a) any vehicle is `available` at that start time — a normal booking, or
-    //   (b) a `travel_going` block's destination area matches the visitor's
-    //       selected area — an area-specific travel booking.
-    // `travel_returning` and non-matching destinations stay unavailable.
+    //   (b) a claimable travel block's (`travel_going` OR `travel_returning`)
+    //       destination area matches the visitor's selected area — an
+    //       area-specific travel booking.
+    // Non-matching destinations stay unavailable.
     // The exact vehicle is derived here from Supabase — NEVER from the browser.
     //
     // Normalize preferred_time to 'HH:MM' (24h) so it matches slot_start
@@ -257,11 +259,13 @@ export async function onRequest(context) {
     let resolvedVehicleId = null;
     let resolvedVehicleName = null;
     let resolvedArea = area || null;
+    // Derived SERVER-SIDE from the matched tile — never read from the body.
+    let resolvedPromoPercent = null;
 
     const slotCheckQuery =
       `${supabaseUrl}/rest/v1/slot_availability` +
       `?slot_date=eq.${encodeURIComponent(body.preferred_date)}` +
-      `&select=slot_start,status,vehicle_id,vehicle_name,block_reason,area` +
+      `&select=slot_start,status,vehicle_id,vehicle_name,block_reason,area,promo_percent,promo_area` +
       `&order=vehicle_id.asc`;
     const slotCheckRes = await fetch(slotCheckQuery, {
       headers: {
@@ -278,13 +282,19 @@ export async function onRequest(context) {
       if (availableRow) {
         // Normal booking — unchanged behavior.
       } else if (area) {
-        // Area-specific travel booking: only `travel_going` tiles whose
-        // destination matches the selected area become bookable. When several
-        // vehicles match, the lowest vehicle_id wins (deterministic).
-        const travelGoing = timeMatches
-          .filter((s) => s.status === "blocked" && s.block_reason === "travel_going")
+        // Area-specific travel booking: a claimable travel tile (`travel_going`
+        // OR `travel_returning`) whose destination matches the selected area
+        // becomes bookable. When several vehicles match, the lowest vehicle_id
+        // wins (deterministic).
+        const claimableTravel = timeMatches
+          .filter(
+            (s) =>
+              s.status === "blocked" &&
+              (s.block_reason === "travel_going" ||
+                s.block_reason === "travel_returning")
+          )
           .sort((a, b) => (a.vehicle_id ?? 0) - (b.vehicle_id ?? 0));
-        const areaMatch = travelGoing.find(
+        const areaMatch = claimableTravel.find(
           (s) => normalizeAreaKey(s.area) === normalizeAreaKey(area)
         );
         if (areaMatch) {
@@ -294,12 +304,24 @@ export async function onRequest(context) {
           // Persist the canonical stored destination, trimmed (the stored value
           // may carry stray whitespace; matching already normalized it).
           resolvedArea = (areaMatch.area || area || "").trim() || null;
-        } else if (travelGoing.length > 0) {
-          // There ARE travel_going tiles at this time, but none for the
+          // Discount is derived SERVER-SIDE from the matched tile, and only
+          // when the tile's own promo_area matches the request area. The
+          // browser's promo_percent/promo_area are display-only — never read.
+          if (
+            areaMatch.promo_percent != null &&
+            normalizeAreaKey(areaMatch.promo_area) === normalizeAreaKey(area)
+          ) {
+            const parsed = Math.round(Number(areaMatch.promo_percent));
+            if (Number.isFinite(parsed) && parsed > 0) {
+              resolvedPromoPercent = Math.min(100, parsed);
+            }
+          }
+        } else if (claimableTravel.length > 0) {
+          // There ARE claimable travel tiles at this time, but none for the
           // visitor's area — reject with the destination(s) so the visitor can
           // pick the right area instead of guessing.
           const destinations = [
-            ...new Set(travelGoing.map((s) => s.area).filter(Boolean)),
+            ...new Set(claimableTravel.map((s) => s.area).filter(Boolean)),
           ];
           return new Response(
             JSON.stringify({
@@ -350,6 +372,11 @@ export async function onRequest(context) {
         slot_start: normalizedTime,
         booking_type: "area_travel",
         travel_area: resolvedArea,
+        // Server-derived discount for this claimable tile (null when the tile
+        // carries no promo or its promo_area does not match). The RPC also
+        // recomputes this from slot_availability so a direct anon call cannot
+        // forge a percent.
+        promo_requested: resolvedPromoPercent,
       };
     }
 

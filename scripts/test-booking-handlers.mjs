@@ -280,6 +280,7 @@ describe("slot-booking.js — area-specific travel slots", () => {
       slot_start: "14:00",
       booking_type: "area_travel",
       travel_area: "Shadman",
+      promo_requested: null,
     });
     clearFetch();
   });
@@ -313,16 +314,117 @@ describe("slot-booking.js — area-specific travel slots", () => {
     clearFetch();
   });
 
-  test("travel_returning stays unavailable", async () => {
+  test("matching travel_returning area becomes bookable via the metadata RPC", async () => {
     mockFetch([
       jsonResponse([{ ...travelGoingRow, block_reason: "travel_returning" }], 200),
+      uuidResponse("cccccccc-dddd-eeee-ffff-000000000000"),
     ]);
     const res = await slotBookingOnRequest({
       request: mockRequest({ body: travelBody }),
       env: mockEnv,
     });
-    assert.equal(res.status, 409);
-    assert.equal(fetchCalls.length, 1);
+    assert.equal(res.status, 201, "matching travel_returning slot must be bookable");
+    assert.equal(fetchCalls.length, 2);
+    assert.match(fetchCalls[1].url, /\/rpc\/submit_slot_booking_with_metadata$/);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.vehicle_id, 3);
+    assert.equal(payload.p_extra.travel_area, "Shadman");
+    clearFetch();
+  });
+
+  test("promo is derived server-side from the matched tile's promo_percent/promo_area", async () => {
+    mockFetch([
+      jsonResponse(
+        [{ ...travelGoingRow, promo_percent: 10, promo_area: "Shadman" }],
+        200
+      ),
+      uuidResponse("dddddddd-eeee-ffff-0000-111111111111"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.promo_requested, 10);
+    clearFetch();
+  });
+
+  test("promo is derived for a travel_returning tile too", async () => {
+    mockFetch([
+      jsonResponse(
+        [
+          {
+            ...travelGoingRow,
+            block_reason: "travel_returning",
+            promo_percent: 8,
+            promo_area: "Shadman",
+          },
+        ],
+        200
+      ),
+      uuidResponse("eeeeeeee-ffff-0000-1111-222222222222"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.promo_requested, 8);
+    clearFetch();
+  });
+
+  test("promo is NOT applied when the tile's promo_area does not match the request area", async () => {
+    mockFetch([
+      jsonResponse(
+        [{ ...travelGoingRow, promo_percent: 10, promo_area: "Model Town" }],
+        200
+      ),
+      uuidResponse("ffffffff-0000-1111-2222-333333333333"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.promo_requested, null);
+    clearFetch();
+  });
+
+  test("promo is NOT applied when the tile carries no promo_area", async () => {
+    mockFetch([
+      jsonResponse([{ ...travelGoingRow, promo_percent: 10 }], 200),
+      uuidResponse("99999999-1111-2222-3333-444444444444"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: travelBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.promo_requested, null);
+    clearFetch();
+  });
+
+  test("a browser-supplied promo_percent is ignored (server derives the value)", async () => {
+    mockFetch([
+      jsonResponse(
+        [{ ...travelGoingRow, promo_percent: 10, promo_area: "Shadman" }],
+        200
+      ),
+      uuidResponse("abababab-cdef-1234-5678-9abcdef01234"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: { ...travelBody, promo_percent: 99, promo_requested: 99 },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.promo_requested, 10);
     clearFetch();
   });
 

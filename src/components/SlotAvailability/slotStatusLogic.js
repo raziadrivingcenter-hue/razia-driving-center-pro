@@ -19,10 +19,12 @@ export const normalizeArea = (a) =>
 // available, none booked, at least one travel-blocked). Travel is keyed
 // strictly on block_reason, never on area.
 //
-// Area-specific travel: when the visitor's selected area equals a
-// `travel_going` tile's destination, that cell becomes `area-available`
-// (bookable, red-orange gradient). `travel_returning` and non-matching
-// destinations stay `travel` (amber/unavailable).
+// Area-specific travel: when the visitor's selected area equals a claimable
+// travel tile's destination (`travel_going` OR `travel_returning`), that cell
+// becomes `area-available` (bookable, red-orange gradient). Non-matching
+// destinations stay `travel` (amber/unavailable). The tile's decayed
+// promo_percent/promo_area are surfaced so the booking form can show the
+// discount and the handler can persist it.
 export function computeSlotStatus({ data, effectiveArea, slotStarts, timeToMin }) {
   const result = {};
   for (const slot of slotStarts) result[slot] = { status: "empty" };
@@ -58,9 +60,10 @@ export function computeSlotStatus({ data, effectiveArea, slotStarts, timeToMin }
 
     // 3) Travel — no vehicle free or booked, at least one travel-blocked.
     //    Keep ALL travel records for the cell so an area-specific match can
-    //    be found: a `travel_going` tile whose destination equals the
-    //    visitor's selected area becomes bookable (red-orange gradient),
-    //    while `travel_returning` (and non-matching destinations) stay amber.
+    //    be found: a claimable tile (`travel_going` or `travel_returning`)
+    //    whose destination equals the visitor's selected area becomes
+    //    bookable (red-orange gradient), while non-matching destinations stay
+    //    amber.
     const travelEntries = (data.travelSlots || []).filter(
       (s) => gridMin >= timeToMin(s.time) && gridMin < timeToMin(s.end)
     );
@@ -68,17 +71,20 @@ export function computeSlotStatus({ data, effectiveArea, slotStarts, timeToMin }
       const areaMatch = effectiveArea
         ? travelEntries.find(
             (s) =>
-              s.blockReason === "travel_going" &&
+              (s.blockReason === "travel_going" ||
+                s.blockReason === "travel_returning") &&
               normalizeArea(s.area) === normalizeArea(effectiveArea)
           )
         : null;
       if (areaMatch) {
         result[slot] = {
           status: "area-available",
-          blockReason: "travel_going",
+          blockReason: areaMatch.blockReason,
           area: areaMatch.area,
           vehicleId: areaMatch.vehicleId,
           vehicleName: areaMatch.vehicleName,
+          promoPercent: areaMatch.promoPercent ?? null,
+          promoArea: areaMatch.promoArea ?? null,
         };
         continue;
       }

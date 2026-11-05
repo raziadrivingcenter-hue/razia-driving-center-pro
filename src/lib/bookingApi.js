@@ -61,6 +61,8 @@ export async function fetchAvailability(date) {
       area: s.area,
       vehicleId: s.vehicle_id,
       vehicleName: s.vehicle_name,
+      promoPercent: s.promo_percent ?? null,
+      promoArea: s.promo_area ?? null,
     })),
     vehicles: data.vehicles || [],
     synced: data.synced,
