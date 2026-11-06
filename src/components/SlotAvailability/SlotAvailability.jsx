@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays,
@@ -101,6 +102,11 @@ export default function SlotAvailability() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [bookingSlot, setBookingSlot] = useState(null); // { time }
+  // Shared-element zoom: set while the clicked tile flies into the booking
+  // card. { slot, label, rect, target } — rect/target are viewport coords.
+  const [zoom, setZoom] = useState(null);
+  const contentRef = useRef(null);
+  const zoomTimers = useRef([]);
 
   // Identity prefill handed off from the authenticated student dashboard.
   // The dashboard stashes { name, accessToken } in sessionStorage (verified
@@ -121,6 +127,12 @@ export default function SlotAvailability() {
   useEffect(() => {
     if (prefill) sessionStorage.removeItem("rdc_dashboard_prefill");
   }, [prefill]);
+
+  // Cancel any in-flight zoom timers if the page unmounts mid-transition.
+  useEffect(() => {
+    const timers = zoomTimers.current;
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, []);
 
   // Compute once on mount (lazy init) — avoids impure Date.now() during render.
   const [today] = useState(() => new Date().toISOString().split("T")[0]);
@@ -239,19 +251,67 @@ export default function SlotAvailability() {
     return new Date(selectedDate + "T00:00:00").getDay() === 0;
   }, [selectedDate]);
 
-  const handleSlotClick = (slot) => {
+  // Click → every other tile collapses with a staggered ripple while the
+  // clicked tile "zooms out" into a ghost card that expands into the booking
+  // form. The ghost is a fixed-position clone, so the grid can unmount as the
+  // form mounts without the flight being cut short.
+  const handleSlotClick = (slot, e) => {
     const entry = slotStatus[slot];
-    if (entry?.status === "available" || entry?.status === "area-available") {
-      setBookingSlot({
-        time: slot,
-        promoPercent: entry.promoPercent || null,
-        promoArea: entry.promoArea || null,
-        area: entry.area || null,
-        blockReason: entry.blockReason || null,
-        vehicleId: entry.vehicleId || null,
-        vehicleName: entry.vehicleName || null,
-      });
+    if (entry?.status !== "available" && entry?.status !== "area-available") return;
+
+    const payload = {
+      time: slot,
+      promoPercent: entry.promoPercent || null,
+      promoArea: entry.promoArea || null,
+      area: entry.area || null,
+      blockReason: entry.blockReason || null,
+      vehicleId: entry.vehicleId || null,
+      vehicleName: entry.vehicleName || null,
+    };
+
+    // Respect reduced-motion: swap instantly, no flight.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setBookingSlot(payload);
+      return;
     }
+
+    // A second click mid-flight restarts the transition cleanly. Mutate the
+    // array in place — the unmount cleanup captured its reference.
+    zoomTimers.current.forEach((t) => clearTimeout(t));
+    zoomTimers.current.length = 0;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+
+    // Flight target = the booking card: centred, max-w-2xl (672px), at the top
+    // of the content column.
+    const c = contentRef.current?.getBoundingClientRect();
+    const targetWidth = c
+      ? Math.min(c.width, 672)
+      : Math.min(window.innerWidth - 32, 672);
+
+    setZoom({
+      slot,
+      label: formatTime12(slot),
+      rect: {
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+      },
+      target: {
+        top: c ? c.top : window.innerHeight * 0.2,
+        left: c
+          ? c.left + (c.width - targetWidth) / 2
+          : (window.innerWidth - targetWidth) / 2,
+        width: targetWidth,
+        height: 560,
+      },
+    });
+
+    // Swap to the booking card once the tile has expanded into place, then
+    // drop the ghost after its fade finishes.
+    zoomTimers.current.push(window.setTimeout(() => setBookingSlot(payload), 400));
+    zoomTimers.current.push(window.setTimeout(() => setZoom(null), 640));
   };
 
   return (
@@ -297,7 +357,7 @@ export default function SlotAvailability() {
         </div>
 
         {/* Content */}
-        <div className="mt-8">
+        <div className="mt-8" ref={contentRef}>
           {!selectedDate ? (
             <div className="flex flex-col items-center py-16 text-gray-400">
               <Clock3 size={40} className="mb-3 text-gray-300" />
@@ -368,7 +428,7 @@ export default function SlotAvailability() {
                   key="grid"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  exit={{ opacity: 0, transition: { duration: 0.1 } }}
                 >
                   {/* Stats bar */}
                   <div className="mb-6 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
@@ -440,6 +500,21 @@ export default function SlotAvailability() {
                             {period.slots.map((slot) => {
                               const entry = slotStatus[slot];
                               const label = formatTime12(slot);
+                              const isZoomSource = zoom?.slot === slot;
+                              // Ripple delay: tiles nearer the clicked one
+                              // collapse first, so the grid appears to fold
+                              // away from the selection.
+                              const collapseDelay = zoom
+                                ? Math.min(
+                                    Math.abs(
+                                      SLOT_STARTS.indexOf(slot) -
+                                        SLOT_STARTS.indexOf(zoom.slot)
+                                    ) * 20,
+                                    200
+                                  )
+                                : 0;
+
+                              let cell;
 
                               if (entry.status === "available") {
                                 // Promo badge only when selected area matches the
@@ -452,13 +527,13 @@ export default function SlotAvailability() {
                                 const showPromoHint =
                                   entry.promoPercent && entry.promoArea && !promoMatch;
 
-                                return (
+                                cell = (
                                   <motion.button
                                     key={slot}
                                     type="button"
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.97 }}
-                                    onClick={() => handleSlotClick(slot)}
+                                    onClick={(e) => handleSlotClick(slot, e)}
                                     className="flex flex-col gap-1 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-left transition hover:border-green-300 hover:bg-green-100"
                                   >
                                     <div className="flex items-center justify-between">
@@ -487,10 +562,8 @@ export default function SlotAvailability() {
                                     )}
                                   </motion.button>
                                 );
-                              }
-
-                              if (entry.status === "booked") {
-                                return (
+                              } else if (entry.status === "booked") {
+                                cell = (
                                   <div
                                     key={slot}
                                     className="rounded-lg border border-red-100 bg-red-50 px-3 py-2"
@@ -508,9 +581,7 @@ export default function SlotAvailability() {
                                     </div>
                                   </div>
                                 );
-                              }
-
-                              if (entry.status === "advance") {
+                              } else if (entry.status === "advance") {
                                 // Advance-booked tile: light gray, disabled (never
                                 // clickable), gray time text. Two labels — the red
                                 // "Booked In Advance" and, when the row carries
@@ -520,7 +591,7 @@ export default function SlotAvailability() {
                                 const advanceLabel = availableInDaysLabel(
                                   entry.availableInDays
                                 );
-                                return (
+                                cell = (
                                   <div
                                     key={slot}
                                     aria-disabled="true"
@@ -549,17 +620,15 @@ export default function SlotAvailability() {
                                     </div>
                                   </div>
                                 );
-                              }
-
-                              if (entry.status === "area-available") {
+                              } else if (entry.status === "area-available") {
                                 const areaLabel = entry.area || effectiveArea;
-                                return (
+                                cell = (
                                   <motion.button
                                     key={slot}
                                     type="button"
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.97 }}
-                                    onClick={() => handleSlotClick(slot)}
+                                    onClick={(e) => handleSlotClick(slot, e)}
                                     className="area-travel-slot"
                                     title={`Available for ${areaLabel}`}
                                   >
@@ -670,13 +739,11 @@ export default function SlotAvailability() {
                                       )}
                                   </motion.button>
                                 );
-                              }
-
-                              if (entry.status === "travel") {
+                              } else if (entry.status === "travel") {
                                 const travelLabel = entry.area
                                   ? `Traveling to ${entry.area}`
                                   : "Traveling";
-                                return (
+                                cell = (
                                   <div
                                     key={slot}
                                     className="rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2"
@@ -698,16 +765,36 @@ export default function SlotAvailability() {
                                     </div>
                                   </div>
                                 );
+                              } else {
+                                // empty — vehicle not operating
+                                cell = (
+                                  <div
+                                    key={slot}
+                                    className="rounded-lg bg-gray-50 px-3 py-2 font-dm-sans text-sm text-gray-300"
+                                  >
+                                    {label}
+                                    <span className="ml-1 text-xs">—</span>
+                                  </div>
+                                );
                               }
 
-                              // empty — vehicle not operating
                               return (
                                 <div
                                   key={slot}
-                                  className="rounded-lg bg-gray-50 px-3 py-2 font-dm-sans text-sm text-gray-300"
+                                  className={[
+                                    "slot-cell",
+                                    zoom ? "is-collapsing" : "",
+                                    isZoomSource ? "is-zoom-source" : "",
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" ")}
+                                  style={
+                                    zoom && !isZoomSource
+                                      ? { transitionDelay: `${collapseDelay}ms` }
+                                      : undefined
+                                  }
                                 >
-                                  {label}
-                                  <span className="ml-1 text-xs">—</span>
+                                  {cell}
                                 </div>
                               );
                             })}
@@ -726,9 +813,10 @@ export default function SlotAvailability() {
                 /* ── Inline registration form ── */
                 <motion.div
                   key="form"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  initial={{ opacity: 0, scale: 0.92, y: 24 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: -12 }}
+                  transition={{ duration: 0.32, ease: [0.34, 1.56, 0.64, 1] }}
                 >
                   <BookingForm
                     slot={bookingSlot}
@@ -745,6 +833,49 @@ export default function SlotAvailability() {
           )}
         </div>
       </div>
+
+      {/* Shared-element zoom — the clicked tile flies into the booking card.
+          Portaled to <body> so the page's overflow-hidden never clips it. */}
+      {zoom &&
+        createPortal(
+          <motion.div
+            className="area-travel-slot area-travel-slot--ghost"
+            initial={{
+              position: "fixed",
+              zIndex: 60,
+              top: zoom.rect.top,
+              left: zoom.rect.left,
+              width: zoom.rect.width,
+              height: zoom.rect.height,
+              borderRadius: 12,
+              opacity: 1,
+            }}
+            animate={{
+              top: zoom.target.top,
+              left: zoom.target.left,
+              width: zoom.target.width,
+              height: zoom.target.height,
+              borderRadius: 16,
+              opacity: [1, 1, 0],
+            }}
+            transition={{
+              duration: 0.6,
+              ease: [0.4, 0, 0.2, 1],
+              opacity: { duration: 0.6, times: [0, 0.65, 1], ease: "linear" },
+            }}
+          >
+            <span className="area-travel-slot__stars" aria-hidden="true" />
+            <span className="relative z-10 flex h-full items-center justify-center gap-2">
+              <span className="font-dm-sans text-lg font-bold text-white">
+                {zoom.label}
+              </span>
+              <span className="text-xs font-semibold text-white/85">
+                Opening booking…
+              </span>
+            </span>
+          </motion.div>,
+          document.body
+        )}
     </div>
   );
 }

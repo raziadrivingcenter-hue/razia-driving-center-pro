@@ -174,3 +174,46 @@
     animation: none;
   }
 }
+
+/* =============================================================================
+   Slot-grid collapse + shared-element zoom transition.
+   Clicking a tile collapses every OTHER tile toward its own centre with a
+   staggered ripple (delay comes from an inline transition-delay), while the
+   clicked tile stays put and a fixed-position ghost card flies from its rect
+   into the booking form.
+   ============================================================================= */
+
+.slot-cell {
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+.slot-cell.is-collapsing {
+  transform: scale(0.1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The clicked tile holds still — the ghost takes over from exactly here. */
+.slot-cell.is-zoom-source {
+  position: relative;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Ghost card: the clicked tile expanded into the booking card. */
+.area-travel-slot--ghost {
+  pointer-events: none;
+  animation: none;
+  box-shadow:
+    0 0 0 1px rgba(163, 230, 53, 0.45),
+    0 18px 50px rgba(5, 150, 105, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot-cell {
+    transition: none;
+  }
+}
