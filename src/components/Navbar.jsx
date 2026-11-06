@@ -3,6 +3,7 @@ import { Menu, X, ChevronDown, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "../router";
 import { cn } from "../lib/utils";
+import { LiquidGlass } from "./UI/liquid-glass";
 import rdcLogo from "../assets/LOGORDC.svg";
 import googleLogo from "../assets/google-logo.png";
 import CustomerSignup from "./CustomerSignup";
@@ -294,11 +295,9 @@ function Navbar({ onBookNow }) {
           {/* ════════ DESKTOP (≥lg) ════════ */}
           <motion.div
             animate={{
-              backdropFilter: floatingActive ? "blur(10px)" : "none",
               boxShadow: floatingActive
                 ? "0 0 24px rgba(34,42,53,0.06), 0 1px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(34,42,53,0.04), 0 0 4px rgba(34,42,53,0.08), 0 16px 68px rgba(47,48,55,0.05), 0 1px 0 rgba(255,255,255,0.1) inset"
                 : "none",
-              width: floatingActive ? "60%" : "100%",
               y: floatingActive ? 20 : 0,
             }}
             transition={{ type: "spring", stiffness: 200, damping: 50 }}
@@ -306,15 +305,27 @@ function Navbar({ onBookNow }) {
             className={cn(
               "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full px-4 py-2 lg:flex",
               floatingActive
-                ? "border border-gray-200 bg-white/80"
-                : "border border-transparent bg-transparent"
+                ? "border border-gray-200"
+                : "border border-transparent"
             )}
           >
+            {/* Liquid glass surface — refracts the page behind the pill.
+                Mounted only while floating, so the top-of-page navbar keeps
+                its original transparent look. The nav content below is
+                `relative`, so it paints and hit-tests above this layer. */}
+            {floatingActive && (
+              <LiquidGlass
+                radius={999}
+                frost={3}
+                className="pointer-events-none absolute inset-0 z-0"
+              />
+            )}
+
             {/* Left — RDC logo + branding */}
             <a
               href={isHomepage ? "#home" : "/"}
               onClick={(e) => handleNavClick(e, "home")}
-              className="flex shrink-0 items-center gap-2.5 transition-transform hover:scale-105"
+              className="relative flex shrink-0 items-center gap-2.5 transition-transform hover:scale-105"
               aria-label="Razia Driving Center — Home"
             >
               <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
@@ -322,7 +333,7 @@ function Navbar({ onBookNow }) {
             </a>
 
             {/* Center — text links */}
-            <div className="hidden items-center gap-7 lg:flex">
+            <div className="relative hidden items-center gap-7 lg:flex">
               {navLinks.map((link) => {
                 if (link.path) {
                   return (
@@ -421,7 +432,7 @@ function Navbar({ onBookNow }) {
             </div>
 
             {/* Right — Signup/Dashboard + Book Now + mobile toggle */}
-            <div className="flex items-center gap-2">
+            <div className="relative flex items-center gap-2">
               {isAuthenticated ? (
                 <button
                   onClick={() => navigate("/dashboard/")}
@@ -458,7 +469,6 @@ function Navbar({ onBookNow }) {
           {/* ════════ MOBILE (<lg) ════════ */}
           <motion.div
             animate={{
-              backdropFilter: floatingActive ? "blur(10px)" : "none",
               boxShadow: floatingActive
                 ? "0 0 24px rgba(34,42,53,0.06), 0 1px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(34,42,53,0.04), 0 0 4px rgba(34,42,53,0.08), 0 16px 68px rgba(47,48,55,0.05), 0 1px 0 rgba(255,255,255,0.1) inset"
                 : "none",
@@ -472,15 +482,25 @@ function Navbar({ onBookNow }) {
             className={cn(
               "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-row items-center justify-between rounded-full px-4 py-2 lg:hidden",
               floatingActive
-                ? "border border-gray-200 bg-white/80"
+                ? "border border-gray-200"
                 : "border border-gray-200 bg-white"
             )}
           >
+            {/* Liquid glass surface — same treatment as the desktop pill.
+                radius matches the pill's resting floating corner (24px). */}
+            {floatingActive && (
+              <LiquidGlass
+                radius={24}
+                frost={3}
+                className="pointer-events-none absolute inset-0 z-0"
+              />
+            )}
+
             {/* Left — RDC logo + branding */}
             <a
               href={isHomepage ? "#home" : "/"}
               onClick={(e) => handleNavClick(e, "home")}
-              className="flex shrink-0 items-center gap-2 transition-transform hover:scale-105"
+              className="relative flex shrink-0 items-center gap-2 transition-transform hover:scale-105"
               aria-label="Razia Driving Center — Home"
             >
               <img src={rdcLogo} alt="Razia Driving Center" width="40" height="40" />
@@ -488,7 +508,7 @@ function Navbar({ onBookNow }) {
             </a>
 
             {/* Right — Book Now + toggle (Sign in/Dashboard lives in the hero on mobile) */}
-            <div className="flex items-center gap-2">
+            <div className="relative flex items-center gap-2">
               <button onClick={onBookNow} className="nav-btn-book">
                 Book Now
               </button>
