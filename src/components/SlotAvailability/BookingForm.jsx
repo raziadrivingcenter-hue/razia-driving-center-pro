@@ -29,15 +29,35 @@ function formatTime12(timeStr) {
 // Compact course selector — horizontal chips reusing course data.
 // Stores the display title (PLUS Plan) which is what goes to the DB.
 
-// "7 Days Training" → "7 Days"
-const durationLabel = (c) => c.duration.replace(/\s*Training\s*$/i, "").trim();
+// "7 Days Training" → { n: "7", rest: "Days" } — the numeral is split out so it
+// can render in DM Sans while the words stay in the body face (site convention,
+// see CourseCard: "Free Pick & Drop Upto <Num>2</Num> Km").
+const durationParts = (c) => {
+  const label = c.duration.replace(/\s*Training\s*$/i, "").trim();
+  const m = label.match(/^(\d+)\s*(.*)$/);
+  return m ? { n: m[1], rest: m[2] } : { n: null, rest: label };
+};
 
-// First "30 Minutes Daily …" feature → "30 min daily"
-const dailyLabel = (c) => {
+// First "30 Minutes Daily …" feature → { n: "30", rest: "min daily" }
+const dailyParts = (c) => {
   const feat = c.features.find((f) => /minutes daily/i.test(f.text));
   const mins = feat?.text.match(/(\d+)\s*minutes/i)?.[1];
-  return mins ? `${mins} min daily` : null;
+  return mins ? { n: mins, rest: "min daily" } : null;
 };
+
+// Plain string form of a { n, rest } pair — for aria-labels and non-numeric slots.
+const partsLabel = (parts) =>
+  parts ? (parts.n ? `${parts.n} ${parts.rest}` : parts.rest) : "";
+
+// Renders "30 min daily" with the numeral in DM Sans and the words in the body face.
+function Num({ n, rest }) {
+  if (!n) return rest;
+  return (
+    <>
+      <span className="font-dm-sans">{n}</span> {rest}
+    </>
+  );
+}
 
 function CourseSelect({ value, onChange, error }) {
   return (
@@ -46,14 +66,15 @@ function CourseSelect({ value, onChange, error }) {
       <div className="grid grid-cols-3 gap-2">
         {courses.map((c) => {
           const selected = value === c.title;
-          const daily = dailyLabel(c);
+          const dur = durationParts(c);
+          const daily = dailyParts(c);
           return (
             <div key={c.name} className="group relative">
               <button
                 type="button"
                 onClick={() => onChange(c.title)}
-                aria-label={`${c.title}, ${c.price}, ${durationLabel(c)}${
-                  daily ? `, ${daily}` : ""
+                aria-label={`${c.title}, ${c.price}, ${partsLabel(dur)}${
+                  daily ? `, ${partsLabel(daily)}` : ""
                 }`}
                 className={`
                   w-full rounded-lg border px-2 py-2 text-center transition
@@ -71,12 +92,17 @@ function CourseSelect({ value, onChange, error }) {
                 >
                   {c.title}
                 </span>
-                <span className="block text-[10px] font-medium text-gray-400">
+                <span className="font-dm-sans block text-[10px] font-medium text-gray-400">
                   {c.price}
                 </span>
                 <span className="mt-0.5 block text-[10px] font-medium text-gray-500">
-                  {durationLabel(c)}
-                  {daily ? ` · ${daily}` : ""}
+                  <Num n={dur.n} rest={dur.rest} />
+                  {daily ? (
+                    <>
+                      {" "}
+                      <span>·</span> <Num n={daily.n} rest={daily.rest} />
+                    </>
+                  ) : null}
                 </span>
               </button>
 
@@ -117,7 +143,7 @@ function CourseSelect({ value, onChange, error }) {
                         Duration
                       </p>
                       <p className="font-dm-sans text-[11px] font-bold text-white">
-                        {durationLabel(c)}
+                        {partsLabel(dur)}
                       </p>
                     </div>
                     <div className="rounded-lg bg-white/5 px-2 py-1.5 ring-1 ring-white/5">
@@ -125,7 +151,7 @@ function CourseSelect({ value, onChange, error }) {
                         Daily
                       </p>
                       <p className="font-dm-sans text-[11px] font-bold text-white">
-                        {daily ?? "—"}
+                        {daily ? partsLabel(daily) : "—"}
                       </p>
                     </div>
                   </div>
@@ -371,27 +397,28 @@ export default function BookingForm({
               <ArrowLeft size={16} className="text-[#FF6201]" />
               Back to slots
             </button>
-            <div className="flex flex-col items-end gap-1.5">
-              <div className="rounded-lg bg-gray-50 px-3 py-1.5 text-right">
-                <span className="font-dm-sans text-xs font-medium text-gray-500">{date}</span>
-                <span className="mx-1.5 text-gray-300">·</span>
-                <span className="font-dm-sans text-xs font-bold text-[#FF6201]">
-                  {formatTime12(slot.time)}
-                </span>
-              </div>
-              {/* Course-diary mark — tucked under the slot time, right-aligned,
-                  sized to the "Complete Your Booking" heading (text-lg = 28px). */}
-              <img
-                src={courseDiaryIcon}
-                alt=""
-                aria-hidden="true"
-                className="h-7 w-7"
-              />
+            <div className="rounded-lg bg-gray-50 px-3 py-1.5 text-right">
+              <span className="font-dm-sans text-xs font-medium text-gray-500">{date}</span>
+              <span className="mx-1.5 text-gray-300">·</span>
+              <span className="font-dm-sans text-xs font-bold text-[#FF6201]">
+                {formatTime12(slot.time)}
+              </span>
             </div>
           </div>
 
-          <h3 className="mt-4 text-lg font-black text-gray-900">Complete Your Booking</h3>
-          <p className="text-xs text-gray-500">Fill in your details to reserve this slot.</p>
+          {/* Heading + course-diary mark — heading block left, mark right, one band. */}
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-black text-gray-900">Complete Your Booking</h3>
+              <p className="text-xs text-gray-500">Fill in your details to reserve this slot.</p>
+            </div>
+            <img
+              src={courseDiaryIcon}
+              alt=""
+              aria-hidden="true"
+              className="h-7 w-7 shrink-0"
+            />
+          </div>
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             {/* Name + Phone */}
