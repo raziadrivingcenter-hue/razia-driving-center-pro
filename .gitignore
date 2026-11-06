@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local WIP — LiquidGlass hero/course-card experiment, not for deployment
+src/components/LiquidGlass/
