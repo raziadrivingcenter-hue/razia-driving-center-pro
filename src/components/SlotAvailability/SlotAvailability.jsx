@@ -564,6 +564,80 @@ export default function SlotAvailability() {
                                     title={`Available for ${areaLabel}`}
                                   >
                                     <span
+                                      className="area-travel-slot__stars"
+                                      aria-hidden="true"
+                                    />
+                                    <span
+                                      className="area-travel-slot__gifts"
+                                      aria-hidden="true"
+                                    >
+                                      <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path d="M12 7.2c-1.5-2.2-4.6-2.4-5.2-.6-.5 1.6 1.7 3.1 5.2.6z" />
+                                        <path d="M12 7.2c1.5-2.2 4.6-2.4 5.2-.6.5 1.6-1.7 3.1-5.2.6z" />
+                                        <circle cx="12" cy="7.6" r="1.05" />
+                                        <rect x="3" y="8.4" width="18" height="3" rx="1" />
+                                        <rect
+                                          x="4.2"
+                                          y="11.4"
+                                          width="15.6"
+                                          height="9.2"
+                                          rx="1"
+                                          opacity=".9"
+                                        />
+                                        <rect
+                                          x="11"
+                                          y="8.4"
+                                          width="2"
+                                          height="12.2"
+                                          fill="#fff"
+                                          opacity=".6"
+                                        />
+                                      </svg>
+                                      <svg
+                                        width="22"
+                                        height="22"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path d="M12 7.2c-1.5-2.2-4.6-2.4-5.2-.6-.5 1.6 1.7 3.1 5.2.6z" />
+                                        <path d="M12 7.2c1.5-2.2 4.6-2.4 5.2-.6.5 1.6-1.7 3.1-5.2.6z" />
+                                        <circle cx="12" cy="7.6" r="1.05" />
+                                        <rect x="3" y="8.4" width="18" height="3" rx="1" />
+                                        <rect
+                                          x="4.2"
+                                          y="11.4"
+                                          width="15.6"
+                                          height="9.2"
+                                          rx="1"
+                                          opacity=".9"
+                                        />
+                                        <rect
+                                          x="11"
+                                          y="8.4"
+                                          width="2"
+                                          height="12.2"
+                                          fill="#fff"
+                                          opacity=".6"
+                                        />
+                                      </svg>
+                                      <svg
+                                        width="9"
+                                        height="9"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path d="M12 2 Q12.8 11.2 22 12 Q12.8 12.8 12 22 Q11.2 12.8 2 12 Q11.2 11.2 12 2 Z" />
+                                      </svg>
+                                    </span>
+                                    <span
                                       className="area-travel-slot__sheen"
                                       aria-hidden="true"
                                     />
@@ -575,10 +649,10 @@ export default function SlotAvailability() {
                                         {label}
                                       </span>
                                       <span className="flex shrink-0 items-center gap-1">
-                                        <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[8px] font-black tracking-wider text-white">
+                                        <span className="rounded-full bg-white/85 px-1.5 py-0.5 text-[8px] font-black tracking-wider text-emerald-700">
                                           ★ PREMIUM
                                         </span>
-                                        <span className="rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold text-white">
+                                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-700 shadow-sm">
                                           Book
                                         </span>
                                       </span>
