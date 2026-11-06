@@ -183,7 +183,11 @@
    into the booking form.
    ============================================================================= */
 
+/* flex column so the tile inside stretches to the full cell width — without
+   this the wrapper (a block) would let the tile shrink-wrap to its content. */
 .slot-cell {
+  display: flex;
+  flex-direction: column;
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
