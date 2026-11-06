@@ -14,6 +14,7 @@ import {
 import { submitSlotBooking } from "../../lib/slotAvailability";
 import { courses } from "../../data/courses";
 import { calculateTotalPayable, getPlanType } from "../../lib/pickDropCalculator";
+import courseDiaryIcon from "../../assets/coursediary.svg";
 
 function formatTime12(timeStr) {
   // "09:00" or "09:00:00" → "9:00 AM"
@@ -27,6 +28,17 @@ function formatTime12(timeStr) {
 
 // Compact course selector — horizontal chips reusing course data.
 // Stores the display title (PLUS Plan) which is what goes to the DB.
+
+// "7 Days Training" → "7 Days"
+const durationLabel = (c) => c.duration.replace(/\s*Training\s*$/i, "").trim();
+
+// First "30 Minutes Daily …" feature → "30 min daily"
+const dailyLabel = (c) => {
+  const feat = c.features.find((f) => /minutes daily/i.test(f.text));
+  const mins = feat?.text.match(/(\d+)\s*minutes/i)?.[1];
+  return mins ? `${mins} min daily` : null;
+};
+
 function CourseSelect({ value, onChange, error }) {
   return (
     <div>
@@ -34,31 +46,106 @@ function CourseSelect({ value, onChange, error }) {
       <div className="grid grid-cols-3 gap-2">
         {courses.map((c) => {
           const selected = value === c.title;
+          const daily = dailyLabel(c);
           return (
-            <button
-              type="button"
-              key={c.name}
-              onClick={() => onChange(c.title)}
-              className={`
-                rounded-lg border px-2 py-2 text-center transition
-                ${
-                  selected
-                    ? "border-[#FF6201] bg-orange-50 ring-2 ring-[#FF6201]/20"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }
-              `}
-            >
-              <span
-                className={`block text-[11px] font-bold ${
-                  selected ? "text-[#FF6201]" : "text-gray-700"
+            <div key={c.name} className="group relative">
+              <button
+                type="button"
+                onClick={() => onChange(c.title)}
+                aria-label={`${c.title}, ${c.price}, ${durationLabel(c)}${
+                  daily ? `, ${daily}` : ""
                 }`}
+                className={`
+                  w-full rounded-lg border px-2 py-2 text-center transition
+                  ${
+                    selected
+                      ? "border-[#FF6201] bg-orange-50 ring-2 ring-[#FF6201]/20"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }
+                `}
               >
-                {c.title}
-              </span>
-              <span className="block text-[10px] font-medium text-gray-400">
-                {c.price}
-              </span>
-            </button>
+                <span
+                  className={`block text-[11px] font-bold ${
+                    selected ? "text-[#FF6201]" : "text-gray-700"
+                  }`}
+                >
+                  {c.title}
+                </span>
+                <span className="block text-[10px] font-medium text-gray-400">
+                  {c.price}
+                </span>
+                <span className="mt-0.5 block text-[10px] font-medium text-gray-500">
+                  {durationLabel(c)}
+                  {daily ? ` · ${daily}` : ""}
+                </span>
+              </button>
+
+              {/* Hover card — pointer devices only (touch gets the plain chip). */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2.5 hidden w-56 -translate-x-1/2 translate-y-1 opacity-0 transition duration-200 ease-out group-hover:translate-y-0 group-hover:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:block"
+              >
+                <div className="relative rounded-xl bg-gray-900 p-3.5 text-left shadow-2xl ring-1 ring-white/10">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-extrabold text-white">
+                      {c.title}
+                    </span>
+                    {c.titleIcon && (
+                      <c.titleIcon size={11} className="shrink-0 text-[#FF6201]" />
+                    )}
+                  </div>
+
+                  {c.badge && (
+                    <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#FF6201]/15 px-1.5 py-0.5 text-[9px] font-semibold text-[#FF6201]">
+                      <c.badge.icon size={9} />
+                      {c.badge.text}
+                    </span>
+                  )}
+
+                  <div className="mt-2 flex items-baseline gap-1.5">
+                    <span className="font-dm-sans text-sm font-bold text-[#FF6201]">
+                      {c.price}
+                    </span>
+                    <span className="font-dm-sans text-[10px] text-white/35 line-through">
+                      {c.oldPrice}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-2 gap-1.5">
+                    <div className="rounded-lg bg-white/5 px-2 py-1.5 ring-1 ring-white/5">
+                      <p className="text-[8px] font-semibold uppercase tracking-wider text-white/40">
+                        Duration
+                      </p>
+                      <p className="font-dm-sans text-[11px] font-bold text-white">
+                        {durationLabel(c)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-white/5 px-2 py-1.5 ring-1 ring-white/5">
+                      <p className="text-[8px] font-semibold uppercase tracking-wider text-white/40">
+                        Daily
+                      </p>
+                      <p className="font-dm-sans text-[11px] font-bold text-white">
+                        {daily ?? "—"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <ul className="mt-2 space-y-1 border-t border-white/10 pt-2">
+                    {c.features.slice(0, 4).map((f) => (
+                      <li key={f.text} className="flex items-center gap-1.5">
+                        <f.icon size={10} className="shrink-0 text-[#FF6201]" />
+                        <span className="truncate text-[10px] text-white/70">
+                          {f.text}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Pointer aimed back at the course chip */}
+                  <span className="absolute -bottom-[5px] left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 bg-gray-900" />
+                </div>
+              </div>
+            </div>
           );
         })}
       </div>
@@ -275,7 +362,7 @@ export default function BookingForm({
           className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"
         >
           {/* Back + slot summary */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             <button
               type="button"
               onClick={onBack}
@@ -284,12 +371,22 @@ export default function BookingForm({
               <ArrowLeft size={16} className="text-[#FF6201]" />
               Back to slots
             </button>
-            <div className="rounded-lg bg-gray-50 px-3 py-1.5 text-right">
-              <span className="font-dm-sans text-xs font-medium text-gray-500">{date}</span>
-              <span className="mx-1.5 text-gray-300">·</span>
-              <span className="font-dm-sans text-xs font-bold text-[#FF6201]">
-                {formatTime12(slot.time)}
-              </span>
+            <div className="flex flex-col items-end gap-1.5">
+              <div className="rounded-lg bg-gray-50 px-3 py-1.5 text-right">
+                <span className="font-dm-sans text-xs font-medium text-gray-500">{date}</span>
+                <span className="mx-1.5 text-gray-300">·</span>
+                <span className="font-dm-sans text-xs font-bold text-[#FF6201]">
+                  {formatTime12(slot.time)}
+                </span>
+              </div>
+              {/* Course-diary mark — tucked under the slot time, right-aligned,
+                  sized to the "Complete Your Booking" heading (text-lg = 28px). */}
+              <img
+                src={courseDiaryIcon}
+                alt=""
+                aria-hidden="true"
+                className="h-7 w-7"
+              />
             </div>
           </div>
 

@@ -315,7 +315,11 @@ export default function SlotAvailability() {
   };
 
   return (
-    <div className="rdc-booking min-h-screen bg-gray-50 pb-16 pt-24 relative overflow-hidden">
+    <div
+      className={`rdc-booking min-h-screen bg-gray-50 pb-16 relative overflow-hidden ${
+        bookingSlot ? "pt-10" : "pt-24"
+      }`}
+    >
       {/* Background image — 50% transparent, cover fills 1920×1080 desktop, crops on mobile */}
       <div
         aria-hidden="true"
@@ -323,38 +327,48 @@ export default function SlotAvailability() {
         style={{ backgroundImage: `url(${slotBg})` }}
       />
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
-        {/* Back to home */}
-        <button
-          onClick={() => navigate("/")}
-          className="mb-4 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-[#FF6201]"
-        >
-          <ArrowLeft size={16} />
-          Back to Home
-        </button>
+        {/* Hero — back link, title, subtitle and date picker. All of it steps
+            aside once the booking wizard is open; the wizard carries its own
+            "Back to slots" control, so the page chrome would only duplicate it. */}
+        {!bookingSlot && (
+          <>
+            {/* Back to home */}
+            <button
+              onClick={() => navigate("/")}
+              className="mb-4 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-[#FF6201]"
+            >
+              <ArrowLeft size={16} />
+              Back to Home
+            </button>
 
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-black text-gray-900 sm:text-4xl">Book Your Slot</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-gray-500">
-            Pick a date and claim an available training slot. 30-minute blocks, 7 AM – 7 PM.
-          </p>
-        </div>
+            {/* Header */}
+            <div className="text-center">
+              <h1 className="text-3xl font-black text-gray-900 sm:text-4xl">
+                Book Your Slot
+              </h1>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-gray-500">
+                Pick a date and claim an available training slot. 30-minute blocks, 7 AM – 7
+                PM.
+              </p>
+            </div>
 
-        {/* Date picker */}
-        <div className="mx-auto mt-6 max-w-xs">
-          <label className="mb-1.5 flex items-center justify-center gap-1.5 text-sm font-semibold text-gray-600">
-            <CalendarDays size={14} className="text-[#FF6201]" />
-            Select Date
-          </label>
-          <input
-            type="date"
-            min={today}
-            max={maxDate}
-            value={selectedDate}
-            onChange={handleDateChange}
-            className="font-dm-sans w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-sm font-medium text-gray-900 shadow-sm outline-none transition focus:border-[#FF6201] focus:ring-4 focus:ring-[#FF6201]/10"
-          />
-        </div>
+            {/* Date picker */}
+            <div className="mx-auto mt-6 max-w-xs">
+              <label className="mb-1.5 flex items-center justify-center gap-1.5 text-sm font-semibold text-gray-600">
+                <CalendarDays size={14} className="text-[#FF6201]" />
+                Select Date
+              </label>
+              <input
+                type="date"
+                min={today}
+                max={maxDate}
+                value={selectedDate}
+                onChange={handleDateChange}
+                className="font-dm-sans w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-sm font-medium text-gray-900 shadow-sm outline-none transition focus:border-[#FF6201] focus:ring-4 focus:ring-[#FF6201]/10"
+              />
+            </div>
+          </>
+        )}
 
         {/* Content */}
         <div className="mt-8" ref={contentRef}>
