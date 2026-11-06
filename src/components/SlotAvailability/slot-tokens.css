@@ -71,8 +71,9 @@
 
 /* =============================================================================
    Area-specific travel tile — a `travel_going` slot whose destination matches
-   the visitor's selected area. Red-orange gradient, white text, subtle liquid
-   sheen. Purely presentational; the booking itself is validated server-side.
+   the visitor's selected area. Premium green→lime gradient with a glowing
+   border, twinkling star sparkles, and a liquid sheen. Purely presentational;
+   the booking itself is validated server-side.
    ============================================================================= */
 
 .area-travel-slot {
@@ -85,8 +86,70 @@
   padding: 8px 12px;
   text-align: left;
   color: #ffffff;
-  background: linear-gradient(110deg, #ff3131, #ff6102);
-  box-shadow: var(--rd-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 22%, rgba(255, 255, 255, 0.9), transparent 60%),
+    radial-gradient(1px 1px at 82% 16%, rgba(255, 255, 255, 0.7), transparent 60%),
+    radial-gradient(1.5px 1.5px at 72% 84%, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(1px 1px at 28% 78%, rgba(255, 255, 255, 0.6), transparent 60%),
+    linear-gradient(120deg, #059669 0%, #10b981 48%, #84cc16 100%);
+  box-shadow:
+    0 0 0 1px rgba(163, 230, 53, 0.55),
+    0 4px 14px rgba(16, 185, 129, 0.4),
+    0 0 22px rgba(132, 204, 22, 0.35);
+  animation: area-travel-glow 2.6s ease-in-out infinite;
+}
+
+/* Twinkling star sparkles — a little "premium" magic on the corners. */
+.area-travel-slot::before,
+.area-travel-slot::after {
+  content: "✦";
+  position: absolute;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+  animation: area-travel-sparkle 1.8s ease-in-out infinite;
+}
+
+.area-travel-slot::before {
+  bottom: 7px;
+  right: 8px;
+  font-size: 11px;
+}
+
+.area-travel-slot::after {
+  bottom: 3px;
+  right: 24px;
+  font-size: 8px;
+  animation-delay: 0.9s;
+}
+
+@keyframes area-travel-sparkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.75) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(20deg);
+  }
+}
+
+/* Soft pulsing glow on the border so the tile reads as "available" at a glance. */
+@keyframes area-travel-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(163, 230, 53, 0.55),
+      0 4px 14px rgba(16, 185, 129, 0.4),
+      0 0 18px rgba(132, 204, 22, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(163, 230, 53, 0.85),
+      0 4px 18px rgba(16, 185, 129, 0.55),
+      0 0 32px rgba(132, 204, 22, 0.5);
+  }
 }
 
 /* Liquid-style highlight sweep. Disabled under reduced-motion. */
@@ -115,7 +178,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .area-travel-slot__sheen {
+  .area-travel-slot__sheen,
+  .area-travel-slot::before,
+  .area-travel-slot::after {
+    animation: none;
+  }
+
+  .area-travel-slot {
     animation: none;
   }
 }

@@ -574,8 +574,13 @@ export default function SlotAvailability() {
                                       >
                                         {label}
                                       </span>
-                                      <span className="shrink-0 rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold text-white">
-                                        Book
+                                      <span className="flex shrink-0 items-center gap-1">
+                                        <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[8px] font-black tracking-wider text-white">
+                                          ★ PREMIUM
+                                        </span>
+                                        <span className="rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold text-white">
+                                          Book
+                                        </span>
                                       </span>
                                     </span>
                                     <span className="relative z-10 mt-0.5 inline-flex w-fit items-center rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white">
