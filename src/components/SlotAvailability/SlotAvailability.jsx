@@ -581,6 +581,14 @@ export default function SlotAvailability() {
                                     <span className="relative z-10 mt-0.5 inline-flex w-fit items-center rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white">
                                       Available for {areaLabel}
                                     </span>
+                                    {entry.promoPercent &&
+                                      entry.promoArea &&
+                                      normalizeArea(effectiveArea) ===
+                                        normalizeArea(entry.promoArea) && (
+                                        <span className="relative z-10 mt-0.5 inline-flex w-fit items-center rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold text-white">
+                                          {entry.promoPercent}% off pick &amp; drop
+                                        </span>
+                                      )}
                                   </motion.button>
                                 );
                               }
