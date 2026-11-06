@@ -46,15 +46,34 @@ function formatTime12(timeStr) {
   return `${displayH}:${m} ${ampm}`;
 }
 
+// Shared wording for a relative day count: 0 → "Today", 1 → "Tomorrow",
+// otherwise "in N days". Used by the booked tile's date label and by the
+// advance tile's "available again" label so both read identically.
+function daysWordLabel(diff) {
+  if (diff <= 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  return `in ${diff} days`;
+}
+
 // "Today" / "Tomorrow" / "in N days"
 function daysLeftLabel(dateStr) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr + "T00:00:00");
   const diff = Math.round((target - today) / (1000 * 60 * 60 * 24));
-  if (diff <= 0) return "Today";
-  if (diff === 1) return "Tomorrow";
-  return `in ${diff} days`;
+  return daysWordLabel(diff);
+}
+
+// Advance tile's second label. Uses the same wording helper as
+// daysLeftLabel so N=1 reads "Tomorrow" (never "Available in 1 days"), and
+// reads "Available in N days" otherwise. Returns null when the count is
+// unknown (older rows without available_in_days) so only the first label
+// renders.
+function availableInDaysLabel(n) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return null;
+  const days = Number(n);
+  if (days === 1) return daysWordLabel(days);
+  return `Available in ${days} days`;
 }
 
 // Split the day into three display periods.
@@ -196,7 +215,8 @@ export default function SlotAvailability() {
 
   // Count per-cell statuses from slotStatus so the stats bar reflects what the
   // grid actually shows. Area-specific travel tiles count as available (they
-  // are bookable); plain travel cells are counted separately.
+  // are bookable); advance tiles count as booked (never as available); plain
+  // travel cells are counted separately.
   const slotCounts = useMemo(
     () => {
       const vals = Object.values(slotStatus);
@@ -204,7 +224,9 @@ export default function SlotAvailability() {
         available: vals.filter(
           (e) => e.status === "available" || e.status === "area-available"
         ).length,
-        booked: vals.filter((e) => e.status === "booked").length,
+        booked: vals.filter(
+          (e) => e.status === "booked" || e.status === "advance"
+        ).length,
         travel: vals.filter((e) => e.status === "travel").length,
       };
     },
@@ -483,6 +505,47 @@ export default function SlotAvailability() {
                                       <span className="font-dm-sans shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">
                                         {daysLeftLabel(selectedDate)}
                                       </span>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              if (entry.status === "advance") {
+                                // Advance-booked tile: light gray, disabled (never
+                                // clickable), gray time text. Two labels — the red
+                                // "Booked In Advance" and, when the row carries
+                                // available_in_days, a second small label using the
+                                // shared day wording ("Tomorrow" / "Available in N
+                                // days").
+                                const advanceLabel = availableInDaysLabel(
+                                  entry.availableInDays
+                                );
+                                return (
+                                  <div
+                                    key={slot}
+                                    aria-disabled="true"
+                                    className="advance-slot cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 py-2"
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span
+                                        className="font-dm-sans text-sm font-medium text-gray-500 truncate"
+                                        title={label}
+                                      >
+                                        {label}
+                                      </span>
+                                      <span className="font-dm-sans shrink-0 rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">
+                                        {daysLeftLabel(selectedDate)}
+                                      </span>
+                                    </div>
+                                    <div className="mt-0.5 flex flex-col gap-0.5">
+                                      <span className="text-[10px] font-semibold text-red-600">
+                                        Booked In Advance
+                                      </span>
+                                      {advanceLabel && (
+                                        <span className="text-[10px] font-medium text-gray-500">
+                                          {advanceLabel}
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                 );

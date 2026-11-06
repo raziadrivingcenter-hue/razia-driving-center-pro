@@ -525,6 +525,93 @@ describe("slot-booking.js — area-specific travel slots", () => {
 });
 
 // =============================================================================
+// slot-booking.js — advance-booked tiles
+// =============================================================================
+
+describe("slot-booking.js — advance-booked tiles", () => {
+  const advanceBody = {
+    customer_name: "Advance Test",
+    customer_phone: "3001234567",
+    preferred_date: "2026-11-12",
+    preferred_time: "14:00",
+    area: "Shadman",
+  };
+
+  const advanceRow = {
+    slot_start: "14:00",
+    status: "blocked",
+    vehicle_id: 9007,
+    vehicle_name: "Toyota Corolla",
+    block_reason: "advance_booked",
+    area: "Shadman",
+  };
+
+  test("rejects an advance_booked tile with 409 and never reaches the RPC", async () => {
+    mockFetch([jsonResponse([advanceRow], 200)]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: advanceBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 409, "advance_booked must be rejected");
+    const body = await res.json();
+    assert.match(body.error, /booked in advance/i);
+    assert.equal(fetchCalls.length, 1, "must not reach the RPC for an advance tile");
+    clearFetch();
+  });
+
+  test("rejects an advance_booked tile for ANY area (and with no area)", async () => {
+    // The rejection is keyed on block_reason only — it must not depend on the
+    // visitor's selected area. One pre-check response per request.
+    for (const area of ["Shadman", "DHA", ""]) {
+      mockFetch([jsonResponse([advanceRow], 200)]);
+      const res = await slotBookingOnRequest({
+        request: mockRequest({ body: { ...advanceBody, area } }),
+        env: mockEnv,
+      });
+      assert.equal(res.status, 409, `area "${area}" must still be rejected`);
+      assert.equal(fetchCalls.length, 1, "must not reach the RPC");
+      clearFetch();
+    }
+  });
+
+  test("rejects an advance_booked tile even when another vehicle is available", async () => {
+    // The website UI gives an advance_booked row priority over an available
+    // row (the desktop publishes one row per tile), so the server must reject
+    // the slot too — otherwise a forged request could claim a tile the
+    // visitor is shown as disabled.
+    mockFetch([
+      jsonResponse(
+        [
+          advanceRow,
+          { slot_start: "14:00", status: "available", vehicle_id: 42 },
+        ],
+        200
+      ),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: advanceBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 409);
+    assert.equal(fetchCalls.length, 1, "must not reach the RPC");
+    clearFetch();
+  });
+
+  test("advance tile with available_in_days set is still rejected (column is irrelevant)", async () => {
+    mockFetch([
+      jsonResponse([{ ...advanceRow, available_in_days: 3 }], 200),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: advanceBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 409);
+    assert.equal(fetchCalls.length, 1);
+    clearFetch();
+  });
+});
+
+// =============================================================================
 // bookings.js
 // =============================================================================
 

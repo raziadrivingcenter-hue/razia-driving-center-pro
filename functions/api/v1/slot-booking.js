@@ -246,6 +246,8 @@ export async function onRequest(context) {
     //       destination area matches the visitor's selected area — an
     //       area-specific travel booking.
     // Non-matching destinations stay unavailable.
+    // Advance-booked tiles (`block_reason = 'advance_booked'`) are rejected
+    // outright — see the check below.
     // The exact vehicle is derived here from Supabase — NEVER from the browser.
     //
     // Normalize preferred_time to 'HH:MM' (24h) so it matches slot_start
@@ -278,6 +280,25 @@ export async function onRequest(context) {
       const timeMatches = slotRows.filter(
         (s) => String(s.slot_start || "").slice(0, 5) === normalizedTime
       );
+      // Advance-booked tiles are NEVER bookable. Detected strictly on
+      // block_reason. This mirrors the website UI, where an advance_booked row
+      // outranks even an 'available' row for another vehicle (the desktop
+      // publishes one row per tile), so the server must reject the slot too —
+      // otherwise a forged request could claim a tile the visitor is shown as
+      // disabled. Checked before the available-row lookup so the advance rule
+      // cannot be bypassed.
+      const advanceRow = timeMatches.find(
+        (s) => s.status === "blocked" && s.block_reason === "advance_booked"
+      );
+      if (advanceRow) {
+        return new Response(
+          JSON.stringify({
+            error:
+              "This slot is booked in advance. Please go back and pick another time.",
+          }),
+          { status: 409, headers: responseHeaders() }
+        );
+      }
       const availableRow = timeMatches.find((s) => s.status === "available");
       if (availableRow) {
         // Normal booking — unchanged behavior.

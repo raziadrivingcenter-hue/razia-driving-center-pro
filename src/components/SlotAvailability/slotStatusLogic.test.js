@@ -20,6 +20,15 @@ const travel = (over = {}) => ({
   ...over,
 });
 
+const advance = (over = {}) => ({
+  time: "14:00",
+  end: "14:30",
+  availableInDays: 3,
+  vehicleId: 9007,
+  vehicleName: "Toyota Corolla",
+  ...over,
+});
+
 const status = (data, effectiveArea) =>
   computeSlotStatus({ data, effectiveArea, slotStarts: SLOTS, timeToMin });
 
@@ -90,6 +99,23 @@ test("area-available surfaces the tile's decayed promo", () => {
   assert.strictEqual(s["14:00"].promoArea, "Shadman");
 });
 
+test("area-available surfaces the promo for travel_going too", () => {
+  // Both claimable directions must carry the row's promo_percent through to
+  // the booking form ("{percent}% off pick & drop").
+  const s = status(
+    {
+      travelSlots: [
+        travel({ blockReason: "travel_going", promoPercent: 12, promoArea: "Shadman" }),
+      ],
+    },
+    "Shadman"
+  );
+  assert.strictEqual(s["14:00"].status, "area-available");
+  assert.strictEqual(s["14:00"].blockReason, "travel_going");
+  assert.strictEqual(s["14:00"].promoPercent, 12);
+  assert.strictEqual(s["14:00"].promoArea, "Shadman");
+});
+
 test("area-available promo is null when the tile carries none", () => {
   const s = status({ travelSlots: [travel()] }, "Shadman");
   assert.strictEqual(s["14:00"].status, "area-available");
@@ -106,6 +132,62 @@ test("area match only applies to the matching time cell", () => {
   const s = status({ travelSlots: [travel()] }, "Shadman");
   assert.strictEqual(s["14:00"].status, "area-available");
   assert.strictEqual(s["14:30"].status, "empty");
+});
+
+// ── advance-booked tiles ────────────────────────────────────────────────────
+
+test("advance tile is not selectable and surfaces available_in_days", () => {
+  const s = status({ advanceSlots: [advance()] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "advance");
+  assert.strictEqual(s["14:00"].availableInDays, 3);
+});
+
+test("advance tile with no available_in_days still renders (null)", () => {
+  const s = status({ advanceSlots: [advance({ availableInDays: null })] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "advance");
+  assert.strictEqual(s["14:00"].availableInDays, null);
+});
+
+test("advance tile is not selectable regardless of area", () => {
+  // Detection is keyed on block_reason only — the area never matters.
+  for (const effectiveArea of ["Shadman", "DHA", ""]) {
+    const s = status({ advanceSlots: [advance()] }, effectiveArea);
+    assert.strictEqual(s["14:00"].status, "advance", `area "${effectiveArea}"`);
+  }
+});
+
+test("same-area travel tile is still selectable (unaffected by advance logic)", () => {
+  const s = status({ travelSlots: [travel()] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "area-available");
+  assert.strictEqual(s["14:00"].blockReason, "travel_going");
+});
+
+test("available tile that is also advance_booked shows as advance", () => {
+  // Synthetic conflict: the desktop publishes only one row per tile, so this
+  // cannot occur in practice — but advance must win when it does.
+  const s = status(
+    {
+      availableSlots: [{ time: "14:00", end: "14:30" }],
+      advanceSlots: [advance()],
+    },
+    "Shadman"
+  );
+  assert.strictEqual(s["14:00"].status, "advance");
+  assert.strictEqual(s["14:00"].availableInDays, 3);
+});
+
+test("advance only affects its own time cell", () => {
+  const s = status({ advanceSlots: [advance()] }, "Shadman");
+  assert.strictEqual(s["14:00"].status, "advance");
+  assert.strictEqual(s["14:30"].status, "empty");
+});
+
+test("advance wins over a travel tile too", () => {
+  const s = status(
+    { travelSlots: [travel()], advanceSlots: [advance()] },
+    "Shadman"
+  );
+  assert.strictEqual(s["14:00"].status, "advance");
 });
 
 // ── existing statuses are preserved ──────────────────────────────────────────

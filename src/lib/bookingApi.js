@@ -12,14 +12,16 @@ const API_BASE = import.meta.env.VITE_BOOKING_API_URL || "";
  * Reads from slot_availability table (synced by SOD software).
  * @param {string} date — YYYY-MM-DD
  * @returns {{
- *   date, availableSlots, blockedSlots, travelSlots, vehicles, synced,
- *   availableCount, blockedCount
+ *   date, availableSlots, blockedSlots, travelSlots, advanceSlots, vehicles,
+ *   synced, availableCount, blockedCount
  * }}
  *
  * availableSlots carry promo_percent/promo_area (may be null). travelSlots are
  * status='blocked' rows with a travel block_reason — rendered as "Traveling to
- * {area}" and never selectable. The backend no longer returns student_name, so
- * blockedSlots have no studentName (maskName tolerates its absence → "").
+ * {area}" and never selectable. advanceSlots are status='blocked' rows with
+ * block_reason='advance_booked' — rendered as "Booked In Advance" and never
+ * selectable. The backend no longer returns student_name, so blockedSlots have
+ * no studentName (maskName tolerates its absence → "").
  */
 export async function fetchAvailability(date) {
   const res = await fetch(`${API_BASE}/api/v1/availability?date=${encodeURIComponent(date)}`, {
@@ -63,6 +65,14 @@ export async function fetchAvailability(date) {
       vehicleName: s.vehicle_name,
       promoPercent: s.promo_percent ?? null,
       promoArea: s.promo_area ?? null,
+    })),
+    advanceSlots: (data.advance_slots || []).map((s) => ({
+      time: s.time,
+      end: s.end,
+      display: s.display,
+      availableInDays: s.available_in_days ?? null,
+      vehicleId: s.vehicle_id,
+      vehicleName: s.vehicle_name,
     })),
     vehicles: data.vehicles || [],
     synced: data.synced,

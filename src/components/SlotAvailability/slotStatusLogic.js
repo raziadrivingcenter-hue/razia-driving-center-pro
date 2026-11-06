@@ -12,7 +12,13 @@ export const normalizeArea = (a) =>
   (a || "").trim().toLowerCase().replace(/\s+/g, " ");
 
 // Aggregate per-vehicle slot records into one status per grid cell.
-// Priority: available (any vehicle free) > booked (any booking) > travel > empty.
+// Priority: advance (any advance_booked row) > available (any vehicle free) >
+// booked (any booking) > travel > empty.
+//
+// Advance-booked tiles are detected strictly on block_reason and are never
+// selectable. They outrank "available" so a tile the desktop has already
+// promised to a future course is never offered, matching the desktop's own
+// precedence (booked > advance_booked > claimable travel > available).
 //
 // A slot is available as long as ANY vehicle can take it, even if others are
 // booked/traveling. Travel is shown only when NO vehicle can take it (none
@@ -32,6 +38,23 @@ export function computeSlotStatus({ data, effectiveArea, slotStarts, timeToMin }
 
   for (const slot of slotStarts) {
     const gridMin = timeToMin(slot);
+
+    // 0) Advance — a future course on this vehicle already occupies the tile.
+    //    Detected strictly on block_reason (never on area). Highest priority:
+    //    the desktop publishes only one row per tile, so this is defensive for
+    //    the cross-vehicle case, but it guarantees an advance_booked tile is
+    //    never shown as bookable.
+    const advanceEntries = (data.advanceSlots || []).filter(
+      (s) => gridMin >= timeToMin(s.time) && gridMin < timeToMin(s.end)
+    );
+    if (advanceEntries.length > 0) {
+      const advance = advanceEntries[0];
+      result[slot] = {
+        status: "advance",
+        availableInDays: advance.availableInDays ?? null,
+      };
+      continue;
+    }
 
     // 1) Available takes priority if ANY vehicle is free at this cell — a
     //    slot is bookable as long as one vehicle can take it, even if other

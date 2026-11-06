@@ -55,23 +55,37 @@ export async function onRequest(context) {
     // student_name is intentionally NOT selected: the contract guarantees it is
     // always NULL and it must never leave this function (client must never see
     // any personal data). We add block_reason, area, promo_percent, promo_area
-    // so the UI can render travel tiles and area-discount badges.
-    let query = `${supabaseUrl}/rest/v1/slot_availability?slot_date=eq.${date}`;
-    query += `&select=slot_start,slot_end,status,vehicle_id,vehicle_name,block_reason,area,promo_percent,promo_area`;
+    // so the UI can render travel tiles and area-discount badges, plus
+    // available_in_days so an advance-booked tile can show "Available in N
+    // days". Older databases may not have that column yet, so the query is
+    // retried without it (see below).
+    const baseSelect =
+      "slot_start,slot_end,status,vehicle_id,vehicle_name,block_reason,area,promo_percent,promo_area";
+    const advanceSelect = `${baseSelect},available_in_days`;
+    const buildQuery = (select) => {
+      let q = `${supabaseUrl}/rest/v1/slot_availability?slot_date=eq.${date}&select=${select}`;
+      if (vehicleId) {
+        q += `&vehicle_id=eq.${vehicleId}`;
+      }
+      // Order by vehicle then time
+      q += `&order=vehicle_id.asc,slot_start.asc`;
+      return q;
+    };
+    const headers = {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    };
 
-    if (vehicleId) {
-      query += `&vehicle_id=eq.${vehicleId}`;
+    let response = await fetch(buildQuery(advanceSelect), { headers });
+    if (!response.ok) {
+      const errorText = await response.text();
+      // Tolerate a missing available_in_days column (old rows / migration not
+      // yet applied): retry the same query without it so the grid still
+      // renders. Any other error falls through to the 502 below.
+      if (/available_in_days|PGRST204/i.test(errorText)) {
+        response = await fetch(buildQuery(baseSelect), { headers });
+      }
     }
-
-    // Order by vehicle then time
-    query += `&order=vehicle_id.asc,slot_start.asc`;
-
-    const response = await fetch(query, {
-      headers: {
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${supabaseAnonKey}`,
-      },
-    });
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -85,10 +99,15 @@ export async function onRequest(context) {
     const data = await response.json();
 
     // Bucket rows by status. 'blocked' rows are no longer dropped: travel
-    // blocks (travel_going / travel_returning) go to `travel_slots`, other
-    // blocked rows keep the legacy "booked" look via `blocked_slots`.
+    // blocks (travel_going / travel_returning) go to `travel_slots`,
+    // advance-booked blocks go to `advance_slots` (their own look, never the
+    // generic "booked" one), and other blocked rows keep the legacy "booked"
+    // look via `blocked_slots`.
     const available = data.filter((s) => s.status === "available");
     const booked = data.filter((s) => s.status === "booked");
+    const advance = data.filter(
+      (s) => s.status === "blocked" && s.block_reason === "advance_booked"
+    );
     const travel = data.filter(
       (s) =>
         s.status === "blocked" &&
@@ -96,8 +115,9 @@ export async function onRequest(context) {
     );
     const otherBlocked = data.filter((s) => s.status === "blocked" && !s.block_reason);
 
-    // Group by vehicle — include ALL vehicles (available, booked, travel, or
-    // other-blocked) so the grid can place every tile in the right column.
+    // Group by vehicle — include ALL vehicles (available, booked, travel,
+    // advance, or other-blocked) so the grid can place every tile in the right
+    // column.
     const vehicles = {};
     const ensureVehicle = (vid, vname) => {
       if (!vehicles[vid]) {
@@ -112,12 +132,14 @@ export async function onRequest(context) {
         display: formatTime(slot.slot_start),
       });
     }
-    for (const slot of [...booked, ...travel, ...otherBlocked]) {
+    for (const slot of [...booked, ...travel, ...advance, ...otherBlocked]) {
       ensureVehicle(slot.vehicle_id, slot.vehicle_name);
     }
 
     // Tiles that look "booked" to the visitor: real bookings + non-travel blocks.
-    // Neither carries student_name (it is never selected and never exposed).
+    // Advance-booked tiles are deliberately NOT here — they get their own
+    // "Booked In Advance" look. Neither carries student_name (it is never
+    // selected and never exposed).
     const bookedDisplay = [...booked, ...otherBlocked];
 
     return new Response(
@@ -156,10 +178,22 @@ export async function onRequest(context) {
           promo_percent: s.promo_percent ?? null,
           promo_area: s.promo_area ?? null,
         })),
+        advance_slots: advance.map((s) => ({
+          time: s.slot_start,
+          end: s.slot_end,
+          display: formatTime(s.slot_start),
+          // Working days until the tile is bookable again; null when the
+          // column is missing (old rows) — the UI then shows only the first
+          // label.
+          available_in_days: s.available_in_days ?? null,
+          vehicle_id: s.vehicle_id,
+          vehicle_name: s.vehicle_name,
+        })),
         vehicles: Object.values(vehicles),
         total_slots: data.length,
         available_count: available.length,
-        blocked_count: bookedDisplay.length,
+        // Advance tiles count as booked, never as available.
+        blocked_count: bookedDisplay.length + advance.length,
         synced: data.length > 0,
         note: data.length === 0
           ? "No synced data for this date yet. Slots will appear after sync."
