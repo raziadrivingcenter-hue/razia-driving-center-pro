@@ -7,6 +7,8 @@ import HeroTestimonial from "./Hero/HeroTestimonial";
 import CustomerSignup from "./CustomerSignup";
 import { getSession, onAuthStateChange } from "../lib/auth";
 import googleLogo from "../assets/google-logo.png";
+import femaleDrivingIcon from "../assets/femaledriving.svg";
+import supportIcon from "../assets/support.svg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -240,6 +242,47 @@ function Hero({ onBookNow }) {
           </motion.div>
 
           <HeroFeaturesMarquee />
+
+          {/* Female staff + customer support — side descriptions under the marquee */}
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.5, delay: 0.36, ease: "easeOut" }}
+            className="-ml-[14px] mt-8 flex flex-wrap items-center gap-x-8 gap-y-4"
+          >
+            <div className="flex items-center gap-4">
+              <img
+                src={femaleDrivingIcon}
+                width={56}
+                height={56}
+                alt=""
+                className="h-14 w-14 shrink-0 object-contain"
+              />
+              <div>
+                <p className="text-sm font-extrabold text-gray-900">Female Staff</p>
+                <p className="mt-0.5 text-xs font-medium text-gray-500">
+                  Female Friendly Environment
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <img
+                src={supportIcon}
+                width={46}
+                height={46}
+                alt=""
+                className="h-[46px] w-[46px] shrink-0 translate-y-1 object-contain"
+              />
+              <div>
+                <p className="text-sm font-extrabold text-gray-900">Customer Support</p>
+                <p className="mt-0.5 text-xs font-medium text-gray-500">
+                  Always here to help with bookings and questions.
+                </p>
+              </div>
+            </div>
+          </motion.div>
           </div>
           </div>
 
