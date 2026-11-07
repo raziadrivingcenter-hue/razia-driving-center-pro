@@ -21,6 +21,7 @@ import slotBg from "../../assets/slot-page-bg.png";
 import couponIcon from "../../assets/coupon.svg";
 import travelIcon from "../../assets/travel.svg";
 import femaleDrivingIcon from "../../assets/femaledriving.svg";
+import blockIcon from "../../assets/block.svg";
 
 import { fetchAvailability } from "../../lib/slotAvailability";
 import { useMeta } from "../../useMeta";
@@ -608,11 +609,11 @@ export default function SlotAvailability() {
                                 );
                               } else if (entry.status === "advance") {
                                 // Advance-booked tile: light gray, disabled (never
-                                // clickable), gray time text. Two labels — the red
-                                // "Booked In Advance" and, when the row carries
-                                // available_in_days, a second small label using the
-                                // shared day wording ("Tomorrow" / "Available in N
-                                // days").
+                                // clickable), gray time text. Two labels share one
+                                // row — the red "Booked In Advance" on the left and,
+                                // when the row carries available_in_days, the shared
+                                // day wording ("Tomorrow" / "Available in N days")
+                                // aligned to the right.
                                 const advanceLabel = availableInDaysLabel(
                                   entry.availableInDays
                                 );
@@ -620,9 +621,19 @@ export default function SlotAvailability() {
                                   <div
                                     key={slot}
                                     aria-disabled="true"
-                                    className="advance-slot cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 py-2"
+                                    className="advance-slot relative overflow-hidden cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 py-2"
                                   >
-                                    <div className="flex items-center justify-between gap-2">
+                                    {/* Big block mark centred on the tile. It is
+                                        deliberately larger than the tile, so the
+                                        rounded corners clip it — that bleed is the
+                                        intent. */}
+                                    <img
+                                      src={blockIcon}
+                                      alt=""
+                                      aria-hidden="true"
+                                      className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 opacity-30"
+                                    />
+                                    <div className="relative z-10 flex items-center justify-between gap-2">
                                       <span
                                         className="font-dm-sans text-sm font-medium text-gray-500 truncate"
                                         title={label}
@@ -633,12 +644,12 @@ export default function SlotAvailability() {
                                         {daysLeftLabel(selectedDate)}
                                       </span>
                                     </div>
-                                    <div className="mt-0.5 flex flex-col gap-0.5">
+                                    <div className="relative z-10 mt-0.5 flex items-center justify-between gap-2">
                                       <span className="text-[10px] font-semibold text-red-600">
                                         Booked In Advance
                                       </span>
                                       {advanceLabel && (
-                                        <span className="text-[10px] font-medium text-gray-500">
+                                        <span className="text-[10px] font-medium text-gray-500 text-right">
                                           {advanceLabel}
                                         </span>
                                       )}
