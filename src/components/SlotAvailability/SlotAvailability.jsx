@@ -632,7 +632,7 @@ export default function SlotAvailability() {
                                       src={blockIcon}
                                       alt=""
                                       aria-hidden="true"
-                                      className="pointer-events-none absolute left-0 top-[18px] h-24 w-24 -translate-y-1/2 opacity-15"
+                                      className="pointer-events-none absolute right-0 top-[18px] h-24 w-24 -translate-y-1/2 opacity-10"
                                     />
                                     <div className="relative z-10 flex items-center justify-between gap-2">
                                       <span
