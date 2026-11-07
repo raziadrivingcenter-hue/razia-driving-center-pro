@@ -19,9 +19,8 @@ import {
 import { useRouter } from "../../router";
 import slotBg from "../../assets/slot-page-bg.png";
 import couponIcon from "../../assets/coupon.svg";
-import travelIcon from "../../assets/travel.svg";
+import routeIcon from "../../assets/route.svg";
 import femaleDrivingIcon from "../../assets/femaledriving.svg";
-import blockIcon from "../../assets/block.svg";
 
 import { fetchAvailability } from "../../lib/slotAvailability";
 import { useMeta } from "../../useMeta";
@@ -621,20 +620,9 @@ export default function SlotAvailability() {
                                   <div
                                     key={slot}
                                     aria-disabled="true"
-                                    className="advance-slot relative overflow-hidden cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 py-2"
+                                    className="advance-slot cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 py-2"
                                   >
-                                    {/* Big block mark sitting on the left edge,
-                                        vertically centred on the "Today" badge
-                                        row. It is deliberately larger than the
-                                        tile, so the rounded corners clip it —
-                                        that bleed is the intent. */}
-                                    <img
-                                      src={blockIcon}
-                                      alt=""
-                                      aria-hidden="true"
-                                      className="pointer-events-none absolute right-0 top-[18px] h-24 w-24 -translate-y-1/2 opacity-10"
-                                    />
-                                    <div className="relative z-10 flex items-center justify-between gap-2">
+                                    <div className="flex items-center justify-between gap-2">
                                       <span
                                         className="font-dm-sans text-sm font-medium text-gray-500 truncate"
                                         title={label}
@@ -645,7 +633,7 @@ export default function SlotAvailability() {
                                         {daysLeftLabel(selectedDate)}
                                       </span>
                                     </div>
-                                    <div className="relative z-10 mt-0.5 flex items-center justify-between gap-2">
+                                    <div className="mt-0.5 flex items-center justify-between gap-2">
                                       <span className="text-[10px] font-semibold text-red-600">
                                         Booked In Advance
                                       </span>
@@ -725,23 +713,25 @@ export default function SlotAvailability() {
                                     title={travelLabel}
                                   >
                                     <div className="flex items-center justify-between gap-2">
-                                      <span
-                                        className="font-dm-sans text-sm font-medium text-yellow-700 truncate"
-                                        title={label}
-                                      >
-                                        {label}
+                                      <span className="flex min-w-0 items-center gap-1.5">
+                                        <span
+                                          className="font-dm-sans text-sm font-medium text-yellow-700 truncate"
+                                          title={label}
+                                        >
+                                          {label}
+                                        </span>
+                                        <img
+                                          src={routeIcon}
+                                          width="14"
+                                          height="14"
+                                          alt=""
+                                          className="shrink-0"
+                                        />
                                       </span>
                                       <span
                                         className="flex shrink-0 items-center gap-1 rounded-full bg-yellow-200/70 px-2 py-0.5 text-[10px] font-bold text-yellow-700"
                                         title={travelLabel}
                                       >
-                                        <img
-                                          src={travelIcon}
-                                          width="12"
-                                          height="12"
-                                          alt=""
-                                          className="shrink-0"
-                                        />
                                         <span className="truncate">{travelLabel}</span>
                                       </span>
                                     </div>
