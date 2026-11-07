@@ -623,15 +623,16 @@ export default function SlotAvailability() {
                                     aria-disabled="true"
                                     className="advance-slot relative overflow-hidden cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 py-2"
                                   >
-                                    {/* Big block mark centred on the tile. It is
-                                        deliberately larger than the tile, so the
-                                        rounded corners clip it — that bleed is the
-                                        intent. */}
+                                    {/* Big block mark sitting on the left edge,
+                                        vertically centred on the "Today" badge
+                                        row. It is deliberately larger than the
+                                        tile, so the rounded corners clip it —
+                                        that bleed is the intent. */}
                                     <img
                                       src={blockIcon}
                                       alt=""
                                       aria-hidden="true"
-                                      className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 opacity-30"
+                                      className="pointer-events-none absolute left-0 top-[18px] h-24 w-24 -translate-y-1/2 opacity-15"
                                     />
                                     <div className="relative z-10 flex items-center justify-between gap-2">
                                       <span
