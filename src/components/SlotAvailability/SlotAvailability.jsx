@@ -317,16 +317,23 @@ export default function SlotAvailability() {
   return (
     <div
       className={`rdc-booking min-h-screen bg-gray-50 pb-16 relative overflow-hidden ${
-        bookingSlot ? "pt-10" : "pt-24"
+        bookingSlot ? "pt-10 lg:flex lg:flex-col lg:pt-0" : "pt-24"
       }`}
     >
-      {/* Background image — 50% transparent, cover fills 1920×1080 desktop, crops on mobile */}
+      {/* Pinned to the viewport so the map stays put while the cards scroll
+          over it. `absolute` would make the artwork travel with the page. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-20"
         style={{ backgroundImage: `url(${slotBg})` }}
       />
-      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
+      <div
+        className={`relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 ${
+          bookingSlot
+            ? "lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:py-10"
+            : ""
+        }`}
+      >
         {/* Hero — back link, title, subtitle and date picker. All of it steps
             aside once the booking wizard is open; the wizard carries its own
             "Back to slots" control, so the page chrome would only duplicate it. */}

@@ -101,14 +101,19 @@ export function LiquidGlass({
     if (blobRef.current) URL.revokeObjectURL(blobRef.current);
   }, []);
 
+  // The pre-ready fallback has to match the ready backdrop as closely as
+  // possible. The filter attaching is not a transition, so any difference —
+  // a 10px blur collapsing to 0.5px, or the pending tint below dropping out —
+  // shows up as a one-frame glitch on the surface.
+  const readyBackdrop = "blur(0.5px) saturate(1.85) brightness(1.02)";
   const backdrop =
     mode === "opaque"
       ? "none"
       : mode === "simple"
         ? "blur(20px) saturate(1.4)"
         : filter
-          ? `url(#${filter.id}) blur(0.5px) saturate(1.85) brightness(1.02)`
-          : "blur(10px) saturate(1.6) brightness(1.04)";
+          ? `url(#${filter.id}) ${readyBackdrop}`
+          : readyBackdrop;
 
   return (
     <div

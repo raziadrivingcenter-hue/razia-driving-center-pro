@@ -15,7 +15,6 @@ import { submitSlotBooking } from "../../lib/slotAvailability";
 import { courses } from "../../data/courses";
 import { calculateTotalPayable, getPlanType } from "../../lib/pickDropCalculator";
 import courseDiaryIcon from "../../assets/coursediary.svg";
-import { LiquidGlass } from "../UI/liquid-glass";
 
 function formatTime12(timeStr) {
   // "09:00" or "09:00:00" → "9:00 AM"
@@ -386,17 +385,8 @@ export default function BookingForm({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.2 }}
-          className="mx-auto max-w-2xl rounded-2xl border border-gray-200 p-5 shadow-sm sm:p-6"
+          className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"
         >
-          {/* Liquid glass surface — refracts the page behind the card. The
-              card content sits in the `relative` wrapper below so it paints
-              above this layer in every fallback mode (Safari / Firefox /
-              reduced-transparency give the layer an opaque background). */}
-          <LiquidGlass
-            radius={16}
-            frost={3}
-            className="pointer-events-none absolute inset-0 z-0"
-          />
           <div className="relative">
           {/* Back + slot summary */}
           <div className="flex items-start justify-between">
