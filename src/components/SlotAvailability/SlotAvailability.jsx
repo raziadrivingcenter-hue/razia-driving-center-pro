@@ -286,12 +286,23 @@ export default function SlotAvailability() {
 
     const rect = e.currentTarget.getBoundingClientRect();
 
-    // Flight target = the booking card: centred, max-w-2xl (672px), at the top
-    // of the content column.
+    // Flight target = the booking card: centred, max-w-2xl (672px). On
+    // desktop that is the top of the content column. On mobile the wizard
+    // opens near the top of the page, so flying to the column top reads as
+    // the card shooting upward — end the flight centred in the viewport
+    // instead, which is where the wizard's own centre lands, keeping the
+    // hand-off seamless.
     const c = contentRef.current?.getBoundingClientRect();
     const targetWidth = c
       ? Math.min(c.width, 672)
       : Math.min(window.innerWidth - 32, 672);
+    const targetHeight = 560;
+    const isMobile = window.innerWidth < 640;
+    const targetTop = isMobile
+      ? Math.max(0, (window.innerHeight - targetHeight) / 2)
+      : c
+        ? c.top
+        : window.innerHeight * 0.2;
 
     setZoom({
       slot,
@@ -303,12 +314,12 @@ export default function SlotAvailability() {
         height: rect.height,
       },
       target: {
-        top: c ? c.top : window.innerHeight * 0.2,
+        top: targetTop,
         left: c
           ? c.left + (c.width - targetWidth) / 2
           : (window.innerWidth - targetWidth) / 2,
         width: targetWidth,
-        height: 560,
+        height: targetHeight,
       },
     });
 
