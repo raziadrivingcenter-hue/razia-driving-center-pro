@@ -14,10 +14,13 @@ import {
   Sunset,
   CalendarOff,
   ArrowLeft,
+  MessageCircle,
 } from "lucide-react";
 import { useRouter } from "../../router";
 import slotBg from "../../assets/slot-page-bg.png";
 import couponIcon from "../../assets/coupon.svg";
+import travelIcon from "../../assets/travel.svg";
+import femaleDrivingIcon from "../../assets/femaledriving.svg";
 
 import { fetchAvailability } from "../../lib/slotAvailability";
 import { useMeta } from "../../useMeta";
@@ -506,7 +509,7 @@ export default function SlotAvailability() {
                       return (
                         <div
                           key={period.key}
-                          className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                          className="flex flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
                         >
                           <div className="mb-3 flex items-center gap-2">
                             <PeriodIcon size={16} className="text-[#FF6201]" />
@@ -717,10 +720,17 @@ export default function SlotAvailability() {
                                         {label}
                                       </span>
                                       <span
-                                        className="shrink-0 rounded-full bg-yellow-200/70 px-2 py-0.5 text-[10px] font-bold text-yellow-700 truncate"
+                                        className="flex shrink-0 items-center gap-1 rounded-full bg-yellow-200/70 px-2 py-0.5 text-[10px] font-bold text-yellow-700"
                                         title={travelLabel}
                                       >
-                                        {travelLabel}
+                                        <img
+                                          src={travelIcon}
+                                          width="12"
+                                          height="12"
+                                          alt=""
+                                          className="shrink-0"
+                                        />
+                                        <span className="truncate">{travelLabel}</span>
                                       </span>
                                     </div>
                                   </div>
@@ -759,6 +769,39 @@ export default function SlotAvailability() {
                               );
                             })}
                           </div>
+
+                          {/* Evening runs 17:00–19:00, so this column is shorter
+                              than the other two and leaves a gap at the bottom.
+                              Fill it with the instructor artwork, a line of
+                              context and a WhatsApp call-to-action. `flex-1`
+                              only stretches on desktop, where the grid row is
+                              equal-height; on mobile it wraps to content. */}
+                          {period.key === "evening" && (
+                            <div className="mt-3 flex flex-1 flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-orange-200 bg-orange-50/70 px-4 py-5 text-center">
+                              <img
+                                src={femaleDrivingIcon}
+                                width="80"
+                                height="80"
+                                alt=""
+                                className="h-20 w-20 object-contain"
+                              />
+                              <p className="text-xs font-semibold text-gray-700">
+                                Evening slots are limited and fill up fast —
+                                reserve yours before they&apos;re gone.
+                              </p>
+                              <a
+                                href={`https://wa.me/923094461407?text=${encodeURIComponent(
+                                  "Hello Razia Driving Center,\n\nI would like to arrange my evening slot according to my needs. Please help me book a suitable time."
+                                )}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#1da851]"
+                              >
+                                <MessageCircle size={14} />
+                                Message us to arrange your Slot according to your need
+                              </a>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
