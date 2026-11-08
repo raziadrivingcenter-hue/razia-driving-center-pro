@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -15,6 +15,7 @@ import { submitSlotBooking } from "../../lib/slotAvailability";
 import { courses } from "../../data/courses";
 import { calculateTotalPayable, getPlanType } from "../../lib/pickDropCalculator";
 import courseDiaryIcon from "../../assets/coursediary.svg";
+import PickupMapPanel from "./PickupMapPanel";
 
 function formatTime12(timeStr) {
   // "09:00" or "09:00:00" → "9:00 AM"
@@ -212,6 +213,11 @@ export default function BookingForm({
   const [distance, setDistance] = useState("");
   const [locationStatus, setLocationStatus] = useState("idle");
   const [locationError, setLocationError] = useState("");
+  // Pickup-map report: { status, distanceKm, withinServiceArea, zoneContains,
+  // routeTooLong, error, estimateKm }. `null` until the map has reported.
+  const [routeInfo, setRouteInfo] = useState(null);
+  const [mapUnsupported, setMapUnsupported] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
@@ -219,6 +225,42 @@ export default function BookingForm({
 
   const wantsPickDrop = pickup === "Yes";
   const distanceNum = Number(distance) || 0;
+
+  // The map is the primary way to set the pickup point. Turning Pick & Drop
+  // off clears the map-derived distance so a later "Yes" starts fresh.
+  const handlePickupToggle = useCallback((opt) => {
+    setPickup(opt);
+    if (opt === "No") {
+      setDistance("");
+      setRouteInfo(null);
+      setMapUnsupported(false);
+      setManualOpen(false);
+      setLocationStatus("idle");
+      setLocationError("");
+    }
+  }, []);
+
+  // A ready route overwrites whatever distance was there — the map is
+  // authoritative. Manual entry still works as a fallback.
+  const handleRouteChange = useCallback((info) => {
+    setRouteInfo(info);
+    if (info?.status === "ready" && Number.isFinite(info.distanceKm)) {
+      setDistance(String(Number(info.distanceKm.toFixed(2))));
+    } else if (info?.status === "loading" || info?.status === "error") {
+      // Never show a price for a distance that is no longer current.
+      setDistance("");
+    }
+  }, []);
+
+  // Routing can fail or WebGL can be missing — reveal the manual entry then,
+  // so a map problem never blocks the booking.
+  useEffect(() => {
+    if (mapUnsupported || routeInfo?.status === "error") {
+      // Revealing the manual field is a direct response to the map failing.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setManualOpen(true);
+    }
+  }, [mapUnsupported, routeInfo?.status]);
 
   // `course` holds the display title (e.g. "PLUS Plan"). The pricing engine
   // keys off the internal name, so resolve it for the calculation only.
@@ -331,8 +373,16 @@ export default function BookingForm({
     if (wantsPickDrop) {
       if (!address.trim()) e.address = "Please enter your pickup address";
       else if (address.trim().length < 5) e.address = "Please enter a complete address";
-      if (!distanceNum || distanceNum <= 0) e.distance = "Enter distance";
-      else if (distanceNum > 20) e.distance = "Pick & Drop is available up to 20 KM";
+      if (!distanceNum || distanceNum <= 0) {
+        e.distance = "Set your pickup on the map or enter a distance";
+      } else if (distanceNum > 20) {
+        e.distance = "Pick & Drop is available up to 20 KM";
+      }
+      if (routeInfo?.withinServiceArea === false) {
+        e.distance = routeInfo.routeTooLong
+          ? "The driving route is over 20 KM — pick & drop is not available here"
+          : "This pickup is outside our 20 KM service area";
+      }
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -475,7 +525,7 @@ export default function BookingForm({
                   <button
                     type="button"
                     key={opt}
-                    onClick={() => setPickup(opt)}
+                    onClick={() => handlePickupToggle(opt)}
                     className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
                       pickup === opt
                         ? "border-[#FF6201] bg-orange-50 text-[#FF6201]"
@@ -518,48 +568,75 @@ export default function BookingForm({
                         )}
                       </div>
 
-                      <div className="flex items-end gap-2">
-                        <div className="flex-1">
-                          <label className="mb-1 block text-xs font-semibold text-gray-600">
-                            Distance (KM)
-                          </label>
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            value={distance}
-                            onChange={(e) => {
-                              const only = e.target.value.replace(/[^0-9.]/g, "");
-                              const parts = only.split(".");
-                              const sanitized =
-                                parts.length > 2
-                                  ? parts[0] + "." + parts.slice(1).join("")
-                                  : only;
-                              setDistance(sanitized);
-                            }}
-                            placeholder="e.g. 5"
-                            className={`font-dm-sans w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:ring-2 ${
-                              errors.distance
-                                ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-                                : "border-gray-200 focus:border-[#FF6201] focus:ring-[#FF6201]/20"
-                            }`}
-                          />
-                          {errors.distance && (
-                            <p className="mt-1 text-xs text-red-500">{errors.distance}</p>
-                          )}
+                      {/* Pickup map — drag to put your pickup under the crosshair.
+                          The route is fetched 1.5 s after the last map touch and
+                          its distance feeds the existing pricing engine. */}
+                      <PickupMapPanel
+                        onRouteChange={handleRouteChange}
+                        onUnsupported={() => setMapUnsupported(true)}
+                      />
+
+                      {routeInfo?.withinServiceArea === false &&
+                        !routeInfo?.routeTooLong && (
+                          <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
+                            This pickup point is outside our 20 KM service area,
+                            so pick &amp; drop is not available here.
+                          </p>
+                        )}
+
+                      {errors.distance && (
+                        <p className="text-xs font-medium text-red-500">{errors.distance}</p>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setManualOpen((open) => !open)}
+                        className="text-xs font-semibold text-gray-500 underline transition hover:text-gray-700"
+                      >
+                        {manualOpen ? "Hide manual distance" : "Enter distance manually"}
+                      </button>
+
+                      {manualOpen && (
+                        <div className="flex items-end gap-2">
+                          <div className="flex-1">
+                            <label className="mb-1 block text-xs font-semibold text-gray-600">
+                              Distance (KM)
+                            </label>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={distance}
+                              onChange={(e) => {
+                                const only = e.target.value.replace(/[^0-9.]/g, "");
+                                const parts = only.split(".");
+                                const sanitized =
+                                  parts.length > 2
+                                    ? parts[0] + "." + parts.slice(1).join("")
+                                    : only;
+                                setDistance(sanitized);
+                              }}
+                              placeholder="e.g. 5"
+                              className={`font-dm-sans w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:ring-2 ${
+                                errors.distance
+                                  ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                                  : "border-gray-200 focus:border-[#FF6201] focus:ring-[#FF6201]/20"
+                              }`}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleCheckDistance}
+                            disabled={locationStatus !== "idle"}
+                            className="flex h-[38px] shrink-0 items-center justify-center rounded-lg bg-gray-900 px-3 text-xs font-semibold text-white transition hover:bg-gray-700 disabled:opacity-60"
+                          >
+                            {locationStatus === "idle"
+                              ? "Check"
+                              : locationStatus === "locating"
+                              ? "Locating…"
+                              : "Opening…"}
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={handleCheckDistance}
-                          disabled={locationStatus !== "idle"}
-                          className="flex h-[38px] shrink-0 items-center justify-center rounded-lg bg-gray-900 px-3 text-xs font-semibold text-white transition hover:bg-gray-700 disabled:opacity-60"
-                        >
-                          {locationStatus === "idle"
-                            ? "Check"
-                            : locationStatus === "locating"
-                            ? "Locating…"
-                            : "Opening…"}
-                        </button>
-                      </div>
+                      )}
 
                       {distanceNum > 20 && (
                         <p className="flex items-center gap-1.5 text-xs font-medium text-red-500">
@@ -577,7 +654,7 @@ export default function BookingForm({
             </div>
 
             {/* Pricing preview */}
-            {pricing && pricing.courseFee > 0 && (() => {
+            {pricing && pricing.courseFee > 0 && routeInfo?.withinServiceArea !== false && (() => {
               // Effective per-km rate across the whole course (rate × days × round
               // trip) — taken straight from the calculator, not recomputed here.
               const perKmRate = pricing.effectiveRatePerKm;

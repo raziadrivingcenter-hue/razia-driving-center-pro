@@ -13,10 +13,12 @@
     "test:slot-config": "node scripts/test-slot-config.mjs",
     "test:booking-handlers": "node --test scripts/test-booking-handlers.mjs",
     "test:student-dashboard": "node scripts/test-student-dashboard.mjs",
+    "test:service-zones": "node scripts/test-service-zones.mjs",
     "fetch:reviews": "node scripts/fetch-google-reviews.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",
     "@react-three/rapier": "^2.2.0",
@@ -27,6 +29,7 @@
     "framer-motion": "^12.42.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.24.0",
+    "maplibre-gl": "^6.16.0",
     "motion": "^14.3.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
