@@ -58,6 +58,9 @@ function MapController({ pickup, route, routeStatus, onPickupChange }) {
   const callbackRef = useRef(onPickupChange);
 
   const lastZoomRef = useRef(map.getZoom());
+  // Centre as the map was handed to us (BASE_POINT), so the initial `setView`
+  // and container resizes do not look like a user pan.
+  const lastCenterRef = useRef({ lat: BASE_LOCATION.lat, lng: BASE_LOCATION.lng });
   const dragZoomRef = useRef(map.getZoom());
   const pickupTimerRef = useRef(null);
   const previewTimerRef = useRef(null);
@@ -141,13 +144,22 @@ function MapController({ pickup, route, routeStatus, onPickupChange }) {
       }
 
       // Same zoom → a pan. Remember this as the user's working zoom and
-      // publish the new pickup point (debounced).
+      // publish the new pickup point (debounced) — but only when the centre
+      // actually moved, so the initial `setView` and container resizes do not
+      // create a pickup at the office.
       dragZoomRef.current = zoom;
-      if (!p) return;
-      if (center.lat === p.lat && center.lng === p.lng) return;
+      const last = lastCenterRef.current;
+      if (
+        last &&
+        Math.abs(center.lat - last.lat) < 1e-7 &&
+        Math.abs(center.lng - last.lng) < 1e-7
+      ) {
+        return;
+      }
 
       clearTimeout(pickupTimerRef.current);
       pickupTimerRef.current = setTimeout(() => {
+        lastCenterRef.current = { lat: center.lat, lng: center.lng };
         callbackRef.current({ lat: center.lat, lng: center.lng });
       }, BOOKING_ROUTE_DEBOUNCE_MS);
     };
