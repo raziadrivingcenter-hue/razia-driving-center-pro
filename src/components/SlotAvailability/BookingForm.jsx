@@ -186,6 +186,9 @@ function CourseSelect({ value, onChange, error }) {
 // past the form. Every number comes from the pricing engine; only the layout
 // lives here.
 function PricingSummary({ pricing, discount, promoMatches, promoPercent }) {
+  // Trim floating-point noise from the display (5.86 - 2 should read as
+  // 3.86 km, not 3.8599999999999999 km).
+  const km = (value) => Number(Number(value).toFixed(2));
   // Effective per-km rate across the whole course (rate × days × round trip).
   const perKmRate = pricing.effectiveRatePerKm;
   const withinFree = pricing.freeKm > 0 && pricing.distanceKm <= pricing.freeKm;
@@ -213,12 +216,13 @@ function PricingSummary({ pricing, discount, promoMatches, promoPercent }) {
           "Within free distance"
         ) : pricing.freeKm > 0 ? (
           <>
-            {pricing.distanceKm} km &minus; {pricing.freeKm} km free ={" "}
-            {pricing.chargeableKm} km &times; Rs. {perKmRate.toLocaleString()}
+            {km(pricing.distanceKm)} km &minus; {km(pricing.freeKm)} km free ={" "}
+            {km(pricing.chargeableKm)} km &times; Rs.{" "}
+            {perKmRate.toLocaleString()}
           </>
         ) : (
           <>
-            {pricing.distanceKm} km &times; Rs. {perKmRate.toLocaleString()}
+            {km(pricing.distanceKm)} km &times; Rs. {perKmRate.toLocaleString()}
           </>
         )}
       </p>

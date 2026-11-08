@@ -22,6 +22,7 @@ import {
   AttributionControl,
   useMap,
 } from "react-leaflet";
+import { LatLngBounds } from "leaflet";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import {
   BASE_LOCATION,
@@ -41,49 +42,129 @@ const BASE_POINT = [BASE_LOCATION.lat, BASE_LOCATION.lng];
 
 const formatKm = (value) => Number(value).toFixed(1);
 
-/** Waits for the map to stop moving, then hands the centre (the crosshair
- *  position) to the parent. `pointerdown`/`wheel` mark a real user touch so
- *  the initial `setView` does not fire a route. */
-function CenterPicker({ onPickupChange }) {
+/** Keeps the crosshair locked on the pickup point while the map is used.
+ *
+ *  A same-zoom move is a pan — the user is choosing a pickup point, so the
+ *  centre is published (debounced) to the parent. A zoom is only a view
+ *  change: the centre is snapped back onto the pickup so the crosshair never
+ *  drifts, and the pickup itself is left untouched.
+ *
+ *  Once a route has loaded, the map zooms out around the pickup after a
+ *  second so the whole route is visible; zooming back in then restores the
+ *  zoom the user had while dragging. */
+function MapController({ pickup, route, routeStatus, onPickupChange }) {
   const map = useMap();
-  const timerRef = useRef(null);
-  const touchedRef = useRef(false);
+  const pickupRef = useRef(pickup);
   const callbackRef = useRef(onPickupChange);
+
+  const lastZoomRef = useRef(map.getZoom());
+  const dragZoomRef = useRef(map.getZoom());
+  const pickupTimerRef = useRef(null);
+  const previewTimerRef = useRef(null);
+  const previewZoomRef = useRef(null);
+  const previewingRef = useRef(false);
+
+  useEffect(() => {
+    pickupRef.current = pickup;
+  }, [pickup]);
 
   useEffect(() => {
     callbackRef.current = onPickupChange;
   }, [onPickupChange]);
 
-  useEffect(() => {
-    const container = map.getContainer();
-    const markTouched = () => {
-      touchedRef.current = true;
-    };
-    container.addEventListener("pointerdown", markTouched);
-    container.addEventListener("wheel", markTouched, { passive: true });
-    return () => {
-      container.removeEventListener("pointerdown", markTouched);
-      container.removeEventListener("wheel", markTouched);
-    };
-  }, [map]);
+  // Never leave a timer running after unmount.
+  useEffect(
+    () => () => {
+      clearTimeout(pickupTimerRef.current);
+      clearTimeout(previewTimerRef.current);
+    },
+    []
+  );
 
+  // ── Route preview ────────────────────────────────────────────────────────
+  // 1 s after the route loads, zoom out around the pickup so the full route
+  // is on screen. `fitZoom - 1` because the view stays centred on one end of
+  // the route instead of the middle.
   useEffect(() => {
-    const schedule = () => {
-      if (!touchedRef.current) return;
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        const center = map.getCenter();
+    if (routeStatus !== "ready" || !route || !pickup) return;
+
+    clearTimeout(previewTimerRef.current);
+    previewTimerRef.current = setTimeout(() => {
+      const p = pickupRef.current;
+      if (!p) return;
+
+      const bounds = new LatLngBounds([BASE_POINT, [p.lat, p.lng]]);
+      const fitZoom = map.getBoundsZoom(bounds, false, [40, 40]);
+      // Never zoom in for the preview — a route that already fits stays put.
+      const previewZoom = Math.min(
+        map.getZoom(),
+        Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), fitZoom - 1))
+      );
+
+      previewZoomRef.current = previewZoom;
+      previewingRef.current = true;
+      map.setZoomAround([p.lat, p.lng], previewZoom, { animate: true });
+    }, 1000);
+
+    return () => clearTimeout(previewTimerRef.current);
+  }, [routeStatus, route, pickup, map]);
+
+  // ── Pan vs zoom ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    const onMoveEnd = () => {
+      const zoom = map.getZoom();
+      const center = map.getCenter();
+      const p = pickupRef.current;
+
+      if (zoom !== lastZoomRef.current) {
+        lastZoomRef.current = zoom;
+
+        // A zoom moved the centre (pinch, double-click or the zoom control) —
+        // snap back so the crosshair stays on the pickup.
+        if (p) map.setView([p.lat, p.lng], zoom, { animate: false });
+
+        // Zooming in from the automatic preview puts the user back at the
+        // zoom they were using while dragging.
+        if (
+          previewingRef.current &&
+          previewZoomRef.current != null &&
+          zoom > previewZoomRef.current &&
+          p
+        ) {
+          previewingRef.current = false;
+          previewZoomRef.current = null;
+          map.setZoomAround([p.lat, p.lng], dragZoomRef.current, {
+            animate: true,
+          });
+        }
+        return;
+      }
+
+      // Same zoom → a pan. Remember this as the user's working zoom and
+      // publish the new pickup point (debounced).
+      dragZoomRef.current = zoom;
+      if (!p) return;
+      if (center.lat === p.lat && center.lng === p.lng) return;
+
+      clearTimeout(pickupTimerRef.current);
+      pickupTimerRef.current = setTimeout(() => {
         callbackRef.current({ lat: center.lat, lng: center.lng });
       }, BOOKING_ROUTE_DEBOUNCE_MS);
     };
 
-    map.on("move", schedule);
-    map.on("zoom", schedule);
-    return () => {
-      map.off("move", schedule);
-      map.off("zoom", schedule);
-      if (timerRef.current) clearTimeout(timerRef.current);
+    map.on("moveend", onMoveEnd);
+    return () => map.off("moveend", onMoveEnd);
+  }, [map]);
+
+  // A new drag cancels the preview and the saved zoom.
+  useEffect(() => {
+    const onDragStart = () => {
+      clearTimeout(previewTimerRef.current);
+      previewingRef.current = false;
+      previewZoomRef.current = null;
     };
+    map.on("dragstart", onDragStart);
+    return () => map.off("dragstart", onDragStart);
   }, [map]);
 
   return null;
@@ -141,7 +222,7 @@ export default function PickupMapPanel({ onRouteChange, onUnsupported }) {
     setRouteError("");
   }, []);
 
-  // The CenterPicker already waits 1.5 s after the last touch; this effect
+  // The MapController already waits 1.5 s after the last touch; this effect
   // only fetches. All setState calls live inside the async callback so the
   // effect body stays side-effect free.
   useEffect(() => {
@@ -253,7 +334,12 @@ export default function PickupMapPanel({ onRouteChange, onUnsupported }) {
           <VectorBaseLayer />
           <ZoomControl position="bottomright" />
           <AttributionControl position="bottomleft" />
-          <CenterPicker onPickupChange={handlePickupChange} />
+          <MapController
+            pickup={pickup}
+            route={route}
+            routeStatus={routeStatus}
+            onPickupChange={handlePickupChange}
+          />
           <MapResizer />
 
           {SERVICE_ZONE && (
