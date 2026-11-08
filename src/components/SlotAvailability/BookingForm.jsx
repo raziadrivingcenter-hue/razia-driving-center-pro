@@ -16,6 +16,7 @@ import { courses } from "../../data/courses";
 import { calculateTotalPayable, getPlanType } from "../../lib/pickDropCalculator";
 import courseDiaryIcon from "../../assets/coursediary.svg";
 import PickupMapPanel from "./PickupMapPanel";
+import PaymentMethodSelect from "./PaymentMethodSelect";
 
 function formatTime12(timeStr) {
   // "09:00" or "09:00:00" → "9:00 AM"
@@ -313,6 +314,9 @@ export default function BookingForm({
   const [routeInfo, setRouteInfo] = useState(null);
   const [mapUnsupported, setMapUnsupported] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  // Payment On Arrival is the only method live today, so it is the default.
+  // Online methods exist in the dropdown but are disabled until they launch.
+  const [paymentMethod, setPaymentMethod] = useState("payment_on_arrival");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
@@ -692,6 +696,10 @@ export default function BookingForm({
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {/* Payment method — online methods are not live yet, so they are
+                    listed disabled with a "Coming Soon" note. */}
+                <PaymentMethodSelect value={paymentMethod} onChange={setPaymentMethod} />
               </div>
 
               {/* ── Right: the pickup map and the price it produces ── */}

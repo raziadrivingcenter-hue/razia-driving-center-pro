@@ -1,0 +1,265 @@
+/* =============================================================================
+   PaymentMethodSelect — same dropdown language as AreaSelect.
+   Chrome (glass surfaces, radius, shadow, type) comes from the shared slot
+   tokens in slot-tokens.css; each declaration keeps a literal fallback so the
+   control renders correctly even outside a .rdc-booking wrapper.
+   ============================================================================= */
+
+/* Block + full width so the dropdown fills the form column like the text
+   inputs above it (AreaSelect stays inline-block for the slot grid). */
+.pm-select {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 180px;
+  font-family: var(--font-raleway, "Raleway", ui-sans-serif, system-ui, sans-serif);
+}
+
+.pm-select__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: var(--rd-label-size, 11px);
+  font-weight: var(--rd-label-weight, 600);
+  color: #6b7280;
+  letter-spacing: var(--rd-label-tracking, 0.01em);
+}
+
+/* ---- Trigger ----------------------------------------------------------- */
+.pm-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: var(--rd-trigger-h, 40px);
+  padding: 0 14px;
+  border-radius: var(--rd-radius-md, 12px);
+  border: 1px solid var(--rd-border, rgba(0, 0, 0, 0.08));
+  background: var(--rd-glass, rgba(255, 255, 255, 0.85));
+  backdrop-filter: var(--rd-blur, blur(12px) saturate(180%));
+  -webkit-backdrop-filter: var(--rd-blur, blur(12px) saturate(180%));
+  box-shadow: var(--rd-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
+  color: #111827;
+  font-size: var(--rd-body-size, 15px);
+  font-weight: var(--rd-body-weight, 500);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--rd-dur-fast, 120ms) var(--rd-ease, ease),
+    box-shadow var(--rd-dur-fast, 120ms) var(--rd-ease, ease);
+}
+
+.pm-select__trigger:hover {
+  border-color: var(--rd-border-hover, rgba(0, 0, 0, 0.16));
+}
+
+.pm-select__trigger:focus {
+  outline: none;
+}
+
+.pm-select__trigger:focus-visible {
+  box-shadow: var(--rd-accent-ring, 0 0 0 3px rgba(255, 98, 1, 0.25));
+}
+
+.pm-select--open .pm-select__trigger {
+  box-shadow: var(--rd-accent-ring, 0 0 0 3px rgba(255, 98, 1, 0.25));
+}
+
+.pm-select__trigger-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pm-select__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-select__chevron {
+  flex-shrink: 0;
+  color: #6b7280;
+  transition: transform var(--rd-dur-med, 160ms) var(--rd-ease, ease);
+}
+
+.pm-select--open .pm-select__chevron {
+  transform: rotate(180deg);
+}
+
+/* ---- Method logo ------------------------------------------------------- */
+.pm-select__logo {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  object-fit: contain;
+}
+
+.pm-select__logo--cash {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.06);
+  color: #374151;
+}
+
+/* ---- Native select (touch / coarse pointer) ---------------------------- */
+.pm-select__native {
+  width: 100%;
+  height: var(--rd-trigger-h, 40px);
+  padding: 0 14px;
+  border-radius: var(--rd-radius-md, 12px);
+  border: 1px solid var(--rd-border, rgba(0, 0, 0, 0.08));
+  background: var(--rd-glass, rgba(255, 255, 255, 0.85));
+  backdrop-filter: var(--rd-blur, blur(12px) saturate(180%));
+  -webkit-backdrop-filter: var(--rd-blur, blur(12px) saturate(180%));
+  box-shadow: var(--rd-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
+  color: #111827;
+  font-size: var(--rd-body-size, 15px);
+  font-weight: var(--rd-body-weight, 500);
+  cursor: pointer;
+}
+
+/* ---- Panel ------------------------------------------------------------- *
+   Open/close scale/translate are driven by framer-motion on the wrapper
+   (inline styles win over these). The glass surface lives on the wrapper, not
+   the <ul>, so the backdrop-filter samples the page behind it. */
+
+.pm-select__panel-wrap {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  z-index: 60;
+  pointer-events: auto;
+  border-radius: var(--rd-radius-lg, 14px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .pm-select__panel-wrap {
+    background: var(--rd-surface-solid, #ffffff);
+  }
+}
+
+.pm-select__panel {
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: var(--rd-radius-lg, 14px);
+  pointer-events: auto;
+}
+
+.pm-select__panel::-webkit-scrollbar {
+  width: 6px;
+}
+.pm-select__panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+.pm-select__panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---- Options ----------------------------------------------------------- */
+.pm-select__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: var(--rd-option-h, 38px);
+  padding: 0 12px;
+  border-radius: var(--rd-radius-sm, 9px);
+  font-size: var(--rd-body-size, 15px);
+  color: #111827;
+  cursor: pointer;
+}
+
+.pm-select__option:hover,
+.pm-select__option--highlight {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.pm-select__option--selected {
+  color: var(--rd-accent, #ff6201);
+  font-weight: 600;
+}
+
+.pm-select__option-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pm-select__option-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Not live yet — cannot be chosen, and says so instead of showing a check. */
+.pm-select__option--disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.pm-select__option--disabled:hover {
+  background: transparent;
+}
+
+.pm-select__option--disabled .pm-select__logo {
+  opacity: 0.55;
+}
+
+.pm-select__badge {
+  flex-shrink: 0;
+  margin-left: 10px;
+  border-radius: var(--rd-radius-pill, 9999px);
+  background: rgba(239, 68, 68, 0.1);
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #dc2626;
+  white-space: nowrap;
+}
+
+.pm-select__check {
+  flex-shrink: 0;
+  margin-left: 10px;
+  color: var(--rd-accent, #ff6201);
+}
+
+/* ---- Touch: native select only, hide custom UI ------------------------- */
+@media (pointer: coarse) {
+  .pm-select__trigger,
+  .pm-select__panel {
+    display: none;
+  }
+}
+
+@media (pointer: fine) {
+  .pm-select__native {
+    display: none;
+  }
+}
+
+/* ---- Reduced motion ---------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .pm-select__panel,
+  .pm-select__chevron,
+  .pm-select__trigger {
+    transition: none;
+  }
+  .pm-select__panel {
+    transform: none;
+  }
+}
