@@ -181,6 +181,82 @@ function CourseSelect({ value, onChange, error }) {
   );
 }
 
+// Pricing summary — rendered directly under the pickup map so the customer
+// sees the distance, the charge calculation and the total without scrolling
+// past the form. Every number comes from the pricing engine; only the layout
+// lives here.
+function PricingSummary({ pricing, discount, promoMatches, promoPercent }) {
+  // Effective per-km rate across the whole course (rate × days × round trip).
+  const perKmRate = pricing.effectiveRatePerKm;
+  const withinFree = pricing.freeKm > 0 && pricing.distanceKm <= pricing.freeKm;
+  const totalPayable = pricing.courseFee + pricing.pickDropCharges - discount;
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+      {/* Course fee */}
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-gray-500">Course Fee</span>
+        <span className="font-dm-sans font-semibold text-gray-800">
+          Rs. {pricing.courseFee.toLocaleString()}
+        </span>
+      </div>
+
+      {/* Pick & Drop + the calculation behind it */}
+      <div className="mt-1.5 flex items-center justify-between text-xs">
+        <span className="text-gray-500">Pick &amp; Drop</span>
+        <span className="font-dm-sans font-semibold text-gray-800">
+          Rs. {pricing.pickDropCharges.toLocaleString()}
+        </span>
+      </div>
+      <p className="mt-0.5 text-[10px] leading-4 text-gray-400">
+        {withinFree ? (
+          "Within free distance"
+        ) : pricing.freeKm > 0 ? (
+          <>
+            {pricing.distanceKm} km &minus; {pricing.freeKm} km free ={" "}
+            {pricing.chargeableKm} km &times; Rs. {perKmRate.toLocaleString()}
+          </>
+        ) : (
+          <>
+            {pricing.distanceKm} km &times; Rs. {perKmRate.toLocaleString()}
+          </>
+        )}
+      </p>
+
+      {/* Area discount — only when the tile promo matches the visitor's area */}
+      {promoMatches && discount > 0 && (
+        <>
+          <div className="mt-1.5 flex items-center justify-between text-xs">
+            <span className="text-gray-500">
+              Area discount ({promoPercent}% off pick &amp; drop)
+            </span>
+            <span className="font-dm-sans font-semibold text-green-600">
+              &minus; Rs. {discount.toLocaleString()}
+            </span>
+          </div>
+          <p className="mt-0.5 text-[10px] leading-4 text-gray-400">
+            {promoPercent}% of Rs. {pricing.pickDropCharges.toLocaleString()} = Rs.{" "}
+            {discount.toLocaleString()}
+          </p>
+        </>
+      )}
+
+      {/* Total Payable — the one number the customer is here for, so it is
+          drawn at 3× the size of every other line in the card. */}
+      <div className="mt-2 flex items-end justify-between gap-3 border-t border-gray-200 pt-2">
+        <span className="text-base font-extrabold text-gray-900">Total Payable</span>
+        <span className="font-dm-sans text-right text-4xl font-black leading-none text-[#FF6201]">
+          Rs. {totalPayable.toLocaleString()}
+        </span>
+      </div>
+
+      <p className="mt-1.5 text-[10px] leading-4 text-gray-400">
+        Final price confirmed by our team before booking confirmation.
+      </p>
+    </div>
+  );
+}
+
 export default function BookingForm({
   slot,
   date,
@@ -584,6 +660,17 @@ export default function BookingForm({
                           </p>
                         )}
 
+                      {pricing &&
+                        pricing.courseFee > 0 &&
+                        routeInfo?.withinServiceArea !== false && (
+                          <PricingSummary
+                            pricing={pricing}
+                            discount={discount}
+                            promoMatches={promoMatches}
+                            promoPercent={promoPercent}
+                          />
+                        )}
+
                       {errors.distance && (
                         <p className="text-xs font-medium text-red-500">{errors.distance}</p>
                       )}
@@ -652,85 +739,6 @@ export default function BookingForm({
                 )}
               </AnimatePresence>
             </div>
-
-            {/* Pricing preview */}
-            {pricing && pricing.courseFee > 0 && routeInfo?.withinServiceArea !== false && (() => {
-              // Effective per-km rate across the whole course (rate × days × round
-              // trip) — taken straight from the calculator, not recomputed here.
-              const perKmRate = pricing.effectiveRatePerKm;
-              const withinFree =
-                pricing.freeKm > 0 && pricing.distanceKm <= pricing.freeKm;
-              const totalPayable =
-                pricing.courseFee + pricing.pickDropCharges - discount;
-
-              return (
-                <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
-                  {/* 1) Course Fee */}
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">Course Fee</span>
-                    <span className="font-dm-sans font-semibold text-gray-800">
-                      Rs. {pricing.courseFee.toLocaleString()}
-                    </span>
-                  </div>
-
-                  {/* 2) Pick & Drop + calculation */}
-                  <div className="mt-1.5 flex items-center justify-between text-xs">
-                    <span className="text-gray-500">Pick & Drop</span>
-                    <span className="font-dm-sans font-semibold text-gray-800">
-                      Rs. {pricing.pickDropCharges.toLocaleString()}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 text-[10px] leading-4 text-gray-400">
-                    {withinFree ? (
-                      "Within free distance"
-                    ) : pricing.freeKm > 0 ? (
-                      <>
-                        {pricing.distanceKm} km &minus; {pricing.freeKm} km free ={" "}
-                        {pricing.chargeableKm} km &times; Rs.{" "}
-                        {perKmRate.toLocaleString()}
-                      </>
-                    ) : (
-                      <>
-                        {pricing.distanceKm} km &times; Rs.{" "}
-                        {perKmRate.toLocaleString()}
-                      </>
-                    )}
-                  </p>
-
-                  {/* 3) Area discount — only when tile promo matches selected area */}
-                  {promoMatches && discount > 0 && (
-                    <>
-                      <div className="mt-1.5 flex items-center justify-between text-xs">
-                        <span className="text-gray-500">
-                          Area discount ({promoPercent}% off pick &amp; drop)
-                        </span>
-                        <span className="font-dm-sans font-semibold text-green-600">
-                          &minus; Rs. {discount.toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 text-[10px] leading-4 text-gray-400">
-                        {promoPercent}% of Rs.{" "}
-                        {pricing.pickDropCharges.toLocaleString()} = Rs.{" "}
-                        {discount.toLocaleString()}
-                      </p>
-                    </>
-                  )}
-
-                  {/* 4) Total Payable */}
-                  <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-2">
-                    <span className="text-sm font-bold text-gray-900">Total Payable</span>
-                    <span className="font-dm-sans text-sm font-black text-[#FF6201]">
-                      Rs. {totalPayable.toLocaleString()}
-                    </span>
-                  </div>
-
-                  {/* 5) Confirmation note */}
-                  <p className="mt-1.5 text-[10px] leading-4 text-gray-400">
-                    Final price confirmed by our team before booking confirmation.
-                  </p>
-                </div>
-              );
-            })()}
 
             {/* Error */}
             {submitError && (

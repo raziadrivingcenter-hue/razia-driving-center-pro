@@ -12,6 +12,12 @@ import {
   Wrench,
 } from "lucide-react";
 
+/** Course preselected when the visitor arrives from an entry point that does
+ *  not name a specific course — the hero "View Slots" button and the navbar
+ *  "Book a Slot" button. PLUS is the most-selling plan, so it is the default.
+ *  The value is the display title, matching what `?course=` carries. */
+export const DEFAULT_COURSE_TITLE = "PLUS Plan";
+
 export const courses = [
   {
     name: "Basic Plan",

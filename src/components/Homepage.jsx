@@ -19,6 +19,7 @@ import Instructor from "./Instructor/Instructor";
 import About from "./About";
 import Footer from "./Footer";
 import WhatsAppButton from "./WhatsAppButton";
+import { DEFAULT_COURSE_TITLE } from "../data/courses";
 
 // Phase 1C: Lazy-load below-fold components to reduce initial JS payload
 const Gallery = lazy(() => import("./Gallery"));
@@ -127,7 +128,15 @@ function Homepage() {
 
         <Navbar onBookNow={() => navigate("/slot-availability/")} />
 
-        <Hero onBookNow={() => navigate("/slot-availability/")} />
+        <Hero
+          onBookNow={() =>
+            navigate(
+              `/slot-availability/?course=${encodeURIComponent(
+                DEFAULT_COURSE_TITLE
+              )}`
+            )
+          }
+        />
 
         <Courses onCustomBooking={goToSlotBooking} />
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { useReviewStats } from "../hooks/useReviewStats";
 
 // FAQPage structured data — mirrors the visible Q&A below so search engines
 // can surface these as rich results and AI engines can cite them directly.
@@ -122,6 +123,25 @@ const faqStructuredData = {
   ],
 };
 
+// Rebuild the schema with the live review count so the structured data never
+// drifts from the visible answer.
+function buildFaqStructuredData(reviewCount) {
+  return {
+    ...faqStructuredData,
+    mainEntity: faqStructuredData.mainEntity.map((question) =>
+      question.name === "How is Razia Driving Center rated on Google?"
+        ? {
+            ...question,
+            acceptedAnswer: {
+              ...question.acceptedAnswer,
+              text: `Razia Driving Center is rated 5.0 out of 5 on Google, based on ${reviewCount} verified Google reviews.`,
+            },
+          }
+        : question
+    ),
+  };
+}
+
 const faqs = [
   {
     question: "Which driving school is in Gulberg 2, Lahore?",
@@ -185,8 +205,10 @@ const faqs = [
   },
   {
     question: "How is Razia Driving Center rated on Google?",
-    answer:
-      <>Razia Driving Center is rated <span className="font-dm-sans">5.0</span> out of <span className="font-dm-sans">5</span> on Google, based on <span className="font-dm-sans">136</span> verified Google reviews.</>,
+    // Function so the live review count from useReviewStats can be injected.
+    answer: (count) => (
+      <>Razia Driving Center is rated <span className="font-dm-sans">5.0</span> out of <span className="font-dm-sans">5</span> on Google, based on <span className="font-dm-sans">{count}</span> verified Google reviews.</>
+    ),
   },
   {
     question: "When was Razia Driving Center established?",
@@ -197,6 +219,7 @@ const faqs = [
 
 function FAQ() {
   const [active, setActive] = useState(null);
+  const { count } = useReviewStats();
 
   const toggleFAQ = (index) => {
     setActive(active === index ? null : index);
@@ -211,7 +234,7 @@ function FAQ() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(faqStructuredData),
+          __html: JSON.stringify(buildFaqStructuredData(count)),
         }}
       />
 
@@ -263,7 +286,9 @@ function FAQ() {
                 <div className="overflow-hidden">
 
                   <p className="px-4 pb-3 text-sm leading-[1.5] text-gray-600">
-                    {faq.answer}
+                    {typeof faq.answer === "function"
+                      ? faq.answer(count)
+                      : faq.answer}
                   </p>
 
                 </div>

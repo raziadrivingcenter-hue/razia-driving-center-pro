@@ -9,6 +9,7 @@ import {
   MapPinned,
   Star,
 } from "lucide-react";
+import { useReviewStats } from "../../hooks/useReviewStats";
 
 const badges = [
   { icon: Award, label: "Since 2016" },
@@ -19,13 +20,15 @@ const badges = [
   { icon: MapPinned, label: "Lahore Specialist" },
 ];
 
-const stats = [
-  { value: "5.0", label: "Google Rating", star: true },
-  { value: "136", label: "Reviews" },
-  { value: "5,221", label: "Students Trained" },
-];
-
 function Instructor() {
+  const { count } = useReviewStats();
+
+  const stats = [
+    { value: "5.0", label: "Google Rating", star: true },
+    { value: String(count), label: "Reviews" },
+    { value: "5,221", label: "Students Trained" },
+  ];
+
   return (
     <section id="instructor" className="bg-white py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-6">
@@ -73,7 +76,7 @@ function Instructor() {
                   <span className="font-dm-sans">5.0</span>
                 </span>
                 <span className="text-xs text-gray-400">
-                  <span className="font-dm-sans">136</span> reviews
+                  <span className="font-dm-sans">{count}</span> reviews
                 </span>
               </div>
             </div>

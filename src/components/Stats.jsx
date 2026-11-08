@@ -4,6 +4,7 @@ import {
   Car,
   Star,
 } from "lucide-react";
+import { useReviewStats } from "../hooks/useReviewStats";
 
 function StatCard({ Icon, value, title }) {
   return (
@@ -22,6 +23,8 @@ function StatCard({ Icon, value, title }) {
 }
 
 function Stats() {
+  const { count } = useReviewStats();
+
   return (
     <section
       id="stats"
@@ -33,7 +36,7 @@ function Stats() {
 
         <StatCard Icon={Star} value={<span className="font-dm-sans">5.0</span>} title="Google Rating" />
 
-        <StatCard Icon={GraduationCap} value={<span className="font-dm-sans">136</span>} title="Google Reviews" />
+        <StatCard Icon={GraduationCap} value={<span className="font-dm-sans">{count}</span>} title="Google Reviews" />
 
         <StatCard Icon={Car} value={<><span>Est. </span><span className="font-dm-sans">2016</span></>} title="Since 2016" />
 

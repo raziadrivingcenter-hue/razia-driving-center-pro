@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import { Mail, Phone, MapPin, Star } from "lucide-react";
+import { useReviewStats } from "../../hooks/useReviewStats";
 
 const FacebookIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -26,26 +26,7 @@ const WhatsAppIcon = () => (
 );
 
 function FooterBottom() {
-  const [stats, setStats] = useState({ rating: "5.0", count: 136 });
-
-  useEffect(() => {
-    let cancelled = false;
-    const loadStats = async () => {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-        const response = await fetch("/api/reviews", { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (!response.ok) return;
-        const data = await response.json();
-        if (!cancelled && data.averageRating && data.totalReviewCount) {
-          setStats({ rating: data.averageRating.toFixed(1), count: data.totalReviewCount });
-        }
-      } catch (_err) { /* keep defaults */ }
-    };
-    loadStats();
-    return () => { cancelled = true; };
-  }, []);
+  const { rating, count } = useReviewStats();
 
   return (
     <>
@@ -57,7 +38,7 @@ function FooterBottom() {
           </div>
           <div>
             <h4 className="font-bold text-white">Google Reviews</h4>
-            <p className="text-sm text-gray-400"><span className="font-dm-sans">★★★★★ {stats.rating}</span> from <span className="font-dm-sans">{stats.count}</span> Reviews</p>
+            <p className="text-sm text-gray-400"><span className="font-dm-sans">★★★★★ {rating}</span> from <span className="font-dm-sans">{count}</span> Reviews</p>
           </div>
         </div>
         <div className="flex flex-wrap justify-center gap-4">

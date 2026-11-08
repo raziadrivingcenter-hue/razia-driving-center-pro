@@ -8,6 +8,7 @@ import rdcLogo from "../assets/LOGORDC.svg";
 import googleLogo from "../assets/google-logo.png";
 import CustomerSignup from "./CustomerSignup";
 import { getSession, signOut, onAuthStateChange } from "../lib/auth";
+import { DEFAULT_COURSE_TITLE } from "../data/courses";
 
 
 /* Smart floating navbar constants */
@@ -419,7 +420,13 @@ function Navbar({ onBookNow }) {
 
               {/* Book a Slot */}
               <button
-                onClick={() => navigate("/slot-availability")}
+                onClick={() =>
+                  navigate(
+                    `/slot-availability?course=${encodeURIComponent(
+                      DEFAULT_COURSE_TITLE
+                    )}`
+                  )
+                }
                 className={cn(
                   "hidden rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 lg:inline-block",
                   route === "/slot-availability"
@@ -611,7 +618,11 @@ function Navbar({ onBookNow }) {
                 {/* Book a Slot */}
                 <button
                   onClick={() => {
-                    navigate("/slot-availability");
+                    navigate(
+                      `/slot-availability?course=${encodeURIComponent(
+                        DEFAULT_COURSE_TITLE
+                      )}`
+                    );
                     setMenuOpen(false);
                   }}
                   className="rounded-lg px-3 py-2.5 text-left text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"

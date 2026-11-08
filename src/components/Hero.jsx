@@ -9,6 +9,7 @@ import { getSession, onAuthStateChange } from "../lib/auth";
 import googleLogo from "../assets/google-logo.png";
 import femaleDrivingIcon from "../assets/femaledriving.svg";
 import supportIcon from "../assets/support.svg";
+import { useReviewStats } from "../hooks/useReviewStats";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -17,6 +18,7 @@ const fadeUp = {
 
 function Hero({ onBookNow }) {
   const { navigate } = useRouter();
+  const { count } = useReviewStats();
   const title = "Driving School in Gulberg, Lahore";
 
   /* ── Auth state (mirrors Navbar: real Supabase session) ── */
@@ -233,7 +235,7 @@ function Hero({ onBookNow }) {
             </span>
             <span className="flex items-center gap-1.5 text-xs text-gray-400">
               <MessageSquareText size={14} strokeWidth={1.8} />
-              <span className="font-semibold text-gray-600"><span className="font-dm-sans">136</span></span> reviews
+              <span className="font-semibold text-gray-600"><span className="font-dm-sans">{count}</span></span> reviews
             </span>
             <span className="flex items-center gap-1.5 text-xs text-gray-400">
               <Calendar size={14} strokeWidth={1.8} />

@@ -8,6 +8,7 @@ import {
   GraduationCap,
   MapPinned,
 } from "lucide-react";
+import { useReviewStats } from "../hooks/useReviewStats";
 
 const features = [
   {
@@ -45,10 +46,11 @@ const features = [
         <span className="font-dm-sans">5.0</span> on Google
       </>
     ),
-    description: (
+    // Function so the live review count from useReviewStats can be injected.
+    description: (count) => (
       <>
         Rated <span className="font-dm-sans">5.0</span> stars from{" "}
-        <span className="font-dm-sans">136</span> verified Google reviews.
+        <span className="font-dm-sans">{count}</span> verified Google reviews.
       </>
     ),
   },
@@ -80,6 +82,8 @@ const features = [
 ];
 
 function WhyChoose() {
+  const { count } = useReviewStats();
+
   return (
     <section
       id="why-choose"
@@ -130,7 +134,9 @@ function WhyChoose() {
                   </h3>
 
                   <p className="mt-0.5 text-xs leading-snug text-[#666]">
-                    {feature.description}
+                    {typeof feature.description === "function"
+                      ? feature.description(count)
+                      : feature.description}
                   </p>
                 </div>
               </div>

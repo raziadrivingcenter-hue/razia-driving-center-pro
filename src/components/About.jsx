@@ -4,8 +4,11 @@ import {
   Users,
   Car,
 } from "lucide-react";
+import { useReviewStats } from "../hooks/useReviewStats";
 
 function About() {
+  const { count } = useReviewStats();
+
   return (
     <section
       id="about"
@@ -124,7 +127,7 @@ function About() {
             </h3>
 
             <p className="mt-0.5 text-xs text-gray-600">
-              <span className="font-dm-sans">136</span> Google Reviews
+              <span className="font-dm-sans">{count}</span> Google Reviews
             </p>
 
           </div>

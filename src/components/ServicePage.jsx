@@ -1,5 +1,6 @@
 import { useMeta } from "../useMeta";
 import { useRouter } from "../router";
+import { useReviewStats } from "../hooks/useReviewStats";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import WhatsAppButton from "./WhatsAppButton";
@@ -36,6 +37,7 @@ function SkillCard({ skill }) {
 
 function ServicePage() {
   const { navigateToSection } = useRouter();
+  const { count } = useReviewStats();
 
   useMeta(SERVICE_META);
 
@@ -158,7 +160,7 @@ function ServicePage() {
                   { label: "Based in", value: "Gulberg 2, Lahore" },
                   { label: "Students trained", value: "5,221+" },
                   { label: "Experience", value: "20+ years" },
-                  { label: "Google rating", value: "5.0 from 136 reviews" },
+                  { label: "Google rating", value: `5.0 from ${count} reviews` },
                   { label: "Training hours", value: "7:00 AM – 7:00 PM daily" },
                   { label: "Lesson type", value: "One-to-one, manual car" },
                 ].map(({ label, value }) => (
