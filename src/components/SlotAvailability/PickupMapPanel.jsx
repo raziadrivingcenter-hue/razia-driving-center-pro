@@ -15,6 +15,7 @@
 /*  the form falls back to a manual distance entry.                   */
 /* ------------------------------------------------------------------ */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import routeIcon from "../../assets/route2.svg";
 import {
   MapContainer,
   GeoJSON,
@@ -384,6 +385,7 @@ export default function PickupMapPanel({ onRouteChange, onUnsupported }) {
 
         {pickup && routeStatus === "ready" && route && (
           <>
+            <img src={routeIcon} alt="" className="h-3.5 w-3.5 shrink-0" />
             <span className="font-dm-sans text-sm font-bold text-gray-900">
               {formatKm(route.distanceKm)} km
             </span>
