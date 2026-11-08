@@ -181,6 +181,29 @@ function CourseSelect({ value, onChange, error }) {
   );
 }
 
+// The grand total. Shown inside the pricing card on mobile and in the card
+// footer on desktop, so the customer always sees it without scrolling.
+function PricingTotal({ pricing, discount }) {
+  const totalPayable = pricing.courseFee + pricing.pickDropCharges - discount;
+
+  return (
+    <>
+      {/* Total Payable — the one number the customer is here for, so it is
+          drawn at 3× the size of every other line in the card. */}
+      <div className="mt-2 flex items-end justify-between gap-3 border-t border-gray-200 pt-2">
+        <span className="text-base font-extrabold text-gray-900">Total Payable</span>
+        <span className="font-dm-sans text-right text-4xl font-black leading-none text-gray-900">
+          Rs. {totalPayable.toLocaleString()}
+        </span>
+      </div>
+
+      <p className="mt-1.5 text-[10px] leading-4 text-gray-400">
+        Final price confirmed by our team before booking confirmation.
+      </p>
+    </>
+  );
+}
+
 // Pricing summary — rendered directly under the pickup map so the customer
 // sees the distance, the charge calculation and the total without scrolling
 // past the form. Every number comes from the pricing engine; only the layout
@@ -192,7 +215,6 @@ function PricingSummary({ pricing, discount, promoMatches, promoPercent }) {
   // Effective per-km rate across the whole course (rate × days × round trip).
   const perKmRate = pricing.effectiveRatePerKm;
   const withinFree = pricing.freeKm > 0 && pricing.distanceKm <= pricing.freeKm;
-  const totalPayable = pricing.courseFee + pricing.pickDropCharges - discount;
 
   return (
     <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
@@ -245,18 +267,11 @@ function PricingSummary({ pricing, discount, promoMatches, promoPercent }) {
         </>
       )}
 
-      {/* Total Payable — the one number the customer is here for, so it is
-          drawn at 3× the size of every other line in the card. */}
-      <div className="mt-2 flex items-end justify-between gap-3 border-t border-gray-200 pt-2">
-        <span className="text-base font-extrabold text-gray-900">Total Payable</span>
-        <span className="font-dm-sans text-right text-4xl font-black leading-none text-[#FF6201]">
-          Rs. {totalPayable.toLocaleString()}
-        </span>
+      {/* Desktop moves the total into the card footer; the breakdown stays
+          in this card. */}
+      <div className="lg:hidden">
+        <PricingTotal pricing={pricing} discount={discount} />
       </div>
-
-      <p className="mt-1.5 text-[10px] leading-4 text-gray-400">
-        Final price confirmed by our team before booking confirmation.
-      </p>
     </div>
   );
 }
@@ -373,6 +388,13 @@ export default function BookingForm({
   const discount = promoMatches
     ? Math.round(pricing.pickDropCharges * (promoPercent / 100))
     : 0;
+
+  // The pricing card (and the footer total) only make sense once a course is
+  // chosen, a distance exists and the pickup is inside the service area.
+  const showPricing =
+    !!pricing &&
+    pricing.courseFee > 0 &&
+    routeInfo?.withinServiceArea !== false;
 
   // Open Google Maps directions. If origin is null, Maps uses its own
   // location detection (works even when the browser geolocation API is blocked).
@@ -515,7 +537,12 @@ export default function BookingForm({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.2 }}
-          className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"
+          className={`mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 ${
+            // With the map open the card takes the full content width and
+            // splits into two columns, so the wizard reads as a landscape
+            // panel instead of a tall column that scrolls.
+            wantsPickDrop ? "lg:max-w-6xl" : ""
+          }`}
         >
           <div className="relative">
           {/* Back + slot summary */}
@@ -551,82 +578,97 @@ export default function BookingForm({
             />
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            {/* Name + Phone */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-gray-600">
-                  <User size={12} />
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Ali Hassan"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:ring-2 ${
-                    errors.name
-                      ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border-gray-200 focus:border-[#FF6201] focus:ring-[#FF6201]/20"
-                  }`}
-                />
-                {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
-              </div>
-              <div>
-                <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-gray-600">
-                  <Phone size={12} />
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="e.g. 0300 1234567"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:ring-2 ${
-                    errors.phone
-                      ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border-gray-200 focus:border-[#FF6201] focus:ring-[#FF6201]/20"
-                  }`}
-                />
-                {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
-              </div>
-            </div>
+          <form onSubmit={handleSubmit} className="mt-4">
+            {/* Desktop (lg+): two columns — visitor and course details on the
+                left, the pickup map and its price on the right, so the wizard
+                reads as a landscape panel instead of a tall scrolling column.
+                Mobile keeps the original single-column order. */}
+            <div
+              className={`flex flex-col gap-4 ${
+                wantsPickDrop
+                  ? "lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-6"
+                  : ""
+              }`}
+            >
+              {/* ── Left: visitor, course and pickup details ── */}
+              <div className="space-y-4">
+                {/* Name + Phone */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+                      <User size={12} />
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Ali Hassan"
+                      className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:ring-2 ${
+                        errors.name
+                          ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                          : "border-gray-200 focus:border-[#FF6201] focus:ring-[#FF6201]/20"
+                      }`}
+                    />
+                    {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
+                  </div>
+                  <div>
+                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+                      <Phone size={12} />
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="e.g. 0300 1234567"
+                      className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:ring-2 ${
+                        errors.phone
+                          ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                          : "border-gray-200 focus:border-[#FF6201] focus:ring-[#FF6201]/20"
+                      }`}
+                    />
+                    {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
+                  </div>
+                </div>
 
-            {/* Course */}
-            <CourseSelect value={course} onChange={setCourse} error={errors.course} />
+                {/* Course */}
+                <CourseSelect value={course} onChange={setCourse} error={errors.course} />
 
-            {/* Pick & Drop */}
-            <div>
-              <p className="mb-1.5 text-xs font-semibold text-gray-600">
-                Need Pick & Drop service?
-              </p>
-              <div className="flex gap-2">
-                {["Yes", "No"].map((opt) => (
-                  <button
-                    type="button"
-                    key={opt}
-                    onClick={() => handlePickupToggle(opt)}
-                    className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
-                      pickup === opt
-                        ? "border-[#FF6201] bg-orange-50 text-[#FF6201]"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
+                {/* Pick & Drop */}
+                <div>
+                  <p className="mb-1.5 text-xs font-semibold text-gray-600">
+                    Need Pick & Drop service?
+                  </p>
+                  <div className="flex gap-2">
+                    {["Yes", "No"].map((opt) => (
+                      <button
+                        type="button"
+                        key={opt}
+                        onClick={() => handlePickupToggle(opt)}
+                        className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                          pickup === opt
+                            ? "border-[#FF6201] bg-orange-50 text-[#FF6201]"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-              <AnimatePresence>
-                {wantsPickDrop && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="space-y-3 pt-3">
+                {/* Address — part of the pick & drop details, so it sits in
+                    the left column on desktop. */}
+                <AnimatePresence>
+                  {wantsPickDrop && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
                       <div>
                         <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-gray-600">
                           <MapPin size={12} />
@@ -647,10 +689,26 @@ export default function BookingForm({
                           <p className="mt-1 text-xs text-red-500">{errors.address}</p>
                         )}
                       </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-                      {/* Pickup map — drag to put your pickup under the crosshair.
-                          The route is fetched 1.5 s after the last map touch and
-                          its distance feeds the existing pricing engine. */}
+              {/* ── Right: the pickup map and the price it produces ── */}
+              <AnimatePresence>
+                {wantsPickDrop && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-3">
+                      {/* Pickup map — drag to put your pickup under the
+                          crosshair. The route is fetched 1.5 s after the last
+                          map touch and its distance feeds the existing pricing
+                          engine. */}
                       <PickupMapPanel
                         onRouteChange={handleRouteChange}
                         onUnsupported={() => setMapUnsupported(true)}
@@ -664,16 +722,14 @@ export default function BookingForm({
                           </p>
                         )}
 
-                      {pricing &&
-                        pricing.courseFee > 0 &&
-                        routeInfo?.withinServiceArea !== false && (
-                          <PricingSummary
-                            pricing={pricing}
-                            discount={discount}
-                            promoMatches={promoMatches}
-                            promoPercent={promoPercent}
-                          />
-                        )}
+                      {showPricing && (
+                        <PricingSummary
+                          pricing={pricing}
+                          discount={discount}
+                          promoMatches={promoMatches}
+                          promoPercent={promoPercent}
+                        />
+                      )}
 
                       {errors.distance && (
                         <p className="text-xs font-medium text-red-500">{errors.distance}</p>
@@ -746,27 +802,55 @@ export default function BookingForm({
 
             {/* Error */}
             {submitError && (
-              <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+              <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
                 <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                 {submitError}
               </div>
             )}
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {submitting ? (
-                <>
-                  <LoaderCircle size={16} className="animate-spin" />
-                  Reserving…
-                </>
-              ) : (
-                "Reserve Slot"
-              )}
-            </button>
+            {/* Footer — on desktop the total sits beside the submit button; on
+                mobile the total already lives inside the pricing card, so the
+                button stands alone. */}
+            <div className="mt-4 border-t border-gray-200 pt-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+                {showPricing && (
+                  <div className="hidden lg:block">
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-sm font-extrabold text-gray-900">
+                        Total Payable
+                      </span>
+                      <span className="font-dm-sans text-4xl font-black leading-none text-gray-900">
+                        Rs.{" "}
+                        {(
+                          pricing.courseFee +
+                          pricing.pickDropCharges -
+                          discount
+                        ).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[10px] text-gray-400">
+                      Final price confirmed by our team before booking confirmation.
+                    </p>
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className={`flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    showPricing ? "w-full lg:w-auto" : "w-full"
+                  }`}
+                >
+                  {submitting ? (
+                    <>
+                      <LoaderCircle size={16} className="animate-spin" />
+                      Reserving…
+                    </>
+                  ) : (
+                    "Reserve Slot"
+                  )}
+                </button>
+              </div>
+            </div>
           </form>
           </div>
         </motion.div>
