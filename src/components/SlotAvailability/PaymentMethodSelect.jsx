@@ -1,4 +1,4 @@
-import { useId, useCallback, useEffect, useRef, useState } from "react";
+import { useId, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Banknote } from "lucide-react";
 import easypaisaLogo from "../../assets/easypaisa.svg";
@@ -6,23 +6,34 @@ import debitCardLogo from "../../assets/debitcard.svg";
 import jazzcashLogo from "../../assets/jazzcash.png";
 import "./PaymentMethodSelect.css";
 
-// Online payment is not live yet, so those methods stay in the list but are
-// disabled and labelled "Coming Soon". Payment On Arrival is the only method
-// that can be chosen today, and it is the default.
-const PAYMENT_METHODS = [
-  { id: "payment_on_arrival", label: "Payment On Arrival", available: true },
-  { id: "easypaisa", label: "EasyPaisa", logo: easypaisaLogo, available: false },
-  { id: "debit_card", label: "Debit Card", logo: debitCardLogo, available: false },
-  { id: "jazzcash", label: "JazzCash", logo: jazzcashLogo, available: false },
-];
+// Online methods stay in the list but are disabled and labelled "Coming Soon"
+// until the feature flag is on. Payment On Arrival is always available and is
+// the default.
+function buildPaymentMethods(cardEnabled) {
+  return [
+    { id: "payment_on_arrival", label: "Payment On Arrival", available: true },
+    {
+      id: "easypaisa",
+      label: "EasyPaisa",
+      logo: easypaisaLogo,
+      available: false,
+      // The EasyPaisa artwork is the wordmark itself, so it carries the name and
+      // does not get a second text label next to it.
+      logoOnly: true,
+    },
+    {
+      id: "debit_card",
+      label: "Debit / Credit Card",
+      logo: debitCardLogo,
+      // Card checkout goes live only when PAYMENTS_CARD_ENABLED is on the
+      // server. Until then the row keeps its "Coming Soon" note.
+      available: cardEnabled === true,
+    },
+    { id: "jazzcash", label: "JazzCash", logo: jazzcashLogo, available: false },
+  ];
+}
 
 const COMING_SOON = "Coming Soon";
-
-// Indexes of the methods that can actually be chosen — keyboard navigation
-// and selection both skip the disabled rows.
-const SELECTABLE = PAYMENT_METHODS.map((m, i) => (m.available ? i : -1)).filter(
-  (i) => i >= 0
-);
 
 function MethodLogo({ method }) {
   if (method.logo) {
@@ -43,7 +54,7 @@ function MethodLogo({ method }) {
  * On touch devices (@media pointer: coarse) a native <select> is shown instead;
  * both write to the same value/onChange.
  */
-export default function PaymentMethodSelect({ value, onChange }) {
+export default function PaymentMethodSelect({ value, onChange, cardEnabled = false }) {
   const id = useId();
   const labelId = `${id}-label`;
   const panelId = `${id}-panel`;
@@ -56,8 +67,25 @@ export default function PaymentMethodSelect({ value, onChange }) {
   const optionRefs = useRef([]);
   const shouldReduceMotion = useReducedMotion();
 
-  const selectedIndex = PAYMENT_METHODS.findIndex((m) => m.id === value);
-  const selected = PAYMENT_METHODS[selectedIndex] ?? null;
+  const methods = useMemo(() => buildPaymentMethods(cardEnabled), [cardEnabled]);
+
+  // Indexes of the methods that can actually be chosen — keyboard navigation
+  // and selection both skip the disabled rows.
+  const selectable = useMemo(
+    () => methods.map((m, i) => (m.available ? i : -1)).filter((i) => i >= 0),
+    [methods]
+  );
+
+  const selectedIndex = methods.findIndex((m) => m.id === value);
+  // If the selected method is not available (e.g. the flag flipped off after
+  // it was chosen), fall back to the first selectable row rather than
+  // rendering a disabled row as the current value.
+  const selected =
+    methods[selectedIndex]?.available === true
+      ? methods[selectedIndex]
+      : selectable.length > 0
+        ? methods[selectable[0]]
+        : null;
 
   const closeList = useCallback(() => {
     setOpen(false);
@@ -67,17 +95,17 @@ export default function PaymentMethodSelect({ value, onChange }) {
 
   const openList = useCallback(() => {
     setOpen(true);
-    setHighlighted(selectedIndex >= 0 ? selectedIndex : SELECTABLE[0]);
-  }, [selectedIndex]);
+    setHighlighted(selectedIndex >= 0 ? selectedIndex : selectable[0]);
+  }, [selectedIndex, selectable]);
 
   const selectIndex = useCallback(
     (idx) => {
-      const method = PAYMENT_METHODS[idx];
+      const method = methods[idx];
       if (!method?.available) return;
       if (method.id !== value) onChange(method.id);
       closeList();
     },
-    [value, onChange, closeList]
+    [methods, value, onChange, closeList]
   );
 
   // Move the highlight to the next selectable row, wrapping at both ends.
@@ -85,19 +113,19 @@ export default function PaymentMethodSelect({ value, onChange }) {
   // the next selectable one rather than jumping back to the top.
   const moveHighlight = useCallback(
     (step) => {
-      if (SELECTABLE.length === 0) return;
+      if (selectable.length === 0) return;
       const from = highlighted;
       let next;
       if (step > 0) {
-        next = SELECTABLE.find((i) => i > from) ?? SELECTABLE[0];
+        next = selectable.find((i) => i > from) ?? selectable[0];
       } else {
         next =
-          [...SELECTABLE].reverse().find((i) => i < from) ??
-          SELECTABLE[SELECTABLE.length - 1];
+          [...selectable].reverse().find((i) => i < from) ??
+          selectable[selectable.length - 1];
       }
       setHighlighted(next);
     },
-    [highlighted]
+    [highlighted, selectable]
   );
 
   // Keep the highlighted row in view.
@@ -174,7 +202,7 @@ export default function PaymentMethodSelect({ value, onChange }) {
         onChange={(e) => onChange(e.target.value)}
         aria-labelledby={labelId}
       >
-        {PAYMENT_METHODS.map((m) => (
+        {methods.map((m) => (
           <option key={m.id} value={m.id} disabled={!m.available}>
             {m.label}
             {m.available ? "" : ` — ${COMING_SOON}`}
@@ -200,7 +228,9 @@ export default function PaymentMethodSelect({ value, onChange }) {
       >
         <span className="pm-select__trigger-inner">
           {selected && <MethodLogo method={selected} />}
-          <span className="pm-select__value">{selected?.label ?? ""}</span>
+          {selected && !selected.logoOnly && (
+            <span className="pm-select__value">{selected.label}</span>
+          )}
         </span>
         <ChevronDown className="pm-select__chevron" size={16} aria-hidden="true" />
       </button>
@@ -229,7 +259,7 @@ export default function PaymentMethodSelect({ value, onChange }) {
               tabIndex={-1}
               className="pm-select__panel"
             >
-              {PAYMENT_METHODS.map((method, idx) => {
+              {methods.map((method, idx) => {
                 const isSelected = idx === selectedIndex;
                 const isHighlight = idx === highlighted;
                 return (
@@ -239,6 +269,7 @@ export default function PaymentMethodSelect({ value, onChange }) {
                     role="option"
                     aria-selected={isSelected}
                     aria-disabled={!method.available}
+                    aria-label={method.logoOnly ? method.label : undefined}
                     ref={(el) => {
                       optionRefs.current[idx] = el;
                     }}
@@ -252,9 +283,11 @@ export default function PaymentMethodSelect({ value, onChange }) {
                   >
                     <span className="pm-select__option-inner">
                       <MethodLogo method={method} />
-                      <span className="pm-select__option-text">
-                        {method.label}
-                      </span>
+                      {!method.logoOnly && (
+                        <span className="pm-select__option-text">
+                          {method.label}
+                        </span>
+                      )}
                     </span>
                     {method.available ? (
                       isSelected && (

@@ -12,6 +12,7 @@
     "test:reviews": "node scripts/test-reviews-api.mjs",
     "test:slot-config": "node scripts/test-slot-config.mjs",
     "test:booking-handlers": "node --test scripts/test-booking-handlers.mjs",
+    "test:payments": "node --test scripts/test-payments.mjs",
     "test:student-dashboard": "node scripts/test-student-dashboard.mjs",
     "test:service-zones": "node scripts/test-service-zones.mjs",
     "fetch:reviews": "node scripts/fetch-google-reviews.mjs",

@@ -89,9 +89,14 @@
 }
 
 /* ---- Method logo ------------------------------------------------------- */
+/* Height-driven, not a fixed square: the EasyPaisa artwork is a wide wordmark
+   (~4.3:1), so a square box shrinks it to an unreadable sliver. Auto width keeps
+   the artwork's own proportions and max-width stops a very wide mark from
+   taking over the row. */
 .pm-select__logo {
-  width: 20px;
   height: 20px;
+  width: auto;
+  max-width: 92px;
   flex-shrink: 0;
   border-radius: 5px;
   object-fit: contain;
@@ -101,6 +106,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 20px;
+  height: 20px;
   background: rgba(0, 0, 0, 0.06);
   color: #374151;
 }

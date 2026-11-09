@@ -236,6 +236,11 @@ export default function PickupMapPanel({ onRouteChange, onUnsupported }) {
       distanceKm: route?.distanceKm ?? null,
       withinServiceArea: pickup ? withinServiceArea : null,
       zoneContains: pickup ? zoneContains : null,
+      // The verified pickup coordinates. Sent to the server when paying by
+      // card so the price is recalculated from the map, never from a typed
+      // distance. Primitives in the deps below keep this effect from refiring.
+      pickupLat: servicePoint?.lat ?? null,
+      pickupLng: servicePoint?.lng ?? null,
       routeTooLong,
       error: routeError,
     });
@@ -247,6 +252,8 @@ export default function PickupMapPanel({ onRouteChange, onUnsupported }) {
     zoneContains,
     routeTooLong,
     routeError,
+    servicePoint?.lat,
+    servicePoint?.lng,
   ]);
 
   const routeKey = route

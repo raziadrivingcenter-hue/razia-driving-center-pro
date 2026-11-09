@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Local secrets — never commit. `*.local` already covers .env.local; the
+# explicit entries make the intent obvious and catch .env.*.local variants.
+.env.local
+.env.*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -25,3 +30,10 @@ dist-ssr
 
 # Local WIP — LiquidGlass hero/course-card experiment, not for deployment
 src/components/LiquidGlass/
+
+# Local probe script — contains a real Supabase project URL and anon key.
+# Temp file; never commit.
+.dbprobe_tmp.js
+
+# Supabase CLI temp dir — never commit.
+supabase/.temp/

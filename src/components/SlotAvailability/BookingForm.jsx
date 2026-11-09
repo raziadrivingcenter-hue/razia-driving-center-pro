@@ -12,11 +12,16 @@ import {
 } from "lucide-react";
 
 import { submitSlotBooking } from "../../lib/slotAvailability";
+import {
+  fetchPaymentConfig,
+  createCardCheckoutSession,
+} from "../../lib/paymentsApi";
 import { courses } from "../../data/courses";
 import { calculateTotalPayable, getPlanType } from "../../lib/pickDropCalculator";
 import courseDiaryIcon from "../../assets/coursediary.svg";
 import PickupMapPanel from "./PickupMapPanel";
 import PaymentMethodSelect from "./PaymentMethodSelect";
+import PaymentStatus from "./PaymentStatus";
 
 function formatTime12(timeStr) {
   // "09:00" or "09:00:00" → "9:00 AM"
@@ -314,13 +319,41 @@ export default function BookingForm({
   const [routeInfo, setRouteInfo] = useState(null);
   const [mapUnsupported, setMapUnsupported] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
-  // Payment On Arrival is the only method live today, so it is the default.
-  // Online methods exist in the dropdown but are disabled until they launch.
+  // Payment On Arrival is the only method that works without the server
+  // feature flag, so it is the default. The card option unlocks only when
+  // /api/v1/payments/config says PAYMENTS_CARD_ENABLED is on.
   const [paymentMethod, setPaymentMethod] = useState("payment_on_arrival");
+  const [paymentConfig, setPaymentConfig] = useState({
+    cardEnabled: false,
+    sandbox: false,
+    provider: "mock",
+  });
+  // idle | redirecting | pending | failed | cancelled
+  const [paymentState, setPaymentState] = useState("idle");
+  const [paymentMessage, setPaymentMessage] = useState("");
+  // "map" = derived from the pickup point, "manual" = typed by hand.
+  // A manual distance cannot be priced for online payment, so it always goes
+  // to manual confirmation instead.
+  const [distanceSource, setDistanceSource] = useState("map");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [submitError, setSubmitError] = useState("");
+
+  // Read the payment configuration once. A failed read leaves cardEnabled
+  // false, so a network problem never turns card payments on.
+  useEffect(() => {
+    let cancelled = false;
+    fetchPaymentConfig().then((config) => {
+      // A failed read leaves cardEnabled false, so a network problem never
+      // turns card payments on.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (!cancelled) setPaymentConfig(config);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const wantsPickDrop = pickup === "Yes";
   const distanceNum = Number(distance) || 0;
@@ -336,6 +369,7 @@ export default function BookingForm({
       setManualOpen(false);
       setLocationStatus("idle");
       setLocationError("");
+      setDistanceSource("map");
     }
   }, []);
 
@@ -345,6 +379,8 @@ export default function BookingForm({
     setRouteInfo(info);
     if (info?.status === "ready" && Number.isFinite(info.distanceKm)) {
       setDistance(String(Number(info.distanceKm.toFixed(2))));
+      // The map produced this distance, so the server can re-derive it.
+      setDistanceSource("map");
     } else if (info?.status === "loading" || info?.status === "error") {
       // Never show a price for a distance that is no longer current.
       setDistance("");
@@ -501,6 +537,56 @@ export default function BookingForm({
     setSubmitting(true);
     setSubmitError("");
 
+    // A hand-typed distance cannot be verified, so it never goes through the
+    // online gateway — it becomes a normal manual-confirmation booking.
+    const manualDistance = wantsPickDrop && distanceSource === "manual";
+    const wantsCard =
+      paymentMethod === "debit_card" &&
+      paymentConfig.cardEnabled === true &&
+      !manualDistance;
+
+    if (wantsCard) {
+      try {
+        const session = await createCardCheckoutSession({
+          customer_name: name.trim(),
+          customer_phone: phone.trim(),
+          preferred_date: date,
+          preferred_time: slot.time,
+          course,
+          home_service: wantsPickDrop,
+          address: wantsPickDrop ? address.trim() : "",
+          area,
+          // Only the coordinates are sent — never a price. The server
+          // recalculates the amount from these.
+          pickup:
+            wantsPickDrop && Number.isFinite(routeInfo?.pickupLat)
+              ? { lat: routeInfo.pickupLat, lng: routeInfo.pickupLng }
+              : null,
+          distance_source: wantsPickDrop ? distanceSource : "map",
+          accessToken,
+        });
+
+        setPaymentState("redirecting");
+        setPaymentMessage(session.message || "");
+        // The gateway's hosted page takes over from here. The booking is
+        // 'pending_payment' until the webhook confirms it.
+        window.location.assign(session.checkoutUrl);
+        return;
+      } catch (err) {
+        if (err.fallback === "manual_confirmation") {
+          // The server also refuses to price this online. Fall back to the
+          // manual-confirmation booking so the customer is never blocked.
+          setSubmitError(err.message);
+          setSubmitting(false);
+          return;
+        }
+        setPaymentState("failed");
+        setPaymentMessage(err.message);
+        setSubmitting(false);
+        return;
+      }
+    }
+
     try {
       const res = await submitSlotBooking({
         customer_name: name.trim(),
@@ -533,7 +619,7 @@ export default function BookingForm({
 
   return (
     <AnimatePresence mode="wait">
-      {!result ? (
+      {paymentState === "idle" && !result ? (
         /* ── Registration form ── */
         <motion.div
           key="form"
@@ -697,9 +783,32 @@ export default function BookingForm({
                   )}
                 </AnimatePresence>
 
-                {/* Payment method — online methods are not live yet, so they are
-                    listed disabled with a "Coming Soon" note. */}
-                <PaymentMethodSelect value={paymentMethod} onChange={setPaymentMethod} />
+                {/* Test banner — shown whenever sandbox keys are active, so a
+                    test shop never looks like a live one. */}
+                {paymentConfig.sandbox && (
+                  <div className="mb-2 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                    <AlertTriangle size={14} className="shrink-0" />
+                    Test mode — no real charge is made.
+                  </div>
+                )}
+
+                {/* Payment method. The card option unlocks only when the server
+                    feature flag is on; the others keep their "Coming Soon" note. */}
+                <PaymentMethodSelect
+                  value={paymentMethod}
+                  onChange={setPaymentMethod}
+                  cardEnabled={paymentConfig.cardEnabled}
+                />
+
+                {paymentMethod === "debit_card" &&
+                  paymentConfig.cardEnabled &&
+                  wantsPickDrop &&
+                  distanceSource === "manual" && (
+                    <p className="mt-2 text-xs font-medium text-amber-700">
+                      A manually entered distance is confirmed by our team, not paid
+                      online — your booking will go to manual confirmation.
+                    </p>
+                  )}
               </div>
 
               {/* ── Right: the pickup map and the price it produces ── */}
@@ -768,6 +877,9 @@ export default function BookingForm({
                                   parts.length > 2
                                     ? parts[0] + "." + parts.slice(1).join("")
                                     : only;
+                                // A hand-typed distance is not verifiable, so
+                                // it can never be charged online.
+                                setDistanceSource("manual");
                                 setDistance(sanitized);
                               }}
                               placeholder="e.g. 5"
@@ -861,6 +973,29 @@ export default function BookingForm({
             </div>
           </form>
           </div>
+        </motion.div>
+      ) : paymentState !== "idle" ? (
+        /* ── Payment outcome (redirecting / pending / failed / cancelled) ── */
+        <motion.div
+          key="payment"
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.96 }}
+          transition={{ duration: 0.2 }}
+        >
+          <PaymentStatus
+            state={paymentState}
+            message={paymentMessage}
+            onRetry={
+              paymentState === "failed" || paymentState === "cancelled"
+                ? () => {
+                    setPaymentState("idle");
+                    setPaymentMessage("");
+                  }
+                : undefined
+            }
+            onBookAnother={onBack}
+          />
         </motion.div>
       ) : (
         /* ── Confirmation ── */
