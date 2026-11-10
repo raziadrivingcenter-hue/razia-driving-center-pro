@@ -3,9 +3,9 @@
 // and the build-time static HTML generator (scripts/build-service-page.js).
 
 export const SERVICE_META = {
-  title: "Driving School Gulberg Lahore | Razia Driving Center",
+  title: "Driving School in Gulberg Lahore | Female Instructor",
   description:
-    "Learn driving in Gulberg 2, Lahore with Razia Driving Center. One-to-one driving lessons, beginner training, ladies driving lessons and practical Lahore traffic training.",
+    "Female instructor Madam Razia. One-to-one manual car lessons in Gulberg, 10/10 practical days, pick and drop, from Rs. 9,999. Rated 5.0.",
   canonical: "https://raziadrivingcenter.com/driving-school-gulberg-lahore/",
 };
 
