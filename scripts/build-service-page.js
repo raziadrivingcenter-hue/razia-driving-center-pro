@@ -179,9 +179,12 @@ const staticFallback = `
       </ul>
 
       <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.75rem; color: #111827;">Driving Courses</h2>
-      <ul style="margin: 0 0 1.5rem; padding-left: 1.25rem; color: #4b5563; line-height: 1.8;">
+      <ul style="margin: 0 0 1rem; padding-left: 1.25rem; color: #4b5563; line-height: 1.8;">
         ${coursesList}
       </ul>
+      <p style="font-size: 0.95rem; margin: 0 0 1.5rem; color: #4b5563; line-height: 1.7;">
+        A pick and drop charge of <strong>km &times; 50 &times; course days &times; 2</strong> applies based on your distance from the center. The first 2 km are free only on the PLUS Plan, up to a maximum of 20 km.
+      </p>
 
       <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.75rem; color: #111827;">Frequently Asked Questions</h2>
       ${faqItems}
