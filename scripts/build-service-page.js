@@ -23,6 +23,7 @@ import {
   SERVICE_META,
   breadcrumbSchema,
   faqSchema,
+  skills,
   staticContent,
 } from "../src/data/servicePageContent.js";
 
@@ -126,6 +127,28 @@ const coursesList = staticContent.courses
   )
   .join("\n        ");
 
+const whoWeTeachList = staticContent.whoWeTeach
+  .map((item) => `<li>${item}</li>`)
+  .join("\n        ");
+
+const howLessonWorksList = staticContent.howLessonWorks
+  .map(
+    (step, index) =>
+      `<li><strong>Step ${index + 1}:</strong> ${step}</li>`
+  )
+  .join("\n        ");
+
+const skillsList = skills
+  .map((skill) => `<li>${skill}</li>`)
+  .join("\n        ");
+
+const faqItems = faqSchema.mainEntity
+  .map(
+    (faq) =>
+      `<div style="margin: 0 0 1rem;"><h3 style="font-size: 1rem; font-weight: 700; margin: 0 0 0.35rem; color: #111827;">${faq.name}</h3><p style="font-size: 0.95rem; margin: 0; color: #4b5563; line-height: 1.7;">${faq.acceptedAnswer.text}</p></div>`
+  )
+  .join("\n      ");
+
 const phoneClean = staticContent.location.phone.replace(/\s/g, "");
 
 const staticFallback = `
@@ -134,6 +157,21 @@ const staticFallback = `
       <p style="font-size: 1rem; margin: 0 0 1.5rem; color: #4b5563; line-height: 1.7;">
         ${staticContent.intro}
       </p>
+
+      <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.75rem; color: #111827;">Who We Teach</h2>
+      <ul style="margin: 0 0 1.5rem; padding-left: 1.25rem; color: #4b5563; line-height: 1.8;">
+        ${whoWeTeachList}
+      </ul>
+
+      <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.75rem; color: #111827;">How a Lesson Works</h2>
+      <ul style="margin: 0 0 1.5rem; padding-left: 1.25rem; color: #4b5563; line-height: 1.8;">
+        ${howLessonWorksList}
+      </ul>
+
+      <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.75rem; color: #111827;">What You Can Learn</h2>
+      <ul style="margin: 0 0 1.5rem; padding-left: 1.25rem; color: #4b5563; line-height: 1.8;">
+        ${skillsList}
+      </ul>
 
       <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.75rem; color: #111827;">Why Choose Razia Driving Center</h2>
       <ul style="margin: 0 0 1.5rem; padding-left: 1.25rem; color: #4b5563; line-height: 1.8;">
@@ -144,6 +182,9 @@ const staticFallback = `
       <ul style="margin: 0 0 1.5rem; padding-left: 1.25rem; color: #4b5563; line-height: 1.8;">
         ${coursesList}
       </ul>
+
+      <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.75rem; color: #111827;">Frequently Asked Questions</h2>
+      ${faqItems}
 
       <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.75rem; color: #111827;">Location &amp; Contact</h2>
       <address style="font-style: normal; font-size: 0.95rem; margin: 0 0 0.5rem; color: #4b5563;">

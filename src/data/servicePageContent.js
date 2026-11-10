@@ -72,6 +72,30 @@ export const faqSchema = {
         text: "You can call or WhatsApp Razia Driving Center at +92 309 4461407, or visit the contact page on the website.",
       },
     },
+    {
+      "@type": "Question",
+      name: "How long is each driving lesson?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Each lesson is about 30 minutes of focused one-to-one practice on a manual car with dual controls.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can I choose the time of my lessons?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. Lessons are available between 7:00 AM and 7:00 PM, any day of the week.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What is the total cost of a course?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "The total is the course fee plus a distance charge of km x 50 x days x 2. The first 2 km are free only on the PLUS Plan, and the maximum distance charge covers 20 km.",
+      },
+    },
   ],
 };
 
@@ -97,6 +121,20 @@ export const staticContent = {
   heading: "Driving School in Gulberg Lahore",
   intro:
     "Razia Driving Center provides practical one-to-one driving lessons from its Gulberg 2 location. Whether you are a complete beginner or want to build confidence on Lahore roads, our structured training helps you become a safe and independent driver.",
+  whoWeTeach: [
+    "Complete beginners who have never driven",
+    "Women who prefer learning with a female instructor",
+    "College students and working professionals with a busy schedule",
+    "Nervous or returning drivers who want to build confidence",
+    "Families looking for a safe one-to-one learning environment",
+  ],
+  howLessonWorks: [
+    "The instructor picks you up from your home.",
+    "Training takes place on real local roads in your own area.",
+    "Each lesson is a focused one-to-one session of about 30 minutes.",
+    "The instructor drops you back home after the lesson.",
+    "A home pick-up with drop-off at your office can also be arranged.",
+  ],
   features: [
     "One-to-one private driving lessons",
     "Beginner-friendly instruction from scratch",
