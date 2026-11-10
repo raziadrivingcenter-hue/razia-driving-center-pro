@@ -1,12 +1,10 @@
-import { useState, useEffect, lazy, Suspense } from "react";
-import { AnimatePresence } from "framer-motion";
+import { useEffect, lazy, Suspense } from "react";
 
 import AOS from "aos";
 import "aos/dist/aos.css";
 
 import "../App.css";
 
-import LoadingScreen from "./Loading/LoadingScreen";
 import { useRouter } from "../router";
 
 import ScrollProgress from "./ScrollProgress";
@@ -30,7 +28,6 @@ const Contact = lazy(() => import("./Contact"));
 const AIChatWidget = lazy(() => import("./AIChatWidget"));
 
 function Homepage() {
-  const [loading, setLoading] = useState(true);
   const { navigate } = useRouter();
 
   // Navigate to the slot-availability page, optionally carrying course data.
@@ -72,42 +69,10 @@ function Homepage() {
     window.history.replaceState({}, "", window.location.pathname);
   };
 
-  // Premium Loading Logic — Phase 1C: finish as soon as DOM is ready,
-  // do not wait for all images/resources (that blocks LCP).
+  // Handle ?book= param on mount.
   useEffect(() => {
-    function finishLoading() {
-      setLoading(false);
-
-      requestAnimationFrame(() => {
-        window.dispatchEvent(new Event("resize"));
-
-        requestAnimationFrame(() => {
-          window.dispatchEvent(new Event("scroll"));
-        });
-      });
-    }
-
-    if (document.readyState === "complete") {
-      const timer = setTimeout(finishLoading, 400);
-      return () => clearTimeout(timer);
-    }
-
-    document.addEventListener("DOMContentLoaded", finishLoading);
-
-    const fallback = setTimeout(finishLoading, 1500);
-
-    return () => {
-      document.removeEventListener("DOMContentLoaded", finishLoading);
-      clearTimeout(fallback);
-    };
+    handleBookParam();
   }, []);
-
-  // Handle ?book= param after loading completes.
-  useEffect(() => {
-    if (!loading) {
-      handleBookParam();
-    }
-  }, [loading]);
 
   // AOS
   useEffect(() => {
@@ -119,10 +84,6 @@ function Homepage() {
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        {loading && <LoadingScreen />}
-      </AnimatePresence>
-
       <div className="min-h-screen bg-white">
         <ScrollProgress />
 
