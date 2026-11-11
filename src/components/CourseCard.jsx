@@ -7,9 +7,9 @@ const NOTCH_H = 40;     // --notch-h
 const NOTCH_R = 14;     // --notch-radius (card corner radius)
 const FILLET = 14;      // S-curve fillet radius
 const FLOOR_R = 14;     // rounded corner where the floor meets the right edge
-const NARROW_W = 112;   // notch width on cards narrower than NARROW_MAX
-const NARROW_H = 36;    // notch height on narrow cards
-const NARROW_MAX = 300; // px
+const NARROW_W = 104;   // notch width on cards narrower than NARROW_MAX
+const NARROW_H = 34;    // notch height on narrow cards
+const NARROW_MAX = 360; // px — below this card width the notch shrinks
 
 const ORANGE = "#FF6201";
 
@@ -144,6 +144,8 @@ function CourseCard({
         "--notch-w": `${nw}px`,
         "--notch-h": `${nh}px`,
         "--notch-radius": `${NOTCH_R}px`,
+        // Cards narrower than 360px get a smaller notch label
+        ...(narrow ? { "--label-size": "11px" } : {}),
       }}
     >
       {measured && (
@@ -250,7 +252,7 @@ function CourseCard({
 
       <div className="course-card__content p-5">
         {/* Plan name */}
-        <div className="flex items-center gap-2">
+        <div className="course-card__title-row flex items-center gap-2">
           {TitleIcon && (
             <TitleIcon size={18} className="shrink-0 text-[#FF6201]" />
           )}
@@ -260,7 +262,7 @@ function CourseCard({
         </div>
 
         {/* Pricing */}
-        <div className="mt-3 flex items-baseline gap-2">
+        <div className="course-card__price-row mt-3 flex items-baseline gap-2">
           <span className="text-3xl font-black leading-none text-gray-900">
             <span className="font-dm-sans">{price}</span>
           </span>
@@ -271,13 +273,13 @@ function CourseCard({
           )}
         </div>
         {savings > 0 && (
-          <span className="mt-1 inline-block text-xs font-semibold text-[#FF6201]">
+          <span className="course-card__pill mt-1 inline-block text-xs font-semibold text-[#FF6201]">
             Save Rs. <span className="font-dm-sans">{savings.toLocaleString()}</span>
           </span>
         )}
 
         {/* Duration */}
-        <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
+        <div className="course-card__pill mt-3 inline-flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
           <Clock3 size={14} className="shrink-0 text-[#FF6201]" />
           <span className="text-xs font-semibold text-gray-700">
             <span className="font-dm-sans">{durationNumber}</span> {durationUnit}
@@ -293,7 +295,7 @@ function CourseCard({
             return (
               <li key={feature.text} className="flex items-start gap-2.5">
                 <Icon size={15} className={`mt-0.5 shrink-0 ${iconColor}`} />
-                <span className="text-sm leading-[1.45] text-gray-600">
+                <span className="course-card__feature-text text-sm leading-[1.45] text-gray-600">
                   {feature.text}
                 </span>
               </li>

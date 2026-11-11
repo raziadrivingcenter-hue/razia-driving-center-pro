@@ -65,6 +65,13 @@
   --marquee-h: 1.5rem; /* height of the old marquee row */
 
   position: relative;
+  /* Grid items default to min-width: auto (= their min-content). The marquee
+     track inside the PLUS card is a long nowrap strip, so without this the
+     single mobile column sizes to it and the card overflows the screen. */
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.05));
   transition: filter 0.2s ease;
 }
@@ -115,9 +122,9 @@
   display: flex;
   align-items: center;
   height: var(--notch-h);
-  /* 16px left padding + 16px gap before the notch (notch starts at x1 - nw) */
-  width: calc(100% - var(--notch-w) - var(--card-bw) / 2 - 16px);
-  padding-left: 16px;
+  /* card width − notch width − 24px */
+  width: calc(100% - var(--notch-w) - 24px);
+  min-width: 0;
   overflow: hidden;
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
@@ -125,10 +132,40 @@
   mask-repeat: no-repeat;
 }
 
+/* The track is taken out of flow so its long nowrap content can never
+   contribute to the card's intrinsic width (which would stretch the grid). */
 .course-card__marquee-track {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  height: 100%;
   display: flex;
+  align-items: center;
   width: max-content;
   white-space: nowrap;
+}
+
+/* Title row — kept clear of the notch (padding-right = notch width) */
+.course-card__title-row {
+  min-width: 0;
+  padding-right: var(--notch-w);
+}
+
+/* Narrow screens: let the content wrap instead of stretching the card */
+.course-card__price-row {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.course-card__pill {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.course-card__feature-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* The old marquee row was shorter than the notch row; pull the content back
@@ -163,7 +200,8 @@
   justify-content: center;
   gap: 5px;
   pointer-events: none;
-  font-size: 12px;
+  /* --label-size is set from JS when the card is narrower than 360px */
+  font-size: var(--label-size, 12px);
   font-weight: 600;
   color: #4a4a4a;
   z-index: 2;
@@ -171,7 +209,7 @@
 
 /* Label on the orange PLUS tab — white text, slightly larger for contrast */
 .course-card--popular .course-card__label {
-  font-size: 13px;
+  font-size: var(--label-size, 13px);
   font-weight: 700;
   color: #ffffff;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
@@ -190,7 +228,11 @@
     animation: none;
     transform: none;
     display: block;
-    width: 100%;
+    left: 16px;
+    right: 0;
+    width: auto;
+    height: 100%;
+    line-height: var(--notch-h);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
