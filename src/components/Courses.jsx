@@ -5,6 +5,13 @@ import CustomCourseCard from "./CustomCourseCard";
 import CourseCard from "./CourseCard";
 import { courses } from "../data/courses";
 
+// Label + dot shown in the notched top-right corner of each plan card.
+const CARD_BADGES = {
+  "Basic Plan": { label: "Best Budget", dot: "#9CA3AF" },
+  "PLUS Plan": { label: "Recommended", dot: "#FF6201" },
+  "PRO+ Plan": { label: "Master", dot: "#D4A017" },
+};
+
 function Courses({ onCustomBooking }) {
   return (
     <section
@@ -31,6 +38,8 @@ function Courses({ onCustomBooking }) {
               {...course}
               popular={course.name === "Economy Driving Course"}
               onBook={onCustomBooking}
+              badgeLabel={CARD_BADGES[course.title]?.label}
+              badgeDot={CARD_BADGES[course.title]?.dot}
             />
 
           ))}

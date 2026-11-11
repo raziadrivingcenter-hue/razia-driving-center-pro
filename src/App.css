@@ -42,3 +42,161 @@
 [data-source="yandex"] {
   border-left: 3px solid #FF0000;
 }
+
+/* =============================================================================
+   Course card — SVG outline with a stepped top-right notch
+   -----------------------------------------------------------------------------
+   The card wrapper has no background, border, radius, overflow or mask.
+   An absolutely positioned SVG draws the white body + coloured outline, so
+   the outline follows the S-curve notch. The shadow is a filter: drop-shadow
+   on the wrapper, which follows the SVG alpha (the card shape).
+
+   Before the first ResizeObserver measurement (and for SSR) the card renders
+   as the old plain rounded card, so nothing jumps.
+   ============================================================================= */
+
+.course-card {
+  --notch-w: 128px;    /* notch width — tunable */
+  --notch-h: 40px;     /* notch height — tunable */
+  --notch-radius: 14px;
+  --card-bw: 1px;
+  --card-border: #e5e7eb;
+  --card-border-hover: #d1d5db;
+  --marquee-h: 1.5rem; /* height of the old marquee row */
+
+  position: relative;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.05));
+  transition: filter 0.2s ease;
+}
+
+.course-card:hover {
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.1));
+}
+
+/* Keyboard focus ring that follows the card */
+.course-card:focus-visible {
+  outline: 2px solid #ff6201;
+  outline-offset: 3px;
+  border-radius: var(--notch-radius);
+}
+
+.course-card--popular {
+  --card-bw: 2px;
+  --card-border: #ff6201;
+  --card-border-hover: #ff6201;
+}
+
+/* Pre-measurement fallback — the old plain rounded card */
+.course-card--plain {
+  background: #ffffff;
+  border: var(--card-bw) solid var(--card-border);
+  border-radius: var(--notch-radius);
+}
+
+/* The SVG body (white fill) and the outline (coloured stroke, width in JS) */
+.course-card__body {
+  fill: #ffffff;
+}
+
+.course-card__outline {
+  fill: none;
+  stroke: var(--card-border);
+  transition: stroke 0.2s ease;
+}
+
+.course-card:hover .course-card__outline {
+  stroke: var(--card-border-hover);
+}
+
+/* Marquee — PLUS Plan only. Top row, left of the notch, on the white surface. */
+.course-card__marquee {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  height: var(--notch-h);
+  /* 16px left padding + 16px gap before the notch (notch starts at x1 - nw) */
+  width: calc(100% - var(--notch-w) - var(--card-bw) / 2 - 16px);
+  padding-left: 16px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.course-card__marquee-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+}
+
+/* The old marquee row was shorter than the notch row; pull the content back
+   up so the card height and the content layout stay the same. */
+.course-card--popular .course-card__content {
+  padding-top: calc(1.25rem - var(--notch-h) + var(--marquee-h));
+}
+
+.course-card__content {
+  position: relative;
+  z-index: 1;
+}
+
+/* "Most Popular" badge */
+.course-card__badge {
+  position: absolute;
+  /* notch floor sits at b/2 + nh; keep >= 8px clearance below it */
+  top: calc(var(--notch-h) + var(--card-bw) / 2 + 8px);
+  right: 12px;
+  z-index: 2;
+}
+
+/* Label inside the notch */
+.course-card__label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--notch-w);
+  height: var(--notch-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  pointer-events: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a4a4a;
+  z-index: 2;
+}
+
+/* Label on the orange PLUS tab — white text, slightly larger for contrast */
+.course-card--popular .course-card__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+}
+
+.course-card__label-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Static text with ellipsis when motion is reduced */
+@media (prefers-reduced-motion: reduce) {
+  .course-card__marquee-track {
+    animation: none;
+    transform: none;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .course-card__marquee-track > span {
+    display: inline-flex;
+  }
+}
