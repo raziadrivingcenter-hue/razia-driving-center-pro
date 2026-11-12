@@ -28,6 +28,7 @@ const API_BASE = import.meta.env.VITE_BOOKING_API_URL || "";
  *   address?: string,
  *   area?: string,          // visitor-selected town; server matches against slot promo_area
  *   accessToken?: string,   // Supabase session JWT (dashboard only); omitted for public bookings
+ *   extra?: object,         // structured metadata (Own-Vehicle course details)
  * }} params
  * @returns {{ success: boolean, bookingId: string, status: string, message: string, whatsappLink: string }}
  */
@@ -42,6 +43,7 @@ export async function submitSlotBooking({
   address = "",
   area = "",
   accessToken = "",
+  extra = undefined,
 }) {
   const res = await fetch(`${API_BASE}/api/v1/slot-booking`, {
     method: "POST",
@@ -59,6 +61,9 @@ export async function submitSlotBooking({
       home_service,
       address,
       area,
+      // Only send `extra` when the caller has it — the slot page's normal
+      // bookings must keep the exact same request shape as before.
+      ...(extra !== undefined ? { extra } : {}),
     }),
   });
 

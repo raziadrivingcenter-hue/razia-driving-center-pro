@@ -15,6 +15,7 @@ const Dashboard = lazy(() => import("./components/Dashboard"));
 const StudentProgressLanding = lazy(() =>
   import("./components/StudentProgressLanding")
 );
+const OwnVehiclePage = lazy(() => import("./components/OwnVehicle/OwnVehiclePage"));
 
 function App() {
   const { route } = useRouter();
@@ -101,6 +102,17 @@ function App() {
     return (
       <Suspense fallback={null}>
         <StudentProgressLanding />
+      </Suspense>
+    );
+  }
+
+  if (
+    route === "/learn-on-your-own-vehicle/" ||
+    route === "/learn-on-your-own-vehicle"
+  ) {
+    return (
+      <Suspense fallback={null}>
+        <OwnVehiclePage />
       </Suspense>
     );
   }

@@ -15,6 +15,21 @@
 /* ------------------------------------------------------------------ */
 
 import { validateSlotTime } from "../../lib/slotConfig.js";
+import {
+  courseFee as computeOwnVehicleCourseFee,
+  pickDropCharge as computeOwnVehiclePickDropCharge,
+  clampDistanceKm as clampOwnVehicleDistanceKm,
+} from "../../lib/ownVehiclePricing.js";
+
+// Own-Vehicle course bookings arrive with extra.booking_type === "own_vehicle".
+// They use the SAME endpoint as the slot page but a different validation and
+// availability rule (a lesson occupies several consecutive tiles on one
+// vehicle), and they persist their metadata through the metadata-enabled RPC.
+const OWN_VEHICLE_BOOKING_TYPE = "own_vehicle";
+const OWN_VEHICLE_MINUTES = [30, 40, 50, 60];
+const OWN_VEHICLE_GENDERS = ["Male", "Female"];
+const OWN_VEHICLE_TRANSMISSIONS = ["Automatic", "Manual"];
+const OWN_VEHICLE_INSTRUCTOR_PREFERENCES = ["Female", "Male"];
 
 // Shared response headers for error replies (CORS + no-store).
 function responseHeaders() {
@@ -55,6 +70,15 @@ export async function onRequest(context) {
   try {
     const body = await request.json();
 
+    // Own-Vehicle bookings carry their course metadata in `extra`. Everything
+    // else (normal slot page, area-travel) keeps the original path below.
+    const ownVehicleExtra =
+      body.extra &&
+      typeof body.extra === "object" &&
+      body.extra.booking_type === OWN_VEHICLE_BOOKING_TYPE
+        ? body.extra
+        : null;
+
     // Validate required fields
     const errors = [];
     if (!body.customer_name || !String(body.customer_name).trim()) {
@@ -75,8 +99,34 @@ export async function onRequest(context) {
       }
     }
 
-    // Pick & Drop validation (optional — only when enabled)
+    // Own-Vehicle course validation. The browser sends the course choices in
+    // `extra`; the server re-derives the price from them below and NEVER trusts
+    // any price the client supplies.
     const wantsPickDrop = body.home_service === true;
+    if (ownVehicleExtra) {
+      const days = Number(ownVehicleExtra.course_days);
+      if (!Number.isInteger(days) || days < 7 || days > 30) {
+        errors.push("Course duration must be between 7 and 30 days.");
+      }
+      const minutes = Number(ownVehicleExtra.lesson_minutes);
+      if (!OWN_VEHICLE_MINUTES.includes(minutes)) {
+        errors.push("Daily lesson duration must be 30, 40, 50 or 60 minutes.");
+      }
+      if (ownVehicleExtra.adult_confirmed !== true) {
+        errors.push("You must confirm you are 18 or older.");
+      }
+      if (!OWN_VEHICLE_GENDERS.includes(ownVehicleExtra.gender)) {
+        errors.push("Please select a valid gender.");
+      }
+      if (!OWN_VEHICLE_TRANSMISSIONS.includes(ownVehicleExtra.transmission)) {
+        errors.push("Please select a valid transmission.");
+      }
+      if (!OWN_VEHICLE_INSTRUCTOR_PREFERENCES.includes(ownVehicleExtra.instructor_preference)) {
+        errors.push("Please select a valid instructor preference.");
+      }
+    }
+
+    // Pick & Drop validation (optional — only when enabled)
     if (wantsPickDrop) {
       if (!body.address || !String(body.address).trim()) {
         errors.push("Pickup address is required for Pick & Drop");
@@ -93,7 +143,13 @@ export async function onRequest(context) {
     // Never trusted for the discount itself — the discount is derived
     // SERVER-SIDE below from the matched tile's promo_percent/promo_area.
     // Any promo value in the request body is ignored.
-    const area = body.area ? String(body.area).trim() : "";
+    // Own-Vehicle courses NEVER derive a promo: no area is sent, so
+    // promo_requested stays null.
+    const area = ownVehicleExtra
+      ? ""
+      : body.area
+        ? String(body.area).trim()
+        : "";
 
     if (errors.length > 0) {
       return new Response(
@@ -209,14 +265,19 @@ export async function onRequest(context) {
       p_preferred_time: body.preferred_time,
       // Frontend sends the display title (PLUS Plan) — store it directly.
       // These are REQUIRED in the 9-arg overload, so pass explicit values.
-      p_preferred_course: body.course ? String(body.course).trim() : null,
+      // Own-Vehicle courses use their own display title.
+      p_preferred_course: ownVehicleExtra
+        ? "Own Vehicle Course"
+        : body.course
+          ? String(body.course).trim()
+          : null,
       p_distance_km: wantsPickDrop ? Number(body.distance_km) : 0,
       p_home_service: wantsPickDrop,
       p_address: wantsPickDrop && body.address ? String(body.address).trim() : null,
       // Visitor-selected town. The RPC uses it ONLY to match against the
       // slot's promo_area server-side — it never trusts the client's own
-      // promo percent.
-      p_area: area || null,
+      // promo percent. Own-Vehicle courses send NO area, so no promo applies.
+      p_area: ownVehicleExtra ? null : area || null,
     };
     if (verifiedEmail) {
       if (!serviceRoleKey) {
@@ -240,16 +301,6 @@ export async function onRequest(context) {
     // time, and the slot page only renders this form after a successful
     // schedule load (so a missing/unreadable slot table never reaches here).
     //
-    // A slot is bookable when EITHER:
-    //   (a) any vehicle is `available` at that start time — a normal booking, or
-    //   (b) a claimable travel block's (`travel_going` OR `travel_returning`)
-    //       destination area matches the visitor's selected area — an
-    //       area-specific travel booking.
-    // Non-matching destinations stay unavailable.
-    // Advance-booked tiles (`block_reason = 'advance_booked'`) are rejected
-    // outright — see the check below.
-    // The exact vehicle is derived here from Supabase — NEVER from the browser.
-    //
     // Normalize preferred_time to 'HH:MM' (24h) so it matches slot_start
     // whether the column stores 'HH:MM' or 'HH:MM:SS'.
     const normalizedTime = (() => {
@@ -263,6 +314,8 @@ export async function onRequest(context) {
     let resolvedArea = area || null;
     // Derived SERVER-SIDE from the matched tile — never read from the body.
     let resolvedPromoPercent = null;
+    // Own-Vehicle price, recomputed below from the server's own pricing module.
+    let ownVehiclePrice = null;
 
     const slotCheckQuery =
       `${supabaseUrl}/rest/v1/slot_availability` +
@@ -275,8 +328,95 @@ export async function onRequest(context) {
         Authorization: `Bearer ${supabaseAnonKey}`,
       },
     });
-    if (slotCheckRes.ok) {
-      const slotRows = await slotCheckRes.json();
+
+    // The availability lookup failed (network/Supabase error). Fail CLOSED:
+    // never create a booking on a slot we could not verify. The booking RPCs
+    // do not re-check availability, so proceeding here would let a stale or
+    // unavailable slot be booked. A 503 lets the visitor retry or pick another
+    // time instead of believing a slot is reserved when it may not be.
+    if (!slotCheckRes.ok) {
+      console.error("Slot availability lookup failed:", slotCheckRes.status);
+      return new Response(
+        JSON.stringify({
+          error:
+            "We could not verify this slot. Please go back and pick another time, or try again shortly.",
+        }),
+        { status: 503, headers: responseHeaders() }
+      );
+    }
+
+    const slotRows = await slotCheckRes.json();
+
+    if (ownVehicleExtra) {
+      // ── Own-Vehicle: the WHOLE lesson must fit on ONE vehicle ──
+      // A lesson of N minutes occupies ceil(N / 30) consecutive tiles. The
+      // start tile and every following tile must be 'available' for the SAME
+      // vehicle. The RPC only checks the first tile, so this is the real gate.
+      const minutes = Number(ownVehicleExtra.lesson_minutes);
+      const tilesNeeded = Math.ceil(minutes / 30);
+      const [startH, startM] = normalizedTime.split(":").map(Number);
+      const requiredTimes = [];
+      for (let i = 0; i < tilesNeeded; i += 1) {
+        const total = startH * 60 + startM + i * 30;
+        requiredTimes.push(
+          `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`
+        );
+      }
+
+      // Group the available tiles by vehicle, then find one vehicle that can
+      // host the entire lesson. The vehicle is derived here — never from the
+      // browser.
+      const availableByVehicle = new Map();
+      for (const row of slotRows) {
+        if (row.status !== "available") continue;
+        const slotTime = String(row.slot_start || "").slice(0, 5);
+        if (!availableByVehicle.has(row.vehicle_id)) {
+          availableByVehicle.set(row.vehicle_id, {
+            name: row.vehicle_name ?? null,
+            slots: new Set(),
+          });
+        }
+        availableByVehicle.get(row.vehicle_id).slots.add(slotTime);
+      }
+      for (const [vehicleId, info] of availableByVehicle) {
+        if (requiredTimes.every((t) => info.slots.has(t))) {
+          resolvedVehicleId = vehicleId;
+          resolvedVehicleName = info.name;
+          break;
+        }
+      }
+      if (resolvedVehicleId == null) {
+        return new Response(
+          JSON.stringify({
+            error:
+              "This slot is no longer available for the full lesson. Please go back and pick another time.",
+          }),
+          { status: 409, headers: responseHeaders() }
+        );
+      }
+
+      // Recompute the price with the server's own pricing module. Any price
+      // the client sent is ignored.
+      const days = Number(ownVehicleExtra.course_days);
+      const km = clampOwnVehicleDistanceKm(
+        wantsPickDrop ? Number(body.distance_km) : 0
+      );
+      const fee = computeOwnVehicleCourseFee(days, minutes);
+      const pickDrop = wantsPickDrop
+        ? computeOwnVehiclePickDropCharge(days, km)
+        : 0;
+      ownVehiclePrice = { courseFee: fee, pickDropCharge: pickDrop, total: fee + pickDrop };
+    } else {
+      // ── Normal / area-travel slot booking ──
+      // A slot is bookable when EITHER:
+      //   (a) any vehicle is `available` at that start time — a normal booking, or
+      //   (b) a claimable travel block's (`travel_going` OR `travel_returning`)
+      //       destination area matches the visitor's selected area — an
+      //       area-specific travel booking.
+      // Non-matching destinations stay unavailable.
+      // Advance-booked tiles (`block_reason = 'advance_booked'`) are rejected
+      // outright — see the check below.
+      // The exact vehicle is derived here from Supabase — NEVER from the browser.
       const timeMatches = slotRows.filter(
         (s) => String(s.slot_start || "").slice(0, 5) === normalizedTime
       );
@@ -364,21 +504,6 @@ export async function onRequest(context) {
         );
       }
     }
-    // The availability lookup failed (network/Supabase error). Fail CLOSED:
-    // never create a booking on a slot we could not verify. The booking RPCs
-    // do not re-check availability, so proceeding here would let a stale or
-    // unavailable slot be booked. A 503 lets the visitor retry or pick another
-    // time instead of believing a slot is reserved when it may not be.
-    else {
-      console.error("Slot availability lookup failed:", slotCheckRes.status);
-      return new Response(
-        JSON.stringify({
-          error:
-            "We could not verify this slot. Please go back and pick another time, or try again shortly.",
-        }),
-        { status: 503, headers: responseHeaders() }
-      );
-    }
 
     // Travel bookings persist their metadata (vehicle + area) in the existing
     // `extra` JSONB column via the metadata-enabled RPC. Normal bookings keep
@@ -401,6 +526,38 @@ export async function onRequest(context) {
       };
     }
 
+    // Own-Vehicle bookings persist their course metadata + the server-computed
+    // price in the existing `extra` JSONB column via the metadata-enabled RPC.
+    // No promo is derived for this booking type, so promo_requested stays null
+    // and p_area is never sent.
+    if (ownVehicleExtra) {
+      rpcPayload.p_extra = {
+        booking_type: OWN_VEHICLE_BOOKING_TYPE,
+        course_days: Number(ownVehicleExtra.course_days),
+        lesson_minutes: Number(ownVehicleExtra.lesson_minutes),
+        tiles_needed: Math.ceil(Number(ownVehicleExtra.lesson_minutes) / 30),
+        transmission: ownVehicleExtra.transmission,
+        gender: ownVehicleExtra.gender,
+        instructor_preference: ownVehicleExtra.instructor_preference,
+        adult_confirmed: true,
+        // Server-recomputed price — the client's numbers are ignored.
+        estimated_total: ownVehiclePrice.total,
+        course_fee: ownVehiclePrice.courseFee,
+        pickdrop_charge: ownVehiclePrice.pickDropCharge,
+        // Server-derived vehicle that can host the whole lesson.
+        vehicle_id: resolvedVehicleId,
+        vehicle_name: resolvedVehicleName,
+        slot_date: body.preferred_date,
+        slot_start: normalizedTime,
+        promo_requested: null,
+        // One-line summary for the staff-facing booking card.
+        summary:
+          `${ownVehicleExtra.course_days} days, ${ownVehicleExtra.lesson_minutes} min, ` +
+          `${ownVehicleExtra.transmission}, ${ownVehicleExtra.gender}, ` +
+          `${ownVehicleExtra.instructor_preference} instructor`,
+      };
+    }
+
     // Call the SECURITY DEFINER RPC. The chosen role (anon or service_role)
     // only needs EXECUTE on its overload — it cannot read or write
     // booking_requests directly, so student names/phones stay private.
@@ -413,14 +570,15 @@ export async function onRequest(context) {
     const rpcAbort = new AbortController();
     const rpcTimeout = setTimeout(() => rpcAbort.abort(), 15000);
 
-    // Travel bookings use the metadata-enabled RPC (separate function names —
-    // no overloading ambiguity); normal bookings keep the original RPC so
-    // existing customers are unaffected.
-    const rpcFunction = travelBooking
-      ? verifiedEmail
-        ? "submit_slot_booking_with_metadata_verified"
-        : "submit_slot_booking_with_metadata"
-      : "submit_slot_booking";
+    // Travel and Own-Vehicle bookings use the metadata-enabled RPC (separate
+    // function names — no overloading ambiguity); normal bookings keep the
+    // original RPC so existing customers are unaffected.
+    const rpcFunction =
+      ownVehicleExtra || travelBooking
+        ? verifiedEmail
+          ? "submit_slot_booking_with_metadata_verified"
+          : "submit_slot_booking_with_metadata"
+        : "submit_slot_booking";
 
     const response = await fetch(
       `${supabaseUrl}/rest/v1/rpc/${rpcFunction}`,

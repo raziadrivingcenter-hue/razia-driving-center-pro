@@ -1,0 +1,112 @@
+/* =============================================================================
+   Own-Vehicle page — custom range sliders.
+   Orange filled track, large round thumb, 44px tall hit area for touch.
+   The filled percentage is supplied by React as the --ov-fill custom property
+   (Webkit needs it explicitly; Firefox uses ::-moz-range-progress).
+   ============================================================================= */
+
+.ov-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  /* Let the page scroll vertically while still dragging horizontally. */
+  touch-action: pan-y;
+  --ov-fill: 0%;
+}
+
+.ov-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    #ff6201 0%,
+    #ff6201 var(--ov-fill),
+    #e5e7eb var(--ov-fill),
+    #e5e7eb 100%
+  );
+}
+
+.ov-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  margin-top: -10px; /* (track 8px − thumb 28px) / 2 */
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #ff6201;
+  box-shadow: 0 2px 8px rgba(255, 98, 1, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ov-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
+}
+
+.ov-slider:focus-visible {
+  outline: none;
+}
+
+.ov-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 4px rgba(255, 98, 1, 0.25),
+    0 2px 8px rgba(255, 98, 1, 0.35);
+}
+
+.ov-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: #e5e7eb;
+}
+
+.ov-slider::-moz-range-progress {
+  height: 8px;
+  border-radius: 9999px;
+  background: #ff6201;
+}
+
+.ov-slider::-moz-range-thumb {
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #ff6201;
+  box-shadow: 0 2px 8px rgba(255, 98, 1, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ov-slider::-moz-range-thumb:hover {
+  transform: scale(1.08);
+}
+
+.ov-slider:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 0 0 4px rgba(255, 98, 1, 0.25),
+    0 2px 8px rgba(255, 98, 1, 0.35);
+}
+
+/* Disabled step buttons ("-" / "+") at the ends of a slider. */
+.ov-step:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ov-step:disabled:hover {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ov-slider::-webkit-slider-thumb,
+  .ov-slider::-moz-range-thumb {
+    transition: none;
+  }
+}

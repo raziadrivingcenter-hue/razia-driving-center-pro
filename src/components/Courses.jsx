@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react";
+import { CarFront, MapPin } from "lucide-react";
 
 import SectionTitle from "./UI/SectionTitle";
 import CustomCourseCard from "./CustomCourseCard";
@@ -44,6 +44,48 @@ function Courses({ onCustomBooking }) {
 
           ))}
 
+        </div>
+
+        {/* Learn On Your Own Vehicle */}
+
+        <div
+          className="mx-auto mt-10 max-w-6xl"
+          data-aos="fade-up"
+          data-aos-delay="100"
+        >
+          <div className="rounded-xl border border-gray-200 bg-white p-5 md:p-6">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:gap-8">
+
+              {/* Left — Icon & Heading */}
+
+              <div className="flex items-start gap-4 md:w-1/3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#FF6201]">
+                  <CarFront size={24} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Learn On Your Own Vehicle
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Choose your own course length and lesson time. Pay only for
+                    what you need.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right — CTA */}
+
+              <div className="flex-1 md:flex md:justify-end">
+                <a
+                  href="/learn-on-your-own-vehicle/"
+                  className="inline-flex items-center justify-center rounded-md bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-gray-800"
+                >
+                  Build Your Course
+                </a>
+              </div>
+
+            </div>
+          </div>
         </div>
 
         {/* Pick & Drop Info */}

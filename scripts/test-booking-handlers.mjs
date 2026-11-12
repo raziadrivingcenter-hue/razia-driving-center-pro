@@ -14,6 +14,11 @@ import assert from "node:assert/strict";
 import { onRequest as slotBookingOnRequest } from "../functions/api/v1/slot-booking.js";
 import { onRequest as bookingsOnRequest } from "../functions/api/v1/bookings.js";
 
+// The Own-Vehicle pricing engine exists twice by design: the browser copy and
+// the Cloudflare Functions mirror. The equality test below proves they agree.
+import * as clientPricing from "../src/lib/ownVehiclePricing.js";
+import * as serverPricing from "../functions/lib/ownVehiclePricing.js";
+
 // ---------------------------------------------------------------------------
 // Mock helpers
 // ---------------------------------------------------------------------------
@@ -717,6 +722,489 @@ describe("bookings.js — operating-hours validation", () => {
     });
     assert.equal(res.status, 201);
     assert.equal(res.headers.get("Cache-Control"), "no-store");
+    clearFetch();
+  });
+});
+
+// =============================================================================
+// Own-Vehicle pricing — browser module vs Cloudflare mirror
+// =============================================================================
+
+describe("own-vehicle pricing — browser module vs Cloudflare mirror", () => {
+  test("both copies produce identical prices over the whole input grid", () => {
+    for (let days = 7; days <= 30; days += 1) {
+      for (const minutes of [30, 40, 50, 60]) {
+        for (const km of [0, 0.5, 1, 5, 8, 12.5, 20, 21, 40]) {
+          for (const homeService of [true, false]) {
+            const label = `days=${days} minutes=${minutes} km=${km} homeService=${homeService}`;
+            assert.equal(
+              clientPricing.perDayPrice(minutes),
+              serverPricing.perDayPrice(minutes),
+              `perDayPrice mismatch (${label})`
+            );
+            assert.equal(
+              clientPricing.courseFee(days, minutes),
+              serverPricing.courseFee(days, minutes),
+              `courseFee mismatch (${label})`
+            );
+            assert.equal(
+              clientPricing.pickDropCharge(days, km),
+              serverPricing.pickDropCharge(days, km),
+              `pickDropCharge mismatch (${label})`
+            );
+            assert.equal(
+              clientPricing.total(days, minutes, km, homeService),
+              serverPricing.total(days, minutes, km, homeService),
+              `total mismatch (${label})`
+            );
+          }
+        }
+      }
+    }
+  });
+
+  test("both copies clamp and validate identically", () => {
+    for (const d of [0, 6, 7, 10, 30, 31, 100, -5, NaN]) {
+      assert.equal(clientPricing.clampDays(d), serverPricing.clampDays(d), `clampDays(${d})`);
+    }
+    for (const m of [0, 29, 30, 45, 60, 61, 120, -10, NaN]) {
+      assert.equal(
+        clientPricing.clampMinutes(m),
+        serverPricing.clampMinutes(m),
+        `clampMinutes(${m})`
+      );
+    }
+    for (const km of [-5, 0, 8, 20, 21, 999, NaN]) {
+      assert.equal(
+        clientPricing.clampDistanceKm(km),
+        serverPricing.clampDistanceKm(km),
+        `clampDistanceKm(${km})`
+      );
+    }
+
+    for (const input of [
+      { days: 6, minutes: 40, distanceKm: 8, homeService: true },
+      { days: 31, minutes: 40, distanceKm: 8, homeService: true },
+      { days: 10, minutes: 45, distanceKm: 8, homeService: true },
+      { days: 10, minutes: 40, distanceKm: 21, homeService: true },
+      { days: 10, minutes: 40, distanceKm: 0, homeService: true },
+      { days: 10, minutes: 40, distanceKm: 8, homeService: false },
+      { days: 10, minutes: 40, distanceKm: 0, homeService: false },
+    ]) {
+      assert.deepEqual(
+        clientPricing.validate(input),
+        serverPricing.validate(input),
+        `validate(${JSON.stringify(input)})`
+      );
+    }
+  });
+});
+
+// =============================================================================
+// slot-booking.js — Own-Vehicle course bookings
+// =============================================================================
+
+describe("slot-booking.js — own-vehicle course bookings", () => {
+  const ownVehicleExtra = {
+    booking_type: "own_vehicle",
+    course_days: 10,
+    lesson_minutes: 40,
+    tiles_needed: 2,
+    transmission: "Automatic",
+    gender: "Male",
+    instructor_preference: "Female",
+    adult_confirmed: true,
+  };
+
+  const ownVehicleBody = {
+    customer_name: "Owais Khan",
+    customer_phone: "03001234567",
+    preferred_date: "2026-11-20",
+    preferred_time: "10:00",
+    course: "Own Vehicle Course",
+    home_service: false,
+    address: "",
+    distance_km: 0,
+    extra: ownVehicleExtra,
+  };
+
+  // A 40-minute lesson occupies 10:00 and 10:30 on the SAME vehicle.
+  const twoTilesSameVehicle = [
+    { slot_start: "10:00", status: "available", vehicle_id: 7, vehicle_name: "Toyota Corolla" },
+    { slot_start: "10:30", status: "available", vehicle_id: 7, vehicle_name: "Toyota Corolla" },
+  ];
+
+  test("happy path stores the course metadata and the server-recomputed price", async () => {
+    mockFetch([
+      jsonResponse(twoTilesSameVehicle, 200),
+      uuidResponse("abcdef12-3456-7890-abcd-ef1234567890"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: ownVehicleBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    assert.equal(fetchCalls.length, 2, "pre-check + RPC");
+    assert.match(fetchCalls[1].url, /\/rpc\/submit_slot_booking_with_metadata$/);
+
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_preferred_course, "Own Vehicle Course");
+    assert.equal(payload.p_area, null, "own-vehicle bookings never send an area");
+    assert.equal(payload.p_home_service, false);
+    assert.equal(payload.p_distance_km, 0);
+    assert.deepEqual(payload.p_extra, {
+      booking_type: "own_vehicle",
+      course_days: 10,
+      lesson_minutes: 40,
+      tiles_needed: 2,
+      transmission: "Automatic",
+      gender: "Male",
+      instructor_preference: "Female",
+      adult_confirmed: true,
+      estimated_total: 10700,
+      course_fee: 10700,
+      pickdrop_charge: 0,
+      vehicle_id: 7,
+      vehicle_name: "Toyota Corolla",
+      slot_date: "2026-11-20",
+      slot_start: "10:00",
+      promo_requested: null,
+      summary: "10 days, 40 min, Automatic, Male, Female instructor",
+    });
+    clearFetch();
+  });
+
+  test("request payload shape for a 10-day / 40-min / 8-km booking", async () => {
+    mockFetch([
+      jsonResponse(twoTilesSameVehicle, 200),
+      uuidResponse("12345678-90ab-cdef-1234-567890abcdef"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: {
+          ...ownVehicleBody,
+          home_service: true,
+          address: "28/A S Block Gulberg 2, Lahore",
+          distance_km: 8,
+        },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_home_service, true);
+    assert.equal(payload.p_distance_km, 8);
+    assert.equal(payload.p_address, "28/A S Block Gulberg 2, Lahore");
+    assert.equal(payload.p_extra.course_days, 10);
+    assert.equal(payload.p_extra.lesson_minutes, 40);
+    assert.equal(payload.p_extra.tiles_needed, 2);
+    assert.equal(payload.p_extra.course_fee, 10700);
+    assert.equal(payload.p_extra.pickdrop_charge, 10400);
+    assert.equal(payload.p_extra.estimated_total, 21100);
+    assert.equal(
+      payload.p_extra.summary,
+      "10 days, 40 min, Automatic, Male, Female instructor"
+    );
+    clearFetch();
+  });
+
+  test("a 30-minute lesson only needs the start tile", async () => {
+    mockFetch([
+      jsonResponse(
+        [
+          {
+            slot_start: "10:00",
+            status: "available",
+            vehicle_id: 7,
+            vehicle_name: "Toyota Corolla",
+          },
+        ],
+        200
+      ),
+      uuidResponse("77777777-6666-5555-4444-333333333333"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: {
+          ...ownVehicleBody,
+          extra: { ...ownVehicleExtra, lesson_minutes: 30, tiles_needed: 1 },
+        },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.tiles_needed, 1);
+    assert.equal(payload.p_extra.estimated_total, 8000, "10 days x Rs. 800 (half of the 60-min day)");
+    clearFetch();
+  });
+
+  test("rejects a 6-day course with 400 and never reaches Supabase", async () => {
+    mockFetch([]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: { ...ownVehicleBody, extra: { ...ownVehicleExtra, course_days: 6 } },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.ok(body.details.some((d) => /7 and 30 days/.test(d)));
+    assert.equal(fetchCalls.length, 0);
+    clearFetch();
+  });
+
+  test("rejects a 31-day course with 400", async () => {
+    mockFetch([]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: { ...ownVehicleBody, extra: { ...ownVehicleExtra, course_days: 31 } },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.ok(body.details.some((d) => /7 and 30 days/.test(d)));
+    assert.equal(fetchCalls.length, 0);
+    clearFetch();
+  });
+
+  test("rejects a 45-minute lesson with 400", async () => {
+    mockFetch([]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: {
+          ...ownVehicleBody,
+          extra: { ...ownVehicleExtra, lesson_minutes: 45 },
+        },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.ok(body.details.some((d) => /30, 40, 50 or 60 minutes/.test(d)));
+    assert.equal(fetchCalls.length, 0);
+    clearFetch();
+  });
+
+  test("rejects a 21 km pick & drop distance with 400", async () => {
+    mockFetch([]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: {
+          ...ownVehicleBody,
+          home_service: true,
+          address: "28/A S Block Gulberg 2, Lahore",
+          distance_km: 21,
+        },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.ok(body.details.some((d) => /up to 20 KM/.test(d)));
+    assert.equal(fetchCalls.length, 0);
+    clearFetch();
+  });
+
+  test("rejects a booking that does not confirm the visitor is 18 or older", async () => {
+    mockFetch([]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: {
+          ...ownVehicleBody,
+          extra: { ...ownVehicleExtra, adult_confirmed: false },
+        },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.ok(body.details.some((d) => /18 or older/.test(d)));
+    assert.equal(fetchCalls.length, 0);
+    clearFetch();
+  });
+
+  test("rejects an unknown gender, transmission or instructor preference", async () => {
+    for (const [field, value, pattern] of [
+      ["gender", "Other", /valid gender/],
+      ["transmission", "CVT", /valid transmission/],
+      ["instructor_preference", "Any", /valid instructor preference/],
+    ]) {
+      mockFetch([]);
+      const res = await slotBookingOnRequest({
+        request: mockRequest({
+          body: { ...ownVehicleBody, extra: { ...ownVehicleExtra, [field]: value } },
+        }),
+        env: mockEnv,
+      });
+      assert.equal(res.status, 400, `${field}=${value} must be rejected`);
+      const body = await res.json();
+      assert.ok(
+        body.details.some((d) => pattern.test(d)),
+        `${field}=${value} expected a validation message`
+      );
+      assert.equal(fetchCalls.length, 0);
+      clearFetch();
+    }
+  });
+
+  test("rejects a missing name or phone on an own-vehicle booking", async () => {
+    for (const field of ["customer_name", "customer_phone"]) {
+      mockFetch([]);
+      const body = { ...ownVehicleBody };
+      delete body[field];
+      const res = await slotBookingOnRequest({
+        request: mockRequest({ body }),
+        env: mockEnv,
+      });
+      assert.equal(res.status, 400, `missing ${field} must be rejected`);
+      assert.equal(fetchCalls.length, 0);
+      clearFetch();
+    }
+  });
+
+  test("rejects pick & drop without an address or a distance", async () => {
+    // Address missing.
+    mockFetch([]);
+    let res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: { ...ownVehicleBody, home_service: true, distance_km: 8 },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 400);
+    let body = await res.json();
+    assert.ok(body.details.some((d) => /address is required/i.test(d)));
+    assert.equal(fetchCalls.length, 0);
+    clearFetch();
+
+    // Distance missing.
+    mockFetch([]);
+    res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: {
+          ...ownVehicleBody,
+          home_service: true,
+          address: "28/A S Block Gulberg 2, Lahore",
+          distance_km: 0,
+        },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 400);
+    body = await res.json();
+    assert.ok(body.details.some((d) => /Distance is required/i.test(d)));
+    assert.equal(fetchCalls.length, 0);
+    clearFetch();
+  });
+
+  test("ignores a price tampered in the request body", async () => {
+    mockFetch([
+      jsonResponse(twoTilesSameVehicle, 200),
+      uuidResponse("99999999-8888-7777-6666-555555555555"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({
+        body: {
+          ...ownVehicleBody,
+          home_service: true,
+          address: "28/A S Block Gulberg 2, Lahore",
+          distance_km: 8,
+          // All of these must be ignored — the server recomputes the price.
+          total: 1,
+          course_fee: 1,
+          pickdrop_charge: 1,
+          extra: {
+            ...ownVehicleExtra,
+            course_fee: 1,
+            pickdrop_charge: 1,
+            estimated_total: 1,
+          },
+        },
+      }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.estimated_total, 21100);
+    assert.equal(payload.p_extra.course_fee, 10700);
+    assert.equal(payload.p_extra.pickdrop_charge, 10400);
+    clearFetch();
+  });
+
+  test("rejects with 409 when the second tile of the lesson is taken", async () => {
+    mockFetch([
+      jsonResponse(
+        [
+          { slot_start: "10:00", status: "available", vehicle_id: 7, vehicle_name: "Toyota Corolla" },
+          { slot_start: "10:30", status: "booked", vehicle_id: 7, vehicle_name: "Toyota Corolla" },
+        ],
+        200
+      ),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: ownVehicleBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 409);
+    const body = await res.json();
+    assert.match(body.error, /no longer available for the full lesson/i);
+    assert.equal(fetchCalls.length, 1, "must not reach the RPC");
+    clearFetch();
+  });
+
+  test("rejects with 409 when the free tiles are split across two vehicles", async () => {
+    mockFetch([
+      jsonResponse(
+        [
+          { slot_start: "10:00", status: "available", vehicle_id: 7, vehicle_name: "Toyota Corolla" },
+          { slot_start: "10:30", status: "available", vehicle_id: 8, vehicle_name: "Honda City" },
+        ],
+        200
+      ),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: ownVehicleBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 409);
+    assert.equal(fetchCalls.length, 1);
+    clearFetch();
+  });
+
+  test("accepts when another vehicle can host the whole lesson", async () => {
+    mockFetch([
+      jsonResponse(
+        [
+          { slot_start: "10:00", status: "available", vehicle_id: 7, vehicle_name: "Toyota Corolla" },
+          { slot_start: "10:30", status: "booked", vehicle_id: 7, vehicle_name: "Toyota Corolla" },
+          { slot_start: "10:00", status: "available", vehicle_id: 9, vehicle_name: "Honda City" },
+          { slot_start: "10:30", status: "available", vehicle_id: 9, vehicle_name: "Honda City" },
+        ],
+        200
+      ),
+      uuidResponse("88888888-7777-6666-5555-444444444444"),
+    ]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: ownVehicleBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 201);
+    const payload = JSON.parse(fetchCalls[1].init.body);
+    assert.equal(payload.p_extra.vehicle_id, 9);
+    assert.equal(payload.p_extra.vehicle_name, "Honda City");
+    clearFetch();
+  });
+
+  test("availability lookup failure fails closed (503) and never books", async () => {
+    mockFetch([new Response("upstream error", { status: 500 })]);
+    const res = await slotBookingOnRequest({
+      request: mockRequest({ body: ownVehicleBody }),
+      env: mockEnv,
+    });
+    assert.equal(res.status, 503);
+    assert.equal(fetchCalls.length, 1, "must not reach the RPC");
     clearFetch();
   });
 });
