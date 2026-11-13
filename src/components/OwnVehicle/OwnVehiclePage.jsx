@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
-import { ArrowLeft, CarFront } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+
+import car3Icon from "../../assets/car3.svg";
 
 import { useRouter } from "../../router";
 import { useMeta } from "../../useMeta";
@@ -59,9 +61,7 @@ export default function OwnVehiclePage() {
 
         <header className="mt-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#FF6201]">
-              <CarFront size={22} />
-            </div>
+            <img src={car3Icon} alt="" className="h-10 w-10 shrink-0" />
             <div>
               <h1 className="text-2xl font-black text-gray-900 sm:text-3xl">
                 Learn On Your Own Vehicle

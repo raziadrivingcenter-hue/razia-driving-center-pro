@@ -2,8 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
-  CalendarDays,
-  CarFront,
   Clock3,
   MapPin,
   Minus,
@@ -11,6 +9,8 @@ import {
   Route,
 } from "lucide-react";
 
+import calendarIcon from "../../assets/calendar.svg";
+import car2Icon from "../../assets/car2.svg";
 import { useCountUp } from "../../hooks/useCountUp";
 import PickupMapPanel from "../SlotAvailability/PickupMapPanel";
 import {
@@ -330,9 +330,11 @@ export default function CourseCalculator({ booking, onContinue }) {
     >
       {/* Card header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#FF6201]">
-          <CarFront size={22} />
-        </div>
+        <img
+          src={car2Icon}
+          alt=""
+          className="h-9 w-9 shrink-0"
+        />
         <div>
           <h2
             id="own-vehicle-calculator-heading"
@@ -351,7 +353,11 @@ export default function CourseCalculator({ booking, onContinue }) {
       <div className="mt-5 grid gap-6 sm:grid-cols-2">
         <div>
           <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-            <CalendarDays size={12} className="text-[#FF6201]" />
+            <img
+              src={calendarIcon}
+              alt=""
+              className="h-4 w-4"
+            />
             Course Length
           </div>
           <CourseSlider
@@ -368,7 +374,7 @@ export default function CourseCalculator({ booking, onContinue }) {
 
         <div>
           <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-            <Clock3 size={12} className="text-[#FF6201]" />
+            <Clock3 size={14} className="text-gray-900" />
             Daily Lesson Time
           </div>
           <CourseSlider
@@ -449,9 +455,7 @@ export default function CourseCalculator({ booking, onContinue }) {
         <div className="order-2 rounded-xl border border-gray-200 p-4 lg:order-1">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#FF6201]">
-                <Route size={20} />
-              </div>
+              <Route size={24} className="mt-0.5 shrink-0 text-gray-900" />
               <div>
                 <p className="text-sm font-semibold text-gray-900">
                   Pick &amp; Drop at Your Doorstep
@@ -490,12 +494,18 @@ export default function CourseCalculator({ booking, onContinue }) {
                   className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-gray-600"
                 >
                   <MapPin size={12} />
-                  Pickup / Drop-off Address
+                  <span>
+                    Pickup / Drop-off Address
+                    <span className="text-red-500" aria-hidden="true">
+                      *
+                    </span>
+                  </span>
                 </label>
                 <input
                   id="own-vehicle-address"
                   type="text"
                   autoComplete="street-address"
+                  aria-required="true"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Enter your complete pickup address"
@@ -526,6 +536,9 @@ export default function CourseCalculator({ booking, onContinue }) {
                   className="mb-1.5 block text-xs font-semibold text-gray-600"
                 >
                   Distance from our center (KM)
+                  <span className="text-red-500" aria-hidden="true">
+                    *
+                  </span>
                 </label>
                 {distanceCapped && (
                   <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-amber-600">
@@ -540,6 +553,7 @@ export default function CourseCalculator({ booking, onContinue }) {
                       id="own-vehicle-distance"
                       type="text"
                       inputMode="decimal"
+                      aria-required="true"
                       value={shownDistance}
                       onChange={handleDistanceChange}
                       placeholder="e.g. 5"

@@ -12,10 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   ArrowLeft,
-  CalendarDays,
-  CarFront,
   CheckCircle2,
-  ClipboardList,
   Clock3,
   LoaderCircle,
   Phone,
@@ -23,6 +20,9 @@ import {
   User,
 } from "lucide-react";
 
+import bookingIcon from "../../assets/booking.svg";
+import calendarIcon from "../../assets/calendar.svg";
+import car3Icon from "../../assets/car3.svg";
 import { useRouter } from "../../router";
 import { useCountUp } from "../../hooks/useCountUp";
 import { submitSlotBooking } from "../../lib/slotAvailability";
@@ -44,16 +44,30 @@ const PAKISTANI_MOBILE_RE = /^03\d{9}$/;
 
 // ── Small form controls ──────────────────────────────────────────────────────
 
-function SegmentedControl({ id, label, options, value, onChange, error }) {
+function SegmentedControl({
+  id,
+  label,
+  options,
+  value,
+  onChange,
+  error,
+  required,
+}) {
   return (
     <div>
       <p id={`${id}-label`} className="mb-1.5 text-xs font-semibold text-gray-600">
         {label}
+        {required && (
+          <span className="text-red-500" aria-hidden="true">
+            *
+          </span>
+        )}
       </p>
       <div
         role="group"
         aria-labelledby={`${id}-label`}
         aria-invalid={Boolean(error)}
+        aria-required={required || undefined}
         className="flex gap-2"
       >
         {options.map((option) => {
@@ -273,9 +287,7 @@ export default function BookingDetails({ booking, slotSelection }) {
     >
       {/* Card header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#FF6201]">
-          <ClipboardList size={22} />
-        </div>
+        <img src={bookingIcon} alt="" className="h-9 w-9 shrink-0" />
         <div>
           <h2
             id="own-vehicle-details-heading"
@@ -304,19 +316,27 @@ export default function BookingDetails({ booking, slotSelection }) {
               {selectedLesson ? (
                 <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-700">
                   <span className="inline-flex items-center gap-1.5">
-                    <CalendarDays size={14} className="text-[#FF6201]" />
+                    <img
+                      src={calendarIcon}
+                      alt=""
+                      className="h-4 w-4"
+                    />
                     <span className="font-dm-sans font-semibold text-gray-900">
                       {formatDateShort(selectedDate)}
                     </span>
                   </span>
                   <span className="inline-flex items-center gap-1.5">
-                    <Clock3 size={14} className="text-[#FF6201]" />
+                    <Clock3 size={14} className="text-gray-900" />
                     <span className="font-dm-sans font-semibold text-gray-900">
                       {formatTimeRange(selectedLesson.start, selectedLesson.end)}
                     </span>
                   </span>
                   <span className="inline-flex items-center gap-1.5">
-                    <CarFront size={14} className="text-[#FF6201]" />
+                    <img
+                      src={car3Icon}
+                      alt=""
+                      className="h-4 w-4"
+                    />
                     <span className="font-dm-sans font-semibold text-gray-900">
                       {days} days
                     </span>
@@ -370,12 +390,18 @@ export default function BookingDetails({ booking, slotSelection }) {
                         className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-gray-600"
                       >
                         <User size={12} />
-                        Full Name
+                        <span>
+                          Full Name
+                          <span className="text-red-500" aria-hidden="true">
+                            *
+                          </span>
+                        </span>
                       </label>
                       <input
                         id="own-vehicle-name"
                         type="text"
                         autoComplete="name"
+                        aria-required="true"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="e.g. Ali Hassan"
@@ -405,13 +431,19 @@ export default function BookingDetails({ booking, slotSelection }) {
                         className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-gray-600"
                       >
                         <Phone size={12} />
-                        Phone Number
+                        <span>
+                          Phone Number
+                          <span className="text-red-500" aria-hidden="true">
+                            *
+                          </span>
+                        </span>
                       </label>
                       <input
                         id="own-vehicle-phone"
                         type="tel"
                         autoComplete="tel"
                         inputMode="numeric"
+                        aria-required="true"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="03001234567"
@@ -444,6 +476,7 @@ export default function BookingDetails({ booking, slotSelection }) {
                     value={gender}
                     onChange={setGender}
                     error={errors.gender}
+                    required
                   />
 
                   {/* Transmission */}
@@ -465,6 +498,7 @@ export default function BookingDetails({ booking, slotSelection }) {
                         type="checkbox"
                         checked={adultConfirmed}
                         onChange={(e) => setAdultConfirmed(e.target.checked)}
+                        aria-required="true"
                         aria-invalid={Boolean(errors.adult)}
                         aria-describedby={
                           errors.adult ? "own-vehicle-adult-error" : undefined
@@ -473,6 +507,9 @@ export default function BookingDetails({ booking, slotSelection }) {
                       />
                       <span className="text-sm text-gray-700">
                         I am 18 or older.
+                        <span className="text-red-500" aria-hidden="true">
+                          *
+                        </span>
                       </span>
                     </label>
                     {errors.adult && (

@@ -2,9 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
-  CalendarDays,
   CalendarOff,
-  CarFront,
   CheckCircle2,
   Clock3,
   LoaderCircle,
@@ -14,6 +12,8 @@ import {
   Users,
 } from "lucide-react";
 
+import calendarIcon from "../../assets/calendar.svg";
+import car3Icon from "../../assets/car3.svg";
 import { fetchOwnVehicleAvailability } from "../../lib/ownVehicleAvailability";
 import {
   SLOT_STARTS,
@@ -177,9 +177,7 @@ export default function SlotPicker({ booking, onContinue, selection, onChange })
     >
       {/* Card header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#FF6201]">
-          <CalendarDays size={22} />
-        </div>
+        <img src={calendarIcon} alt="" className="h-9 w-9 shrink-0" />
         <div>
           <h2
             id="own-vehicle-slots-heading"
@@ -200,12 +198,18 @@ export default function SlotPicker({ booking, onContinue, selection, onChange })
           htmlFor="own-vehicle-date"
           className="mb-1.5 flex items-center justify-center gap-1.5 text-sm font-semibold text-gray-600"
         >
-          <CalendarDays size={14} className="text-[#FF6201]" />
-          Select Date
+          <img src={calendarIcon} alt="" className="h-4 w-4" />
+          <span>
+            Select Date
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
+          </span>
         </label>
         <input
           id="own-vehicle-date"
           type="date"
+          aria-required="true"
           min={today}
           max={maxDate}
           value={selectedDate}
@@ -217,12 +221,12 @@ export default function SlotPicker({ booking, onContinue, selection, onChange })
       <div className="mt-5">
         {!selectedDate ? (
           <div className="flex flex-col items-center py-10 text-gray-400">
-            <Clock3 size={36} className="mb-2 text-gray-300" />
+            <Clock3 size={36} className="mb-2 text-gray-900" />
             <p className="text-sm">Choose a date above to view available slots.</p>
           </div>
         ) : loading ? (
           <div className="flex flex-col items-center py-10 text-gray-400">
-            <LoaderCircle size={28} className="mb-2 animate-spin text-[#FF6201]" />
+            <LoaderCircle size={28} className="mb-2 animate-spin text-gray-900" />
             <p className="text-sm">Loading schedule...</p>
           </div>
         ) : error ? (
@@ -233,9 +237,7 @@ export default function SlotPicker({ booking, onContinue, selection, onChange })
         ) : isSunday ? (
           /* Sunday = weekly off, same handling as /slot-availability. */
           <div className="mx-auto max-w-md rounded-xl border border-gray-200 bg-white p-6 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-100">
-              <CalendarOff size={28} className="text-[#FF6201]" />
-            </div>
+            <CalendarOff size={32} className="text-gray-900" />
             <h3 className="mt-4 text-lg font-black text-gray-900">
               Sunday — Weekly Off
             </h3>
@@ -300,7 +302,11 @@ export default function SlotPicker({ booking, onContinue, selection, onChange })
               </div>
               {counts.travel > 0 && (
                 <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 shadow-sm ring-1 ring-gray-100">
-                  <CarFront size={14} className="text-yellow-500" />
+                  <img
+                    src={car3Icon}
+                    alt=""
+                    className="h-4 w-4"
+                  />
                   <span className="text-xs font-medium text-gray-700">
                     <span className="font-dm-sans font-semibold">
                       {counts.travel}
@@ -321,7 +327,7 @@ export default function SlotPicker({ booking, onContinue, selection, onChange })
                     className="flex flex-col rounded-xl border border-gray-100 bg-gray-50 p-3"
                   >
                     <div className="mb-2 flex items-center gap-2">
-                      <PeriodIcon size={14} className="text-[#FF6201]" />
+                      <PeriodIcon size={14} className="text-gray-900" />
                       <span className="text-sm font-bold text-gray-800">
                         {period.label}
                       </span>

@@ -1,4 +1,6 @@
-import { CarFront, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
+
+import car3Icon from "../assets/car3.svg";
 
 import SectionTitle from "./UI/SectionTitle";
 import CustomCourseCard from "./CustomCourseCard";
@@ -60,7 +62,7 @@ function Courses({ onCustomBooking }) {
 
               <div className="flex items-start gap-4 md:w-1/3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#FF6201]">
-                  <CarFront size={24} strokeWidth={2.5} />
+                  <img src={car3Icon} alt="" className="h-6 w-6" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">
