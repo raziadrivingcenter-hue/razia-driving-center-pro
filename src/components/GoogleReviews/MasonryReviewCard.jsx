@@ -150,7 +150,7 @@ export function ReviewCard({ review, index = 0 }) {
             mt-2
             text-xs
             font-semibold
-            text-[#FF6201]
+            text-[#C2410C]
             transition-colors
             duration-200
             hover:text-[#FF3131]

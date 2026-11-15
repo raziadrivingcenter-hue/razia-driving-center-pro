@@ -141,35 +141,35 @@ function WhyBestSchool() {
           Explore our{" "}
           <a
             href="/driving-courses-lahore/"
-            className="font-semibold text-[#FF6201] hover:underline"
+            className="font-semibold text-[#C2410C] hover:underline"
           >
             driving courses and fees
           </a>
           , learn about our{" "}
           <a
             href="/female-driving-instructor-lahore/"
-            className="font-semibold text-[#FF6201] hover:underline"
+            className="font-semibold text-[#C2410C] hover:underline"
           >
             female driving instructor
           </a>
           , see our{" "}
           <a
             href="/practical-driving-lessons-lahore/"
-            className="font-semibold text-[#FF6201] hover:underline"
+            className="font-semibold text-[#C2410C] hover:underline"
           >
             practical driving lessons
           </a>{" "}
           and{" "}
           <a
             href="/advanced-driving-lahore/"
-            className="font-semibold text-[#FF6201] hover:underline"
+            className="font-semibold text-[#C2410C] hover:underline"
           >
             advanced driving lessons
           </a>
           , or{" "}
           <a
             href="/slot-availability/"
-            className="font-semibold text-[#FF6201] hover:underline"
+            className="font-semibold text-[#C2410C] hover:underline"
           >
             book your slot online
           </a>

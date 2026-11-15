@@ -129,6 +129,7 @@ function Gallery() {
 
             <button
               onClick={() => setSelectedImage(null)}
+              aria-label="Close"
               className="absolute right-8 top-8 flex h-14 w-14 items-center justify-center rounded-full bg-white text-3xl font-bold shadow-xl transition hover:scale-110"
             >
               ✕

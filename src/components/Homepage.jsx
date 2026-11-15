@@ -156,53 +156,62 @@ function Homepage() {
   return (
     <>
       <div className="min-h-screen bg-white">
+        {/* Skip link — first focusable element on the page. Hidden until
+            focused; the visible style lives in index.css (.skip-to-content). */}
+        <a href="#main" className="skip-to-content">
+          Skip to content
+        </a>
+
         <ScrollProgress />
 
         <Navbar onBookNow={() => navigate("/slot-availability/")} />
 
-        <Hero
-          onBookNow={() =>
-            navigate(
-              `/slot-availability/?course=${encodeURIComponent(
-                DEFAULT_COURSE_TITLE
-              )}`
-            )
-          }
-        />
+        {/* tabindex="-1" lets the skip link move focus here, not just scroll */}
+        <main id="main" tabIndex={-1}>
+          <Hero
+            onBookNow={() =>
+              navigate(
+                `/slot-availability/?course=${encodeURIComponent(
+                  DEFAULT_COURSE_TITLE
+                )}`
+              )
+            }
+          />
 
-        <Courses onCustomBooking={goToSlotBooking} />
+          <Courses onCustomBooking={goToSlotBooking} />
 
-        <WhyChoose />
+          <WhyChoose />
 
-        <Suspense fallback={<ReviewsPlaceholder />}>
-          <GoogleReviews />
-        </Suspense>
+          <Suspense fallback={<ReviewsPlaceholder />}>
+            <GoogleReviews />
+          </Suspense>
 
-        <Instructor />
+          <Instructor />
 
-        <Suspense fallback={null}>
-          <ServiceAreaMap />
-        </Suspense>
+          <Suspense fallback={null}>
+            <ServiceAreaMap />
+          </Suspense>
 
-        <Suspense fallback={null}>
-          <Gallery />
-        </Suspense>
+          <Suspense fallback={null}>
+            <Gallery />
+          </Suspense>
 
-        <About />
+          <About />
 
-        <Suspense fallback={null}>
-          <FAQ />
-        </Suspense>
+          <Suspense fallback={null}>
+            <FAQ />
+          </Suspense>
 
-        <Suspense fallback={null}>
-          <MapSection />
-        </Suspense>
+          <Suspense fallback={null}>
+            <MapSection />
+          </Suspense>
 
-        <Suspense fallback={null}>
-          <Contact />
-        </Suspense>
+          <Suspense fallback={null}>
+            <Contact />
+          </Suspense>
 
-        <WhyBestSchool />
+          <WhyBestSchool />
+        </main>
 
         <Footer />
 

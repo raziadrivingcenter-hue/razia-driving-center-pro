@@ -80,7 +80,7 @@ function Instructor() {
                 <span className="text-sm font-bold text-gray-900">
                   <span className="font-dm-sans">5.0</span>
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-500">
                   <span className="font-dm-sans">{count}</span> reviews
                 </span>
               </div>
@@ -142,7 +142,7 @@ function Instructor() {
                         <span className="ml-0.5 text-yellow-400">★</span>
                       )}
                     </span>
-                    <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                    <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-gray-500">
                       {s.label}
                     </span>
                   </div>

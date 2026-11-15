@@ -82,7 +82,7 @@ function ReviewFace({ review, side }) {
             <BadgeCheck size={12} className="text-blue-500" />
           </p>
           {review.time && (
-            <p className="text-[10px] text-gray-400">{review.time}</p>
+            <p className="text-[10px] text-gray-500">{review.time}</p>
           )}
         </div>
       </div>

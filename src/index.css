@@ -77,6 +77,32 @@ html {
 }
 
 /* =========================================
+   Skip link — hidden until focused
+   Off-screen rather than display:none, so it stays keyboard-focusable.
+   ========================================= */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  display: inline-block;
+  border-radius: 0.5rem;
+  background: #ff6201;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+}
+
+.skip-to-content:focus {
+  left: 1rem;
+  top: 1rem;
+  outline: 2px solid #1f2329;
+  outline-offset: 2px;
+}
+
+/* =========================================
    Rizwan Premium Modal Animations
 ========================================= */
 
