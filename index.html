@@ -41,10 +41,27 @@
   <!-- Raleway — premium weight range for the redesign -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Non-blocking font CSS: preload it, fetch it as print media (so it never
+       blocks first paint), then swap to all media once it has loaded. The
+       metric-matched fallbacks in src/index.css hold the text at the same size
+       and line-height until the real fonts arrive, so nothing jumps. -->
   <link
+    rel="preload"
+    as="style"
     href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
   />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap"
+    media="print"
+    onload="this.media='all'"
+  />
+  <noscript>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap"
+    />
+  </noscript>
 
   <meta
     name="viewport"

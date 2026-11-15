@@ -1,8 +1,61 @@
 @import "tailwindcss";
 
 @theme {
-  --font-raleway: "Raleway", ui-sans-serif, system-ui, sans-serif;
-  --font-dm-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-raleway: "Raleway", "Raleway Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-dm-sans: "DM Sans", "DM Sans Fallback", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* =========================================
+   Font fallbacks — metric-matched to the Google Fonts above.
+
+   The webfonts are loaded non-blocking (see index.html: preload + media="print"
+   swap), so text first paints in a local stand-in. Each @font-face below
+   carries size-adjust / ascent-override / descent-override / line-gap-override
+   so that stand-in has the same glyph widths and the same `line-height: normal`
+   as the real font — when the swap happens, nothing on the page moves.
+
+   Values are computed from the actual font binaries (Raleway, DM Sans, Arial,
+   Roboto), not guessed:
+     size-adjust      = webfont x-height / fallback x-height
+     *_-override      = webfont hhea metric / size-adjust
+   Arial covers Windows, Roboto covers Android. Systems with neither fall
+   through to the un-adjusted system stack, exactly as before.
+   ========================================= */
+
+@font-face {
+  font-family: "Raleway Fallback";
+  src: local("Arial");
+  size-adjust: 100.09%;
+  ascent-override: 93.92%;
+  descent-override: 23.38%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Raleway Fallback";
+  src: local("Roboto");
+  size-adjust: 98.24%;
+  ascent-override: 95.69%;
+  descent-override: 23.82%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "DM Sans Fallback";
+  src: local("Arial");
+  size-adjust: 97.19%;
+  ascent-override: 102.06%;
+  descent-override: 31.9%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "DM Sans Fallback";
+  src: local("Roboto");
+  size-adjust: 95.4%;
+  ascent-override: 103.99%;
+  descent-override: 32.5%;
+  line-gap-override: 0%;
 }
 
 html,
