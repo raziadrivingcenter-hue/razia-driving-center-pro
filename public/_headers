@@ -12,6 +12,12 @@
 # Open Graph image - immutable (versioned filename).
 /og-image-v2.png
   Cache-Control: public, max-age=31536000, immutable
+
+# Own-Vehicle page share image — pinned to image/png so it can never be
+# served as the SPA's text/html, and immutable (versioned filename).
+/learnownvehicle-og-v1.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
 /*.svg
   Cache-Control: public, max-age=604800
 
@@ -22,6 +28,18 @@
   Cache-Control: public, max-age=86400
 /apple-touch-icon.png
   Cache-Control: public, max-age=86400
+
+# Review profile photos, 3D car-viewer models and the downloadable guide.
+# These filenames are NOT content-hashed, so they are cached for 30 days
+# (revalidate after) rather than a year — a replaced file still propagates.
+/reviews/photos/*
+  Cache-Control: public, max-age=2592000
+
+/models/*
+  Cache-Control: public, max-age=2592000
+
+/driving-course-guide.pdf
+  Cache-Control: public, max-age=2592000
 
 # OpenAPI spec — short cache, correct content type
 /api/v1/openapi.json
