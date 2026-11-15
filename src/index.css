@@ -102,6 +102,13 @@ html {
   outline-offset: 2px;
 }
 
+/* The skip link moves focus to <main id="main">; without this the browser
+   draws a focus ring around the whole page. Scoped to the skip-link target
+   only — no other landmark is affected. */
+#main:focus {
+  outline: none;
+}
+
 /* =========================================
    Rizwan Premium Modal Animations
 ========================================= */

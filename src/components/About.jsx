@@ -21,7 +21,7 @@ function About() {
 
         <div>
 
-          <span className="rounded-full bg-orange-100 px-3 py-1.5 text-xs font-semibold text-[#FF6201]">
+          <span className="rounded-full bg-orange-100 px-3 py-1.5 text-xs font-semibold text-[#C2410C]">
             About Razia Driving Center
           </span>
 
@@ -35,7 +35,7 @@ function About() {
           <p className="mt-3 text-sm leading-[1.45] text-gray-600">
             Razia Driving Center has proudly trained thousands of students
             across Lahore since December 2016. Our experienced{" "}
-            <a href="#instructor" className="font-medium text-[#FF6201] underline">female instructor</a>
+            <a href="#instructor" className="font-medium text-[#C2410C] underline">female instructor</a>
             {" "}provides one-to-one practical driving lessons on
             real Lahore roads, helping beginners become confident, safe and
             responsible drivers.

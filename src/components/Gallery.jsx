@@ -30,7 +30,7 @@ function Gallery() {
 
           <div className="text-center">
 
-            <span className="rounded-full bg-orange-100 px-4 py-2 font-semibold text-[#FF6201]">
+            <span className="rounded-full bg-orange-100 px-4 py-2 font-semibold text-[#C2410C]">
               Student Gallery
             </span>
 

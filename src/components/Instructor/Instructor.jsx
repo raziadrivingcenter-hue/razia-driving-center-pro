@@ -36,7 +36,7 @@ function Instructor() {
 
         {/* Section Header */}
         <div className="max-w-2xl">
-          <span className="inline-block rounded-full bg-orange-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#FF6201]">
+          <span className="inline-block rounded-full bg-orange-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#C2410C]">
             Your Instructor
           </span>
           <h2 className="mt-5 text-3xl font-extrabold tracking-tight text-gray-950 md:text-4xl">
@@ -93,7 +93,7 @@ function Instructor() {
               <h3 className="text-2xl font-extrabold tracking-tight text-gray-950 md:text-3xl">
                 Madam Razia
               </h3>
-              <p className="mt-1 text-sm font-semibold text-[#FF6201]">
+              <p className="mt-1 text-sm font-semibold text-[#C2410C]">
                 Professional Female Driving Instructor
               </p>
 
@@ -111,7 +111,7 @@ function Instructor() {
                   "Every student deserves confidence behind the steering wheel.
                   My goal is to make learning enjoyable, safe and stress-free."
                 </p>
-                <cite className="mt-2 block text-xs font-bold not-italic tracking-wide text-[#FF6201]">
+                <cite className="mt-2 block text-xs font-bold not-italic tracking-wide text-[#C2410C]">
                   — Madam Razia
                 </cite>
               </blockquote>

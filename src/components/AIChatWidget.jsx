@@ -60,7 +60,7 @@ function renderMarkdown(text) {
     } else if (match[4]) {
       // `code`
       parts.push(
-        <code key={match.index} className="rounded bg-gray-200 px-1 py-0.5 text-xs font-mono text-[#FF6201]">
+        <code key={match.index} className="rounded bg-gray-200 px-1 py-0.5 text-xs font-mono text-[#374151]">
           {match[4]}
         </code>
       );
@@ -215,7 +215,7 @@ function QuickReplies({ buttons, onSelect, disabled }) {
             py-2
             text-sm
             font-medium
-            text-[#FF6201]
+            text-[#C2410C]
             transition-all
             duration-200
             hover:border-[#FF6201]
@@ -621,7 +621,7 @@ function AIChatWidget() {
                         py-2
                         text-sm
                         font-medium
-                        text-[#FF6201]
+                        text-[#C2410C]
                         transition-all
                         hover:bg-[#FF6201]
                         hover:text-white
@@ -640,7 +640,7 @@ function AIChatWidget() {
                         py-2
                         text-sm
                         font-medium
-                        text-[#FF6201]
+                        text-[#C2410C]
                         transition-all
                         hover:bg-[#FF6201]
                         hover:text-white

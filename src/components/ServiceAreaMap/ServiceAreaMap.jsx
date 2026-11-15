@@ -317,7 +317,7 @@ export default function ServiceAreaMap() {
       <div className="mx-auto max-w-6xl px-6">
         {/* Header */}
         <div className="max-w-2xl">
-          <span className="inline-block rounded-full bg-orange-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#FF6201]">
+          <span className="inline-block rounded-full bg-orange-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#C2410C]">
             Service Area
           </span>
           <h2 className="mt-5 text-3xl font-extrabold tracking-tight text-gray-950 md:text-4xl">

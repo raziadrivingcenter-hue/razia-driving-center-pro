@@ -190,7 +190,7 @@ function Hero({ onBookNow }) {
                 px-7
                 text-sm
                 font-semibold
-                text-[#FF6201]
+                text-[#C2410C]
                 transition-all
                 duration-200
                 hover:-translate-y-0.5

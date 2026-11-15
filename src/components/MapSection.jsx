@@ -19,7 +19,7 @@ function MapSection() {
 
         <div className="text-center">
 
-          <span className="rounded-full bg-orange-100 px-3 py-1.5 text-xs font-semibold text-[#FF6201]">
+          <span className="rounded-full bg-orange-100 px-3 py-1.5 text-xs font-semibold text-[#C2410C]">
             Visit Us
           </span>
 

@@ -72,7 +72,7 @@ function ReviewFace({ review, side }) {
             className="h-8 w-8 rounded-full object-cover ring-1 ring-gray-100"
           />
         ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-50 text-[12px] font-bold text-[#FF6201]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-50 text-[12px] font-bold text-[#C2410C]">
             {review.name.charAt(0)}
           </div>
         )}
