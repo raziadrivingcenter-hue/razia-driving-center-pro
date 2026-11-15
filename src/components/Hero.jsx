@@ -58,19 +58,32 @@ function Hero({ onBookNow }) {
           <div>
           <div className="max-w-[720px]">
 
-          {/* Location label */}
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="flex items-center gap-2"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-[#FF3131] to-[#FF6201]" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
-              Gulberg 2, Lahore
+          {/* Rating pill + location label. The pill is plain markup (no
+              framer-motion) so it paints immediately and never starts hidden. */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#FF6201]/20 bg-[#FFF3EA] px-3 py-1.5 text-[12px] font-semibold text-[#1F2329]">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="#FF6201"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              Top Rated Driving School in Lahore
             </span>
-          </motion.div>
+
+            {/* Location label — plain markup (no framer-motion) so it paints
+                on first paint instead of fading in from opacity 0. */}
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-[#FF3131] to-[#FF6201]" />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+                Gulberg 2, Lahore
+              </span>
+            </div>
+          </div>
 
           {/* Heading + description */}
           <motion.h1
