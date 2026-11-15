@@ -12,12 +12,44 @@ import Navbar from "./Navbar";
 import Hero from "./Hero";
 import Courses from "./Courses";
 import WhyChoose from "./WhyChoose";
-import GoogleReviews from "./GoogleReviews/GoogleReviews";
+import ReviewsPlaceholder from "./GoogleReviews/ReviewsPlaceholder";
 import Instructor from "./Instructor/Instructor";
 import About from "./About";
+import WhyBestSchool from "./WhyBestSchool";
 import Footer from "./Footer";
 import WhatsAppButton from "./WhatsAppButton";
 import { DEFAULT_COURSE_TITLE } from "../data/courses";
+
+// ── GoogleReviews: code-split, but never late ───────────────────────────────
+// The section sits far below the fold, so its JS is not in the initial bundle.
+// Two triggers make sure it is ready before anybody needs it:
+//   1. on idle — requestIdleCallback, capped at 2s
+//   2. the moment a #reviews anchor is clicked
+const GoogleReviews = lazy(() => import("./GoogleReviews/GoogleReviews"));
+
+let reviewsChunk = null;
+function loadGoogleReviews() {
+  if (!reviewsChunk) {
+    reviewsChunk = import("./GoogleReviews/GoogleReviews");
+  }
+  return reviewsChunk;
+}
+
+// The placeholder has no id (so #reviews is never duplicated in the DOM), which
+// means a bare anchor jump cannot find the section before the chunk lands.
+// Scroll to it once the real section has mounted, and give up after 5s.
+function scrollToReviewsWhenReady(attempt = 0) {
+  const section = document.getElementById("reviews");
+
+  if (section) {
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  if (attempt < 50) {
+    setTimeout(() => scrollToReviewsWhenReady(attempt + 1), 100);
+  }
+}
 
 // Phase 1C: Lazy-load below-fold components to reduce initial JS payload
 const Gallery = lazy(() => import("./Gallery"));
@@ -82,6 +114,45 @@ function Homepage() {
     });
   }, []);
 
+  // Fetch the reviews chunk on idle, so it is already cached by the time the
+  // user scrolls down to it. requestIdleCallback is missing in Firefox and
+  // Safari, so fall back to a plain 2s timer there.
+  useEffect(() => {
+    let cancelled = false;
+
+    const start = () => {
+      if (!cancelled) loadGoogleReviews();
+    };
+
+    const idle =
+      typeof window !== "undefined" && window.requestIdleCallback
+        ? window.requestIdleCallback(start, { timeout: 2000 })
+        : setTimeout(start, 2000);
+
+    return () => {
+      cancelled = true;
+      if (typeof window !== "undefined" && window.cancelIdleCallback) {
+        window.cancelIdleCallback(idle);
+      } else {
+        clearTimeout(idle);
+      }
+    };
+  }, []);
+
+  // Clicking the navbar "Reviews" anchor starts the chunk immediately and
+  // scrolls to the section once it has actually mounted.
+  useEffect(() => {
+    const handleClick = (event) => {
+      const link = event.target.closest?.('a[href="#reviews"]');
+      if (!link) return;
+
+      loadGoogleReviews().then(() => scrollToReviewsWhenReady());
+    };
+
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, []);
+
   return (
     <>
       <div className="min-h-screen bg-white">
@@ -103,7 +174,9 @@ function Homepage() {
 
         <WhyChoose />
 
-        <GoogleReviews />
+        <Suspense fallback={<ReviewsPlaceholder />}>
+          <GoogleReviews />
+        </Suspense>
 
         <Instructor />
 
@@ -128,6 +201,8 @@ function Homepage() {
         <Suspense fallback={null}>
           <Contact />
         </Suspense>
+
+        <WhyBestSchool />
 
         <Footer />
 
