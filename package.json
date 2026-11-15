@@ -7,7 +7,7 @@
     "dev": "vite",
     "prebuild": "node scripts/generate-favicons.mjs",
     "build": "vite build",
-    "postbuild": "node scripts/build-service-page.js",
+    "postbuild": "node scripts/build-service-page.js && node scripts/build-own-vehicle-page.js",
     "lint": "eslint .",
     "test:reviews": "node scripts/test-reviews-api.mjs",
     "test:slot-config": "node scripts/test-slot-config.mjs",

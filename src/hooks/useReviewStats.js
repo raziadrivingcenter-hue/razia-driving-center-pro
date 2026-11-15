@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 // request per page load instead of each hitting /api/reviews.
 
 // Shown until the endpoint responds. Same fallback the footer has always used.
-const FALLBACK = { rating: "5.0", count: 136 };
+const FALLBACK = { rating: "5.0", count: 147 };
 
 let cachedStats = null;
 let pendingRequest = null;

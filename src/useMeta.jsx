@@ -3,8 +3,19 @@ import { useEffect } from "react";
 const DEFAULT_META = {
   title: "Razia Driving Center | Driving School in Gulberg 2, Lahore",
   description:
-    "Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-one driving lessons with an experienced female instructor. Rated 5.0 from 136 Google reviews. Established 2016.",
+    "Razia Driving Center is a driving school in Gulberg 2, Lahore offering one-to-one driving lessons with an experienced female instructor. Rated 5.0 from 147 Google reviews. Established 2016.",
   canonical: "https://raziadrivingcenter.com/",
+};
+
+// Homepage share image from index.html — restored on unmount so a page that
+// sets its own image does not leak it onto every other route.
+const DEFAULT_IMAGE = {
+  url: "https://raziadrivingcenter.com/og-image-v2.png",
+  type: "image/png",
+  width: "1200",
+  height: "630",
+  alt: "Razia Driving Center - Book your driving lesson slot online in Gulberg 2, Lahore",
+  card: "summary_large_image",
 };
 
 function setMeta(name, content, isProperty = false) {
@@ -32,7 +43,20 @@ function setCanonical(href) {
   el.setAttribute("href", href);
 }
 
-export function useMeta({ title, description, canonical }) {
+// Open Graph + Twitter image tags. Only pages that pass `image` touch these,
+// so every existing caller keeps the homepage image it already had.
+function setImageMeta(image) {
+  setMeta("og:image", image.url, true);
+  setMeta("og:image:secure_url", image.url, true);
+  setMeta("og:image:type", image.type, true);
+  setMeta("og:image:width", image.width, true);
+  setMeta("og:image:height", image.height, true);
+  setMeta("og:image:alt", image.alt, true);
+  setMeta("twitter:image", image.url);
+  setMeta("twitter:card", image.card);
+}
+
+export function useMeta({ title, description, canonical, image }) {
   useEffect(() => {
     document.title = title || DEFAULT_META.title;
 
@@ -45,6 +69,9 @@ export function useMeta({ title, description, canonical }) {
 
     setCanonical(canonical || DEFAULT_META.canonical);
 
+    // No image passed → leave the static HTML's og:image untouched.
+    if (image) setImageMeta(image);
+
     return () => {
       document.title = DEFAULT_META.title;
       setMeta("description", DEFAULT_META.description);
@@ -54,6 +81,7 @@ export function useMeta({ title, description, canonical }) {
       setMeta("twitter:title", DEFAULT_META.title);
       setMeta("twitter:description", DEFAULT_META.description);
       setCanonical(DEFAULT_META.canonical);
+      setImageMeta(DEFAULT_IMAGE);
     };
-  }, [title, description, canonical]);
+  }, [title, description, canonical, image]);
 }

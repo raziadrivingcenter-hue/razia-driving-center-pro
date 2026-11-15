@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import car3Icon from "../../assets/car3.svg";
 
+import { OWN_VEHICLE_META } from "../../data/ownVehicleSeo";
 import { useRouter } from "../../router";
 import { useMeta } from "../../useMeta";
 import { useOwnVehicleBooking } from "../../hooks/useOwnVehicleBooking";
@@ -22,12 +23,7 @@ export default function OwnVehiclePage() {
   // booking form and the charges always match the selected slot.
   const [slotSelection, setSlotSelection] = useState({ date: "", slot: "" });
 
-  useMeta({
-    title: "Learn On Your Own Vehicle | Razia Driving Center",
-    description:
-      "Build a driving course around your own vehicle. Choose your course length and daily lesson time, add pick & drop, and see your price live.",
-    canonical: "https://raziadrivingcenter.com/learn-on-your-own-vehicle/",
-  });
+  useMeta(OWN_VEHICLE_META);
 
   const goBack = () => {
     // Prefer a real history entry so the visitor returns to where they came
