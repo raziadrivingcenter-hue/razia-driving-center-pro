@@ -62,8 +62,12 @@ function ReviewFace({ review, side }) {
         {review.photo ? (
           <img
             src={review.photo}
+            srcSet={`${review.photo} 80w`}
+            sizes="32px"
             alt={review.name}
-            loading="lazy"
+            width={80}
+            height={80}
+            loading="eager"
             decoding="async"
             className="h-8 w-8 rounded-full object-cover ring-1 ring-gray-100"
           />

@@ -11,7 +11,8 @@
 //  Snell's-law displacement map, with a frosted fallback elsewhere.
 // =============================================================================
 
-import bgImage from "../assets/bgimage5.png";
+import bgImage768 from "../assets/bgimage5-768.webp";
+import bgImage1440 from "../assets/bgimage5-1440.webp";
 import { LiquidGlass } from "./UI/liquid-glass";
 
 const SKILLS = [
@@ -59,7 +60,11 @@ function WhyBestSchool() {
       {/* Background photo — decorative, hidden from assistive tech. Anchored to
           the bottom so the car and skyline stay in frame on wide sections. */}
       <img
-        src={bgImage}
+        src={bgImage768}
+        srcSet={`${bgImage768} 768w, ${bgImage1440} 1440w`}
+        sizes="100vw"
+        width={1440}
+        height={810}
         alt=""
         aria-hidden="true"
         loading="lazy"

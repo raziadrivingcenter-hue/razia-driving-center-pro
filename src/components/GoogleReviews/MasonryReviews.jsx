@@ -24,8 +24,8 @@ export default function MasonryReviews({ reviews }) {
         xl:columns-4
       "
     >
-      {reviews.map((review) => (
-        <ReviewCard key={review.id} review={review} />
+      {reviews.map((review, index) => (
+        <ReviewCard key={review.id} review={review} index={index} />
       ))}
     </div>
   );

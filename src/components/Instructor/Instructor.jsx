@@ -1,4 +1,5 @@
-import instructorImage from "../../assets/instructor/instructor.png";
+import instructorImage448 from "../../assets/instructor/instructor-448.webp";
+import instructorImage896 from "../../assets/instructor/instructor-896.webp";
 import { motion } from "framer-motion";
 import {
   Award,
@@ -60,7 +61,11 @@ function Instructor() {
             {/* ── Image Column ── */}
             <div className="relative bg-gradient-to-br from-gray-100 to-gray-50 p-6 lg:p-8">
               <img
-                src={instructorImage}
+                src={instructorImage448}
+                srcSet={`${instructorImage448} 448w, ${instructorImage896} 896w`}
+                sizes="(min-width: 1024px) 480px, calc(100vw - 48px)"
+                width={896}
+                height={896}
                 alt="Madam Razia — Professional Female Driving Instructor"
                 loading="lazy"
                 decoding="async"

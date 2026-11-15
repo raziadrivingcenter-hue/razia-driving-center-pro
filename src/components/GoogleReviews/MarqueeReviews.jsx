@@ -76,7 +76,7 @@ function MarqueeColumn({ reviews, index }) {
       >
         {loop.map((review, i) => (
           <div key={`${review.id}-${i}`}>
-            <ReviewCard review={review} />
+            <ReviewCard review={review} index={i} />
           </div>
         ))}
       </div>

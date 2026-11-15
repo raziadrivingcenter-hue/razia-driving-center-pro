@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import gallery1 from "../assets/gallery/gallery1.png";
-import gallery2 from "../assets/gallery/gallery2.png";
-import gallery3 from "../assets/gallery/gallery3.png";
+import gallery1_400 from "../assets/gallery/gallery1-400.webp";
+import gallery1_800 from "../assets/gallery/gallery1-800.webp";
+import gallery2_400 from "../assets/gallery/gallery2-400.webp";
+import gallery2_800 from "../assets/gallery/gallery2-800.webp";
+import gallery3_400 from "../assets/gallery/gallery3-400.webp";
+import gallery3_800 from "../assets/gallery/gallery3-800.webp";
 
+// Two widths per photo. The grid uses the small one; the lightbox opens the
+// large one so the full-screen view keeps its original detail.
 const images = [
-  gallery1,
-  gallery2,
-  gallery3,
+  { small: gallery1_400, large: gallery1_800 },
+  { small: gallery2_400, large: gallery2_800 },
+  { small: gallery3_400, large: gallery3_800 },
 ];
 
 function Gallery() {
@@ -50,14 +55,16 @@ function Gallery() {
                 data-aos-delay={index * 100}
                 whileHover={{ y: -8 }}
                 className="group relative cursor-pointer overflow-hidden rounded-3xl shadow-xl"
-                onClick={() => setSelectedImage(image)}
+                onClick={() => setSelectedImage(image.large)}
               >
 
                 <img
-                  src={image}
+                  src={image.small}
+                  srcSet={`${image.small} 400w, ${image.large} 800w`}
+                  sizes="(min-width: 1024px) 390px, (min-width: 768px) 345px, calc(100vw - 48px)"
                   alt={`Student driving lesson at Razia Driving Center — gallery photo ${index + 1}`}
-                  width="400"
-                  height="320"
+                  width={800}
+                  height={451}
                   loading="lazy"
                   decoding="async"
                   className="h-80 w-full object-cover transition duration-500 group-hover:scale-110"
@@ -99,6 +106,8 @@ function Gallery() {
             <motion.img
               src={selectedImage}
               alt="Gallery Preview"
+              width={800}
+              height={451}
               initial={{
                 scale: 0.7,
                 opacity: 0,

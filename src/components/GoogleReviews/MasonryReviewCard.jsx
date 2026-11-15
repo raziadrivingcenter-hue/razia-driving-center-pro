@@ -26,7 +26,7 @@ export function Stars({ rating }) {
 }
 
 /* ── Single review card ── */
-export function ReviewCard({ review }) {
+export function ReviewCard({ review, index = 0 }) {
   const [expanded, setExpanded] = useState(false);
 
   const isYandex = review.source === "yandex";
@@ -41,6 +41,11 @@ export function ReviewCard({ review }) {
   } else if (review.photoUrl) {
     profileSrc = review.photoUrl;
   }
+
+  // Avatars in /reviews/photos are 80w WebP. The local profile photo bundled
+  // with the app is a different asset, so it gets no srcSet.
+  const isWebpAvatar =
+    typeof profileSrc === "string" && profileSrc.startsWith("/reviews/photos/");
 
   const needsClamp = review.review.length > 160;
 
@@ -67,7 +72,12 @@ export function ReviewCard({ review }) {
         {profileSrc ? (
           <img
             src={profileSrc}
+            {...(isWebpAvatar ? { srcSet: `${profileSrc} 80w`, sizes: "40px" } : {})}
             alt={`${review.name} profile photo`}
+            width={80}
+            height={80}
+            loading={index >= 10 ? "lazy" : "eager"}
+            decoding="async"
             className="h-10 w-10 shrink-0 rounded-full object-cover"
           />
         ) : (
