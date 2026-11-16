@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users, Star, MessageSquareText, Calendar, Sparkles, User } from "lucide-react";
 import { useRouter } from "../router";
@@ -93,13 +93,28 @@ function Hero({ onBookNow }) {
             transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
             className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-950 md:text-5xl lg:text-6xl"
           >
-            {title.split("").map((char, i) => (
-              <span
-                key={i}
-                className={`inline-block transition-all duration-200 ease-out md:hover:font-black md:hover:text-[#FF6201]${/\d/.test(char) ? " font-dm-sans" : ""}`}
-              >
-                {char === " " ? " " : char}
-              </span>
+            {/* Each character is its own inline-block box, and a line break is
+                allowed between two inline-block boxes — so without grouping,
+                the heading could break mid-word ("Gul-berg"). Grouping the
+                characters into words, each word in a nowrap span, means lines
+                only break at spaces. The space stays outside the span so its
+                soft-wrap opportunity is preserved. */}
+            {title.split(" ").map((word, wordIndex, words) => (
+              <Fragment key={wordIndex}>
+                <span className="whitespace-nowrap">
+                  {word.split("").map((char, charIndex) => (
+                    <span
+                      key={charIndex}
+                      className={`inline-block transition-all duration-200 ease-out md:hover:font-black md:hover:text-[#FF6201]${
+                        /[0-9]/.test(char) ? " font-dm-sans" : ""
+                      }`}
+                    >
+                      {char}
+                    </span>
+                  ))}
+                </span>
+                {wordIndex < words.length - 1 ? " " : ""}
+              </Fragment>
             ))}
           </motion.h1>
 
