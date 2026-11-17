@@ -7,17 +7,9 @@
 import { useState, useEffect } from "react";
 import { motion, useAnimate } from "framer-motion";
 import { Star, BadgeCheck } from "lucide-react";
-import cachedReviews from "../../data/cached-reviews.json";
 
 const CYCLE_MS = 4500;
 const FLIP_MS = 700;
-
-const reviews = cachedReviews.reviews.map((r) => ({
-  name: r.name,
-  text: r.review,
-  photo: r.photo,
-  time: r.time ? relativeTime(r.time) : "",
-}));
 
 function relativeTime(iso) {
   const now = Date.now();
@@ -96,6 +88,28 @@ export default function HeroTestimonial() {
   const [reducedMotion, setReducedMotion] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
+  // The cached review list is ~42 KB for 136 reviews, and this card is hidden
+  // below lg — so it is fetched on demand instead of riding along in the
+  // initial bundle.
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    import("../../data/cached-reviews.json").then((m) => {
+      if (cancelled) return;
+      setReviews(
+        (m.default.reviews || []).map((r) => ({
+          name: r.name,
+          text: r.review,
+          photo: r.photo,
+          time: r.time ? relativeTime(r.time) : "",
+        }))
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Listen for live changes (e.g. OS toggle)
   useEffect(() => {
@@ -107,7 +121,7 @@ export default function HeroTestimonial() {
 
   // Auto-flip cycle
   useEffect(() => {
-    if (reducedMotion) return;
+    if (reducedMotion || reviews.length < 2) return;
 
     const interval = setInterval(async () => {
       // Flip current front → back (0 → 180)
@@ -126,7 +140,15 @@ export default function HeroTestimonial() {
     }, CYCLE_MS);
 
     return () => clearInterval(interval);
-  }, [animate, scope, reducedMotion]);
+  }, [animate, scope, reducedMotion, reviews.length]);
+
+  // Same box as the loaded card, so the hero grid does not move while the
+  // review data is still loading.
+  if (reviews.length < 2) {
+    return (
+      <div className="relative hidden h-[240px] w-full max-w-[340px] lg:block" />
+    );
+  }
 
   const current = reviews[index];
   const next = reviews[(index + 1) % reviews.length];
