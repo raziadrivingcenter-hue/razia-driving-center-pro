@@ -7,7 +7,6 @@ import { LiquidGlass } from "./UI/liquid-glass";
 import rdcLogo from "../assets/LOGORDC.svg";
 import googleLogo from "../assets/google-logo.png";
 import CustomerSignup from "./CustomerSignup";
-import { getSession, signOut, onAuthStateChange } from "../lib/auth";
 import { DEFAULT_COURSE_TITLE } from "../data/courses";
 
 
@@ -36,17 +35,29 @@ function Navbar({ onBookNow }) {
 
   useEffect(() => {
     let cancelled = false;
-    // Resolve any existing session on first paint.
-    getSession().then((session) => {
-      if (!cancelled) {
-        setUser(session?.user ?? null);
-        setAuthReady(true);
-      }
-    });
-    // Keep in sync: sign-in, token refresh, sign-out (also from the dashboard).
-    const unsubscribe = onAuthStateChange((u) => {
-      if (!cancelled) setUser(u);
-    });
+    // The Supabase client is ~200 KB, so it is loaded on demand rather than
+    // sitting in the initial bundle. The navbar shows the signed-out state for
+    // one extra tick before the session resolves.
+    let unsubscribe = () => {};
+
+    (async () => {
+      const { getSession, onAuthStateChange } = await import("../lib/auth");
+      if (cancelled) return;
+
+      // Resolve any existing session.
+      getSession().then((session) => {
+        if (!cancelled) {
+          setUser(session?.user ?? null);
+          setAuthReady(true);
+        }
+      });
+
+      // Keep in sync: sign-in, token refresh, sign-out (also from the dashboard).
+      unsubscribe = onAuthStateChange((u) => {
+        if (!cancelled) setUser(u);
+      });
+    })();
+
     return () => {
       cancelled = true;
       unsubscribe();
@@ -57,6 +68,7 @@ function Navbar({ onBookNow }) {
 
   const handleSignOut = async () => {
     try {
+      const { signOut } = await import("../lib/auth");
       await signOut();
     } catch {
       /* ignore */

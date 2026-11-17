@@ -5,7 +5,6 @@ import { useRouter } from "../router";
 import HeroFeaturesMarquee from "./Hero/HeroFeaturesMarquee";
 import HeroTestimonial from "./Hero/HeroTestimonial";
 import CustomerSignup from "./CustomerSignup";
-import { getSession, onAuthStateChange } from "../lib/auth";
 import googleLogo from "../assets/google-logo.png";
 import femaleDrivingIcon from "../assets/femaledriving.svg";
 import supportIcon from "../assets/support.svg";
@@ -28,15 +27,27 @@ function Hero({ onBookNow }) {
 
   useEffect(() => {
     let cancelled = false;
-    getSession().then((session) => {
-      if (!cancelled) {
-        setUser(session?.user ?? null);
-        setAuthReady(true);
-      }
-    });
-    const unsubscribe = onAuthStateChange((u) => {
-      if (!cancelled) setUser(u);
-    });
+    // The Supabase client is ~200 KB, so it is loaded on demand rather than
+    // sitting in the initial bundle. The header just shows the signed-out
+    // state for one extra tick.
+    let unsubscribe = () => {};
+
+    (async () => {
+      const { getSession, onAuthStateChange } = await import("../lib/auth");
+      if (cancelled) return;
+
+      getSession().then((session) => {
+        if (!cancelled) {
+          setUser(session?.user ?? null);
+          setAuthReady(true);
+        }
+      });
+
+      unsubscribe = onAuthStateChange((u) => {
+        if (!cancelled) setUser(u);
+      });
+    })();
+
     return () => {
       cancelled = true;
       unsubscribe();

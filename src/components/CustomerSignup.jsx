@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import googleLogo from "../assets/google-logo.png";
-import { signInWithGoogle } from "../lib/auth";
 
 /**
  * Sign-in modal — real Google OAuth via Supabase Auth.
@@ -22,7 +21,10 @@ export default function CustomerSignup({ open, onClose }) {
     setBusy(true);
     setError("");
     try {
-      // Redirects the whole page; onClose is a best-effort cleanup.
+      // Loaded on demand: the Supabase client is ~200 KB and this modal is the
+      // only thing that needs it. Redirects the whole page; onClose is a
+      // best-effort cleanup.
+      const { signInWithGoogle } = await import("../lib/auth");
       await signInWithGoogle();
       onClose();
     } catch {
