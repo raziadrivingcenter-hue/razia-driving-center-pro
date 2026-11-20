@@ -1,7 +1,6 @@
 import { useEffect, lazy, Suspense } from "react";
 
 import AOS from "aos";
-import "aos/dist/aos.css";
 
 import "../App.css";
 
