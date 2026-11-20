@@ -35,9 +35,10 @@
   <link rel="icon" type="image/png" href="/favicon-48.png?v=48" sizes="48x48" />
   <link rel="apple-touch-icon" href="/favicon-48.png?v=48" />
 
-  <!-- Phase 1C: Preconnect to critical origins (maps.googleapis.com removed — not used; map iframe uses www.google.com) -->
-  <link rel="preconnect" href="https://www.google.com" />
-
+  <!-- Preconnects: only the font origins. www.google.com was removed — it only
+       serves the map iframe, which is lazy and far below the fold, and the
+       edge mirrors these hints into a Link header, so every hint here is
+       counted twice by PageSpeed. -->
   <!-- Raleway — premium weight range for the redesign -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
